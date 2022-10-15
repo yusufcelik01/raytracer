@@ -1,0 +1,9 @@
+*
+**/**
+
+!.gitignore
+!README.md
+
+hw1.pdf
+*.tar.gz
+
