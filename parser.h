@@ -62,6 +62,7 @@ namespace parser
         void loadFromXml(const std::string &filepath);
         void render(Camera camera);
         void render(size_t cameraId);
+        vec3f getRayColor(Ray ray, int depth);
     };
 }
 

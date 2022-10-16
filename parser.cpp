@@ -1,4 +1,5 @@
 #include "parser.h"
+#include "ppm.h"
 #include "Ray.hpp"
 #include "tinyxml2.h"
 #include <sstream>
@@ -149,7 +150,14 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream << "0 0 0" << std::endl;
         }
         child = element->FirstChildElement("PhongExponent");
-        stream << child->GetText() << std::endl;
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "1" << std::endl;
+        }
 
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
         stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
@@ -241,13 +249,34 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
 
 
-vec3f getRayColor(Ray ray, int depth)
+vec3f parser::Scene::getRayColor(Ray ray, int depth)
 {
     if(depth < 0)
     {
         return vec3f(0.f, 0.f, 0.f);
     }
 
+    float min_t = 1e20;
+
+    for(Sphere sphere : spheres)
+    {
+        IntersectionData intData;
+        if(sphere.intersectRay(vertex_data, ray, intData))
+        {
+            if(intData.t < min_t)
+            {
+                min_t = intData.t;
+            }
+        }
+
+    }
+
+    if(min_t < 1e20){
+        return vec3f(100, 200, 100);
+    }
+    else {
+        return vec3f(0, 0, 0);
+    }
     
 
 }
@@ -278,18 +307,27 @@ void parser::Scene::render(Camera camera)
             vec3f m = e - w * camera.near_distance;
             vec3f q = m + l * u + t * v;
             
-            float s_u = (x + 0.5) * (r-l)/nx;
-            float s_v = (y + 0.5) * (t-b)/ny;
+            float s_u = (x + 0.5) * (r-l)/float(nx);
+            float s_v = (y + 0.5) * (t-b)/float(ny);
 
             vec3f s = q + s_u * u - s_v * v;
-            Ray r; 
-            r.o = e;
-            r.d = s - e;
+            Ray ray; 
+            ray.o = e;
+            ray.d = s - e;
 
-            //vec3f color;
-            //img[(camere.image_width*y + x)*3] = clamp(color.r);
+            
+            vec3f color = getRayColor(ray, max_recursion_depth);
+            vec3i c = clamp(vec3i(color));
+            
+            img[(camera.image_width*y + x)*3] = c.r;
+            img[(camera.image_width*y + x)*3 + 1] = c.g;
+            img[(camera.image_width*y + x)*3 + 2] = c.b;
+            
         }
     }
+    write_ppm(camera.image_name.c_str() , img, nx, ny);
+
+    delete[] img;
 }
 
 void parser::Scene::render(size_t cameraId)

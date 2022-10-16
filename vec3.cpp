@@ -33,7 +33,7 @@ vec3f vec3f::operator-()
     return u;
 }
 
-vec3f vec3f::operator-(const vec3f& rhs)
+vec3f vec3f::operator-(const vec3f& rhs) const
 {
     vec3f v;
     v.x = this->x - rhs.x;
@@ -59,18 +59,16 @@ vec3f cross(const vec3f& a, const vec3f& b)
     
     c.x = a.y * b.z - a.z * b.y;
     c.y = a.z * b.x - a.x * b.z;
-    c.z = a.x * b.y - a.y * b.z;
+    c.z = a.x * b.y - a.y * b.x;
 
     return c;
 }
 
-vec3f dot(const vec3f& a, const vec3f& b)
+float dot(const vec3f& a, const vec3f& b)
 {
-    vec3f c;
+    float c;
     
-    c.x = a.x * b.x;
-    c.y = a.y * b.y;
-    c.z = a.z * b.z;
+    c = a.x * b.x + a.y * b.y + a.z * b.z;
 
     return c;
 }
@@ -90,12 +88,21 @@ vec3f norm(const vec3f& a)
     return k * a;
 }
 
-vec3f operator*(const vec3f& v, float& c)
+//vec3f operator*(const vec3f& v, float& c)
+//{
+//   vec3f u; 
+//   u.x = c * v.x;
+//   u.y = c * v.y;
+//   u.z = c * v.z;
+//
+//   return u;
+//}
+vec3f vec3f::operator*(float& c)
 {
    vec3f u; 
-   u.x = c * v.x;
-   u.y = c * v.y;
-   u.z = c * v.z;
+   u.x = c * this->x;
+   u.y = c * this->y;
+   u.z = c * this->z;
 
    return u;
 }
@@ -107,4 +114,45 @@ vec3f operator*(float& c, const vec3f& v)
    u.z = c * v.z;
 
    return u;
+}
+
+
+/// vec3i member functions
+vec3i::vec3i()
+{
+    this->x = 0;
+    this->y = 0;
+    this->z = 0;
+}
+
+
+vec3i::vec3i(vec3f vf)
+{
+    this->x = vf.x;
+    this->y = vf.y;
+    this->z = vf.z;
+}
+
+vec3i clamp(const vec3i a)
+{
+    vec3i v = a;
+    if(v.x > 255){
+        v.x = 255;
+    }
+    if(v.x < 0){
+        v.x = 0;
+    }
+    if(v.y > 255){
+        v.y = 255;
+    }
+    if(v.y < 0){
+        v.y = 0;
+    }
+    if(v.z > 255){
+        v.z = 255;
+    }
+    if(v.z < 0){
+        v.z = 0;
+    }
+    return v;
 }
