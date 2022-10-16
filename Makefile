@@ -3,7 +3,7 @@ CXX= g++
 CFLAGS = -g
 CXXFLAGS = -std=c++17
 
-OBJECT_FILES= main.o  parser.o  ppm.o  Sphere.o  tinyxml2.o  vec3.o
+OBJECT_FILES= main.o  parser.o  ppm.o  Sphere.o  tinyxml2.o  vec3.o img.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)

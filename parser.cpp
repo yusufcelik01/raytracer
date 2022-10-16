@@ -1,5 +1,6 @@
 #include "parser.h"
 #include "ppm.h"
+#include "img.hpp"
 #include "Ray.hpp"
 #include "tinyxml2.h"
 #include <sstream>
@@ -325,7 +326,8 @@ void parser::Scene::render(Camera camera)
             
         }
     }
-    write_ppm(camera.image_name.c_str() , img, nx, ny);
+    //write_ppm(camera.image_name.c_str() , img, nx, ny);
+    write_png(camera.image_name.c_str() , nx, ny, img);
 
     delete[] img;
 }
