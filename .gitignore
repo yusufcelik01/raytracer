@@ -1,9 +1,15 @@
 *
 **/**
+hw1.pdf
+*.tar.gz
 
 !.gitignore
 !README.md
+!Makefile
 
-hw1.pdf
-*.tar.gz
+!*.cpp
+!*.hpp
+!*.h
+!*.c
+
 
