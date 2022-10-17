@@ -27,9 +27,10 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
         intData.t = t2;
     }
     intData.hitType = SPHERE;
-    intData.v0_id = -1;
-    intData.v1_id = -1;
-    intData.v2_id = -1;
+    //intData.v0_id = -1;
+    //intData.v1_id = -1;
+    //intData.v2_id = -1;
+    intData.sphereCenterId = center_vertex_id;
     intData.material_id = this->material_id;
     intData.intersectionPoint = ray.o + (ray.d * intData.t);
 

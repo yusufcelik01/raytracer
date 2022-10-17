@@ -113,6 +113,15 @@ vec3f vec3f::operator*(const float& c) const
 
    return u;
 }
+vec3f vec3f::operator/(const float& c) const
+{
+   vec3f u; 
+   u.x = x / c;
+   u.y = y / c;
+   u.z = z / c;
+
+   return u;
+}
 vec3f operator*(float& c, const vec3f& v)
 {
    vec3f u; 

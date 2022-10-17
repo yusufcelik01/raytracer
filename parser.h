@@ -63,6 +63,8 @@ namespace parser
         void render(Camera camera);
         void render(size_t cameraId);
         vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay);
+        vec3f getObjNorm(const IntersectionData& data);
+        vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
     };
 }
 

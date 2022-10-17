@@ -29,6 +29,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
 
     if(hit)
     {
+        intData.hitType = MESH;
         intData.material_id = this->material_id;
         //notice that temp is carry data of a face
     }

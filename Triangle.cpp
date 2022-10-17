@@ -5,6 +5,7 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Interse
     if(this->indices.intersectRay(VAO, r, intData))
     {
         //intData.obj = this;
+        intData.hitType = TRIANGLE;
         intData.material_id = this->material_id;
         return true;
     }

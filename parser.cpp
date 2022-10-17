@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <stdexcept>
+#include <cmath>
 #include <limits>
 
 void parser::Scene::loadFromXml(const std::string &filepath)
@@ -250,7 +251,60 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     }
 }
 
+vec3f parser::Scene::getObjNorm(const IntersectionData& data)
+{
+    vec3f n;
+    vec3f a,b,c;
+    switch(data.hitType)
+    {
+        case SPHERE:
+            n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId - 1]);
+            break;
+        case TRIANGLE://fall through mesh
+        case MESH:
+            a = vertex_data[data.v0_id - 1]; 
+            b = vertex_data[data.v1_id - 1]; 
+            c = vertex_data[data.v2_id - 1]; 
+            
+            n = norm(cross(b-a, c-b));
 
+            break;
+        //default:
+        //    n = vec3f(0.f);
+    }
+
+    return n;
+}
+
+vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
+{
+    //for now only calculate diffuse & spcular shading
+    //for only point lights
+    vec3f w_eye = -norm(eyeRay.d);
+    vec3f color = vec3f(0.f);
+    for(PointLight light : point_lights)
+    {
+        vec3f w_light = (light.position - p);
+        float distance = length(w_light); 
+        w_light = norm(w_light);
+        float d_sqr = distance * distance;
+
+        vec3f irradiance = light.intensity / d_sqr;
+        //diffuse shading
+        vec3f cosTheta = dot(surfNorm, w_light);
+        color += material.diffuse * cosTheta * irradiance;
+
+        //specular shading 
+        vec3f half = norm(w_light + w_eye);
+        float cosAlpha = dot(half, surfNorm);
+        cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
+
+        //cosAlpha = material.phong_exponent
+        color += material.specular * cosAlpha * irradiance;
+    }
+
+    return color;
+}
 
 vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
 {
@@ -338,18 +392,16 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
     }
 
     if(hit){
-        //Material objMaterial = materials[materialId];
         Material objMaterial = materials[closestObjData.material_id - 1];
-        //std::cout << "Object material : " << closestObjData.obj->getMaterialId() << std::endl;
-        //vec3f n = closestObjData.obj->getSurfNormal(vertex_data, closestObjData);
+        vec3f n = getObjNorm(closestObjData);
 
         vec3f color = vec3f(0.f);
-        color += objMaterial.diffuse * 255.f;
+        color += objMaterial.ambient * ambient_light;
+        //color += objMaterial.diffuse * 255.f;
+        color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
         
-        
-        //return objMaterial.ambient * 35e4;
         return color;
-        return vec3f(90.f, 50.f, 190.f);
+        //return vec3f(90.f, 50.f, 190.f);
         //TODO
         //recurse here
     }

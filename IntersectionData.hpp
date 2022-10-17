@@ -14,7 +14,13 @@ class IntersectionData //this is where i break oop and go back to C
     public:
     enum hitObjectType hitType;
     float t;
-    int v0_id, v1_id, v2_id;//triangle indices
+    union
+    {
+        struct{ int v0_id, v1_id, v2_id;};//triangle indices
+        struct{ int sphereCenterId; };
+    };
+
+    
     vec3f intersectionPoint;
     int material_id;
 };

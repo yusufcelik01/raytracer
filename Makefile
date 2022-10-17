@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g 
+CFLAGS = -g -O3
 CXXFLAGS = -std=c++17
 
 
@@ -45,3 +45,4 @@ simple_test: raytracer
 	./raytracer hw1/inputs/spheres.xml
 	./raytracer hw1/inputs/cornellbox.xml
 	./raytracer hw1/inputs/two_spheres.xml
+	./raytracer hw1/inputs/four_spheres.xml
