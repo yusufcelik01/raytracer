@@ -6,11 +6,16 @@
 #include <vector>
 
 
-class Mesh : Object
+class Mesh :public Object
 {
     public:
-    int material_id;
     std::vector<Face> faces;
+
+    //member functions
+    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
+    int getMaterialId();
+
 };
 
 

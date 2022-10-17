@@ -16,6 +16,13 @@ vec3f::vec3f(float c)
     this->z = c;
 }
 
+vec3f::vec3f(const vec3i& ivec)
+{
+    this->x = ivec.x;
+    this->y = ivec.y;
+    this->z = ivec.z;
+}
+
 vec3f::vec3f(float x, float y, float z)
 {
     this->x = x;
@@ -43,7 +50,7 @@ vec3f vec3f::operator-(const vec3f& rhs) const
     return v;
 }
 
-vec3f vec3f::operator+(const vec3f& rhs)
+vec3f vec3f::operator+(const vec3f& rhs) const
 {
     vec3f v;
     v.x = this->x + rhs.x;
@@ -97,12 +104,12 @@ vec3f norm(const vec3f& a)
 //
 //   return u;
 //}
-vec3f vec3f::operator*(float& c)
+vec3f vec3f::operator*(const float& c) const
 {
    vec3f u; 
-   u.x = c * this->x;
-   u.y = c * this->y;
-   u.z = c * this->z;
+   u.x = c * x;
+   u.y = c * y;
+   u.z = c * z;
 
    return u;
 }
@@ -128,31 +135,81 @@ vec3i::vec3i()
 
 vec3i::vec3i(vec3f vf)
 {
-    this->x = vf.x;
-    this->y = vf.y;
-    this->z = vf.z;
+    this->x = int(vf.x);
+    this->y = int(vf.y);
+    this->z = int(vf.z);
 }
 
-vec3i clamp(const vec3i a)
+vec3i clamp(const vec3i a, vec3i lower, vec3i upper)
 {
     vec3i v = a;
-    if(v.x > 255){
-        v.x = 255;
+    if(v.x > upper.x){
+        v.x = upper.x;
     }
-    if(v.x < 0){
-        v.x = 0;
+    else if(v.x < lower.x){
+        v.x = lower.x;
     }
-    if(v.y > 255){
-        v.y = 255;
+    
+    if(v.y > upper.y){
+        v.y = upper.y;
     }
-    if(v.y < 0){
-        v.y = 0;
+    else if(v.y < lower.y){
+        v.y = lower.y;
     }
-    if(v.z > 255){
-        v.z = 255;
+
+    if(v.z > upper.z){
+        v.z = upper.z;
     }
-    if(v.z < 0){
-        v.z = 0;
+    else if(v.z < lower.z){
+        v.z = lower.z;
     }
     return v;
+}
+vec3i clamp(const vec3i a, int lower, int upper)
+{
+    vec3i v = a;
+    if(v.x > upper){
+        v.x = upper;
+    }
+    else if(v.x < lower){
+        v.x = lower;
+    }
+    
+    if(v.y > upper){
+        v.y = upper;
+    }
+    else if(v.y < lower){
+        v.y = lower;
+    }
+
+    if(v.z > upper){
+        v.z = upper;
+    }
+    else if(v.z < lower){
+        v.z = lower;
+    }
+    return v;
+}
+
+vec3f vec3f::operator*(const vec3f& rhs) const
+{
+    vec3f ret;
+    ret.x = x * rhs.x;
+    ret.y = y * rhs.y;
+    ret.z = z * rhs.z;
+    return ret;
+}
+vec3f& vec3f::operator+=(const vec3f& rhs)
+{
+    this->x += rhs.x;
+    this->y += rhs.y;
+    this->z += rhs.z;
+    return *this;
+}
+vec3f& vec3f::operator-=(const vec3f& rhs) 
+{
+    this->x -= rhs.x;
+    this->y -= rhs.y;
+    this->z -= rhs.z;
+    return *this;
 }

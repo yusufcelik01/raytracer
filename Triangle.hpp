@@ -7,8 +7,11 @@
 class Triangle: public Object
 {
     public:
-    int material_id;
     Face indices;
+
+    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData) ;
+    vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
+    int getMaterialId();
 };
 
 #endif

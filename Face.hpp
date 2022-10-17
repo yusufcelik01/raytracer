@@ -1,12 +1,19 @@
 #ifndef __FACE__
 #define __FACE__
 
-    struct Face
-    {
-        int v0_id;
-        int v1_id;
-        int v2_id;
-    };
+#include "Object.hpp"
+
+class Face : public Object
+{
+    public:
+    int v0_id;
+    int v1_id;
+    int v2_id;
+    
+    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
+    int getMaterialId();
+};
 
 
 #endif

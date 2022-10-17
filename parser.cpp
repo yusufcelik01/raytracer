@@ -4,7 +4,9 @@
 #include "Ray.hpp"
 #include "tinyxml2.h"
 #include <sstream>
+#include <iostream>
 #include <stdexcept>
+#include <limits>
 
 void parser::Scene::loadFromXml(const std::string &filepath)
 {
@@ -250,33 +252,114 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
 
 
-vec3f parser::Scene::getRayColor(Ray ray, int depth)
+vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
 {
     if(depth < 0)
     {
         return vec3f(0.f, 0.f, 0.f);
     }
 
-    float min_t = 1e20;
+    //float min_t = 1e20;
+    float min_t = std::numeric_limits<float>::infinity();
+    bool hit = false;
+    IntersectionData closestObjData;
+    closestObjData.material_id = -1;
+    closestObjData.t = std::numeric_limits<float>::infinity(); 
+    //closestObjData.face =  NULL;
 
+    vec3f color = vec3f(0.f);
+
+    //std::cout << "<<<<<<<<<" << std::endl;
+    //std::cout << "Sphere loop starts " << std::endl;
     for(Sphere sphere : spheres)
     {
         IntersectionData intData;
         if(sphere.intersectRay(vertex_data, ray, intData))
         {
-            if(intData.t < min_t)
+            hit = true;
+            if(intData.t < closestObjData.t)
             {
-                min_t = intData.t;
+                closestObjData = IntersectionData(intData);
+                //closestObjData.t = intData.t;
+                //closestObjData.obj = intData.obj;
+                //closestObjData.material_id = intData.material_id;
+                //closestObjData.intersectionPoint = intData.intersectionPoint;
+                //closestObjData.hitType = intData.hitType;
+
+                //std::cout << "---------" << std::endl;
+                //std::cout << "hit sphere with vertex ID: " << sphere.center_vertex_id << std::endl;
+                //std::cout << "t parameter: " << closestObjData.t << std::endl;
+                //std::cout << "Sphere material : " << intData.obj->getMaterialId() << std::endl;
+                //std::cout << "closestObjData material : " << closestObjData.material_id << std::endl;
+                //std::cout << "---------" << std::endl;
+            }
+        }
+
+    }
+    //if(hit)
+    //{
+    //    std::cout << "=========" << std::endl;
+    //    std::cout << "Sphere loop ends " << std::endl;
+    //    std::cout << "t parameter: " << closestObjData.t << std::endl;
+    //    std::cout << "closestObjData pointer : " << closestObjData.obj << std::endl;
+    //    std::cout << "closestObjData material : " << closestObjData.material_id << std::endl;
+    //    std::cout << "=========" << std::endl;
+    //}
+
+    for(Triangle triangle : triangles)
+    {
+        IntersectionData intData;
+        if(triangle.intersectRay(vertex_data, ray, intData))
+        {
+            hit = true;
+            if(intData.t < closestObjData.t)
+            {
+                closestObjData = intData;
             }
         }
 
     }
 
-    if(min_t < 1e20){
-        return vec3f(100, 200, 100);
+    for(Mesh mesh: meshes)
+    {
+        IntersectionData intData;
+        if(mesh.intersectRay(vertex_data, ray, intData))
+        {
+            //if(hit){
+            //    break;
+            //}
+            hit = true;
+            if(intData.t < closestObjData.t)
+            {
+                closestObjData = intData;
+            }
+        }
+
+    }
+
+    if(hit){
+        //Material objMaterial = materials[materialId];
+        Material objMaterial = materials[closestObjData.material_id - 1];
+        //std::cout << "Object material : " << closestObjData.obj->getMaterialId() << std::endl;
+        //vec3f n = closestObjData.obj->getSurfNormal(vertex_data, closestObjData);
+
+        vec3f color = vec3f(0.f);
+        color += objMaterial.diffuse * 255.f;
+        
+        
+        //return objMaterial.ambient * 35e4;
+        return color;
+        return vec3f(90.f, 50.f, 190.f);
+        //TODO
+        //recurse here
     }
     else {
-        return vec3f(0, 0, 0);
+        if(isPrimaryRay) {
+            return this->background_color;
+        }
+        else {
+            return vec3f(0, 0, 0);
+        }
     }
     
 
@@ -290,6 +373,7 @@ void parser::Scene::render(Camera camera)
     v = norm(camera.up);
     w = norm(-camera.gaze);
     u = norm(cross(v, w));
+    v = norm(cross(w, u));
 
     int nx = camera.image_width;
     int ny = camera.image_height;
@@ -301,24 +385,24 @@ void parser::Scene::render(Camera camera)
     int x,y;
     unsigned char* img = new unsigned char[camera.image_width* camera.image_height * 3];
 
+    vec3f m = e - w * camera.near_distance;
+    vec3f q = m + l * u + t * v;
+
     for(y = 0; y < camera.image_height; ++y)
     {
         for(x = 0; x < camera.image_width; ++x)
         {
-            vec3f m = e - w * camera.near_distance;
-            vec3f q = m + l * u + t * v;
-            
             float s_u = (x + 0.5) * (r-l)/float(nx);
             float s_v = (y + 0.5) * (t-b)/float(ny);
 
             vec3f s = q + s_u * u - s_v * v;
             Ray ray; 
             ray.o = e;
-            ray.d = s - e;
+            ray.d = norm(s - e);
 
             
-            vec3f color = getRayColor(ray, max_recursion_depth);
-            vec3i c = clamp(vec3i(color));
+            vec3f color = getRayColor(ray, max_recursion_depth, true);
+            vec3i c = clamp(vec3i(color), 0, 255);
             
             img[(camera.image_width*y + x)*3] = c.r;
             img[(camera.image_width*y + x)*3 + 1] = c.g;
@@ -331,6 +415,8 @@ void parser::Scene::render(Camera camera)
 
     delete[] img;
 }
+
+
 
 void parser::Scene::render(size_t cameraId)
 {

@@ -26,5 +26,24 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     {
         intData.t = t2;
     }
+    intData.hitType = SPHERE;
+    intData.v0_id = -1;
+    intData.v1_id = -1;
+    intData.v2_id = -1;
+    intData.material_id = this->material_id;
+    intData.intersectionPoint = ray.o + (ray.d * intData.t);
+
     return true;
+}
+
+
+vec3f Sphere::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const
+{
+    return norm(intersectionPoint.intersectionPoint - VAO[this->center_vertex_id-1]);
+    //return vec3f(0.f);
+}
+
+int Sphere::getMaterialId()
+{
+    return this->material_id;
 }
