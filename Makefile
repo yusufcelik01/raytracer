@@ -14,6 +14,7 @@ all:
 	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
 
 
+vec3.cpp: vec3.hpp
 main.o: main.cpp parser.h ppm.h
 parser.o: parser.cpp parser.h
 Sphere.o: Sphere.cpp Sphere.hpp Object.hpp
@@ -46,3 +47,4 @@ simple_test: raytracer
 	./raytracer hw1/inputs/cornellbox.xml
 	./raytracer hw1/inputs/two_spheres.xml
 	./raytracer hw1/inputs/four_spheres.xml
+	./raytracer hw1/inputs/spheres_mirror.xml
