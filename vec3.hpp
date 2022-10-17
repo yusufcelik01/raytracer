@@ -47,8 +47,9 @@ float length(const vec3f& a);
 vec3f norm(const vec3f& a);
 vec3i clamp(const vec3i a, int, int);
 vec3i clamp(const vec3i a, vec3i, vec3i);
+vec3f reflect(vec3f n, vec3f incoming);
 
 
-vec3f operator*(float& c, const vec3f& v);
+vec3f operator*(const float& c, const vec3f& v);
 
 #endif

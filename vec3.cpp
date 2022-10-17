@@ -80,6 +80,14 @@ float dot(const vec3f& a, const vec3f& b)
     return c;
 }
 
+/*
+ all vectors must be unit
+ */
+vec3f reflect(vec3f n, vec3f incoming)
+{
+    return -incoming + ( 2.f * n * (dot(n, incoming)));
+}
+
 float length(const vec3f& a)
 {
     float l = sqrt(a.x*a.x + a.y*a.y + a.z*a.z);
@@ -122,7 +130,7 @@ vec3f vec3f::operator/(const float& c) const
 
    return u;
 }
-vec3f operator*(float& c, const vec3f& v)
+vec3f operator*(const float& c, const vec3f& v)
 {
    vec3f u; 
    u.x = c * v.x;
