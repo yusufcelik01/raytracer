@@ -319,12 +319,9 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
     IntersectionData closestObjData;
     closestObjData.material_id = -1;
     closestObjData.t = std::numeric_limits<float>::infinity(); 
-    //closestObjData.face =  NULL;
 
     vec3f color = vec3f(0.f);
 
-    //std::cout << "<<<<<<<<<" << std::endl;
-    //std::cout << "Sphere loop starts " << std::endl;
     for(Sphere sphere : spheres)
     {
         IntersectionData intData;
@@ -334,31 +331,10 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
             if(intData.t < closestObjData.t)
             {
                 closestObjData = IntersectionData(intData);
-                //closestObjData.t = intData.t;
-                //closestObjData.obj = intData.obj;
-                //closestObjData.material_id = intData.material_id;
-                //closestObjData.intersectionPoint = intData.intersectionPoint;
-                //closestObjData.hitType = intData.hitType;
-
-                //std::cout << "---------" << std::endl;
-                //std::cout << "hit sphere with vertex ID: " << sphere.center_vertex_id << std::endl;
-                //std::cout << "t parameter: " << closestObjData.t << std::endl;
-                //std::cout << "Sphere material : " << intData.obj->getMaterialId() << std::endl;
-                //std::cout << "closestObjData material : " << closestObjData.material_id << std::endl;
-                //std::cout << "---------" << std::endl;
             }
         }
 
     }
-    //if(hit)
-    //{
-    //    std::cout << "=========" << std::endl;
-    //    std::cout << "Sphere loop ends " << std::endl;
-    //    std::cout << "t parameter: " << closestObjData.t << std::endl;
-    //    std::cout << "closestObjData pointer : " << closestObjData.obj << std::endl;
-    //    std::cout << "closestObjData material : " << closestObjData.material_id << std::endl;
-    //    std::cout << "=========" << std::endl;
-    //}
 
     for(Triangle triangle : triangles)
     {
@@ -379,9 +355,6 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
         IntersectionData intData;
         if(mesh.intersectRay(vertex_data, ray, intData))
         {
-            //if(hit){
-            //    break;
-            //}
             hit = true;
             if(intData.t < closestObjData.t)
             {
@@ -397,13 +370,9 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
 
         vec3f color = vec3f(0.f);
         color += objMaterial.ambient * ambient_light;
-        //color += objMaterial.diffuse * 255.f;
         color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
         
         return color;
-        //return vec3f(90.f, 50.f, 190.f);
-        //TODO
-        //recurse here
     }
     else {
         if(isPrimaryRay) {
