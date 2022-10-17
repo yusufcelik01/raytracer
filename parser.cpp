@@ -126,7 +126,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         material.type = REGULAR;
         if(element->Attribute("type", "mirror") != NULL)
         {
-            material.type = REGULAR;
+            material.type = MIRROR;
         }
         else if(element->Attribute("type", "conductor") != NULL) 
         {
@@ -400,6 +400,16 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
         vec3f color = vec3f(0.f);
         color += objMaterial.ambient * ambient_light;
         color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
+
+        //get mirror lightging
+        if(objMaterial.type == MIRROR)
+        {
+            //std::cout <<"MIRROR ENTER" << std::endl;
+            Ray reflectingRay;
+            reflectingRay.d = reflect(n, -ray.d);
+            reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon;//epsilon ekle TODO
+            color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false);
+        }
         
         return color;
     }
