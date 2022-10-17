@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g -O3
+CFLAGS = -g 
 CXXFLAGS = -std=c++17
 
 

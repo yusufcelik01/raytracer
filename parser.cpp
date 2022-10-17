@@ -286,15 +286,15 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
     for(PointLight light : point_lights)
     {
         vec3f w_light = (light.position - p);
-        //Ray shadowRay;
-        //shadowRay.o = p + surfNorm * shadow_ray_epsilon;
-        //shadowRay.d = norm(light.position - shadowRay.o);
-        //if(rayQuery(shadowRay, dummy, true))//if shadow
-        //{
-        //    continue;
-        //}
-
+        Ray shadowRay;
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = norm(light.position - shadowRay.o);
         float distance = length(w_light); 
+        if(rayQuery(shadowRay, dummy, true, distance))//if shadow
+        {
+            continue;
+        }
+
         w_light = norm(w_light);
         float d_sqr = distance * distance;
 
@@ -316,7 +316,7 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
     return color;
 }
 
-bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay)
+bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT)
 {
     IntersectionData closestObjData;
     closestObjData.material_id = -1;
@@ -330,9 +330,9 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
         IntersectionData intData;
         if(sphere.intersectRay(vertex_data, ray, intData))
         {
-            if(intData.t < closestObjData.t && intData.t > 0)
+            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
             {
-                if(isShadowRay && intData.t > 0) {return true;}
+                if(isShadowRay) {return true;}
                 hit = true;
                 closestObjData = IntersectionData(intData);
             }
@@ -345,9 +345,9 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
         IntersectionData intData;
         if(triangle.intersectRay(vertex_data, ray, intData))
         {
-            if(intData.t < closestObjData.t && intData.t > 0)
+            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
             {
-                if(isShadowRay && intData.t > 0) {return true;}
+                if(isShadowRay) {return true;}
                 hit = true;
                 closestObjData = intData;
             }
@@ -355,18 +355,27 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
 
     }
 
+    int meshID = 1;
     for(Mesh mesh: meshes)
     {
         IntersectionData intData;
         if(mesh.intersectRay(vertex_data, ray, intData))
         {
-            if(intData.t < closestObjData.t && intData.t > 0)
+            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
             {
-                if(isShadowRay && intData.t > 0) {return true;}
+
+                if(isShadowRay ) {
+                //std::cout << "============" << std::endl;
+                //std::cout << "hit meshID: " << meshID << std::endl;
+                //std::cout << "t: " << intData.t << std::endl;
+                //std::cout << "============" << std::endl;
+
+                    return true;}
                 hit = true;
                 closestObjData = intData;
             }
         }
+        meshID++;
 
     }
     retData = closestObjData;
@@ -382,7 +391,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
 
     IntersectionData closestObjData;
     bool hit = false;
-    hit = rayQuery(ray, closestObjData, false);
+    hit = rayQuery(ray, closestObjData, false, std::numeric_limits<float>::infinity());
 
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
