@@ -88,6 +88,51 @@ vec3f reflect(vec3f n, vec3f incoming)
     return -incoming + ( 2.f * n * (dot(n, incoming)));
 }
 
+/*
+  returns the refracting vector
+  if total internal reflection occurs returns a 0 vector
+  eta = n1/n2 where n1 is the current mediums refraction index
+                and n2 is the refraction index we are about to enter
+  
+  */
+vec3f refract(vec3f n, vec3f incoming, float eta)
+{
+    float cosTheta = dot(-incoming, n);
+    float cosPhi_squared = 1.f - eta*eta * (1.f - cosTheta*cosTheta);
+    if( cosPhi_squared < 0)//total internal reflection
+    {
+        return vec3f(0.f);
+    }
+    else
+    {
+        return norm((incoming + n*cosTheta)*eta - n * sqrt(cosPhi_squared));
+    }
+}
+
+float dielectricReflectionRatio(float n1, float n2, float cosTheta, float cosPhi)
+{
+    float rPar = (n2 * cosTheta - n1 * cosPhi)
+                /(n2 * cosTheta + n1 * cosPhi);
+
+    float rPer = (n1 * cosTheta - n2 * cosPhi)
+                /(n1 * cosTheta + n2 * cosPhi);
+
+    return 0.5 * (rPar * rPar + rPer * rPer);
+}
+
+float conductorReflectionRatio(float n2, float k2, float cosTheta)
+{
+    float n2_k2 = n2*n2 + k2*k2;
+    float twoNcosTheta = 2. * n2 * cosTheta;
+    
+    float Rs = (n2_k2 - twoNcosTheta + cosTheta*cosTheta)
+              /(n2_k2 + twoNcosTheta + cosTheta*cosTheta);
+    float Rp = (n2_k2 * cosTheta * cosTheta - twoNcosTheta + 1)
+              /(n2_k2 * cosTheta * cosTheta + twoNcosTheta + 1); 
+
+    return 0.5 * (Rs + Rp);
+}
+
 float length(const vec3f& a)
 {
     float l = sqrt(a.x*a.x + a.y*a.y + a.z*a.z);

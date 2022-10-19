@@ -48,6 +48,9 @@ vec3f norm(const vec3f& a);
 vec3i clamp(const vec3i a, int, int);
 vec3i clamp(const vec3i a, vec3i, vec3i);
 vec3f reflect(vec3f n, vec3f incoming);
+vec3f refract(vec3f n, vec3f incoming, float eta);
+float dielectricReflectionRatio(float n1, float n2, float cosTheta, float cosPhi);
+float conductorReflectionRatio(float n2, float k2, float cosTheta);
 
 
 vec3f operator*(const float& c, const vec3f& v);
