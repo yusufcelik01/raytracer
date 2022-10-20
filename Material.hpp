@@ -8,7 +8,8 @@ typedef enum MaterialType
     REGULAR,
     MIRROR,
     CONDUCTOR,
-    DIELECTRIC
+    DIELECTRIC,
+    AIR,
 }MaterialType;
 
 struct Material
@@ -18,7 +19,13 @@ struct Material
     vec3f ambient;
     vec3f diffuse;
     vec3f specular;
+    //mirror
     vec3f mirror;
+    //confuctor fields
+    float refraction_index;
+    float absorption_index;
+    //dielectric fields
+    vec3f absorption_coefficent;
     float phong_exponent;
 };
 

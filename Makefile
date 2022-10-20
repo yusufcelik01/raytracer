@@ -48,3 +48,4 @@ simple_test: raytracer
 	./raytracer hw1/inputs/two_spheres.xml
 	./raytracer hw1/inputs/four_spheres.xml
 	./raytracer hw1/inputs/spheres_mirror.xml
+	./raytracer hw1/inputs/cornellbox_recursive.xml

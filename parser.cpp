@@ -127,14 +127,32 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         if(element->Attribute("type", "mirror") != NULL)
         {
             material.type = MIRROR;
+            child = element->FirstChildElement("MirrorReflectance");
+            stream << child->GetText() << std::endl;
+            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         }
         else if(element->Attribute("type", "conductor") != NULL) 
         {
             material.type = CONDUCTOR;
+            child = element->FirstChildElement("MirrorReflectance");
+            stream << child->GetText() << std::endl;
+            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
+            child = element->FirstChildElement("RefractionIndex");
+            stream << child->GetText() << std::endl;
+            stream >> material.refraction_index;
+            child = element->FirstChildElement("AbsorptionIndex");
+            stream << child->GetText() << std::endl;
+            stream >> material.absorption_index;
         }
         else if(element->Attribute("type", "dielectric") != NULL) 
         {
             material.type = DIELECTRIC;
+            child = element->FirstChildElement("AbsorptionCoefficient");
+            stream << child->GetText() << std::endl;
+            stream >> material.absorption_coefficent.x >> material.absorption_coefficent.y >> material.absorption_coefficent.z;
+            child = element->FirstChildElement("RefractionIndex");
+            stream << child->GetText() << std::endl;
+            stream >> material.refraction_index;
         }
 
 
@@ -144,15 +162,14 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("MirrorReflectance");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-        }
-        else
-        {
-            stream << "0 0 0" << std::endl;
-        }
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //}
+        //else
+        //{
+        //    stream << "0 0 0" << std::endl;
+        //}
         child = element->FirstChildElement("PhongExponent");
         if(child)
         {
@@ -166,7 +183,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
         stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
         stream >> material.specular.x >> material.specular.y >> material.specular.z;
-        stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         stream >> material.phong_exponent;
 
         materials.push_back(material);
@@ -382,7 +398,7 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
     return hit;
 }
 
-vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
+vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
 {
     if(depth < 0)
     {
@@ -396,19 +412,76 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay)
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
         vec3f n = getObjNorm(closestObjData);
+        if(dot(n, ray.d) > 0)//if we are inside an object
+        {
+            n = -n;
+        }
 
         vec3f color = vec3f(0.f);
         color += objMaterial.ambient * ambient_light;
         color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
 
-        //get mirror lightging
+        //get refraction_index lightging
         if(objMaterial.type == MIRROR)
         {
             //std::cout <<"MIRROR ENTER" << std::endl;
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
-            reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon;//epsilon ekle TODO
-            color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false);
+            reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+            color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
+        }
+        else if(objMaterial.type == DIELECTRIC)
+        {
+            Ray reflectingRay, refractingRay;
+            reflectingRay.d = reflect(n, -ray.d);
+            reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+            refractingRay.o = closestObjData.intersectionPoint - n * shadow_ray_epsilon;
+
+            float eta;
+            if (currentMedium.type == AIR){ eta = 1.f / objMaterial.refraction_index; }
+            else { eta = currentMedium.refraction_index ;}
+            refractingRay.d = refract(n, ray.d, eta);
+
+            if(refractingRay.d == vec3f(0.f))//total internal reflection
+            {
+                color += getRayColor(reflectingRay, depth - 1, false, currentMedium);
+            }
+            else//refraction + reflection
+            {
+                float reflectionRatio;
+                if(currentMedium.type == AIR)
+                {
+                reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, objMaterial.refraction_index, dot(-ray.d, n), dot(n, -refractingRay.d) );
+                }
+                else
+                {
+                reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, 1.0f, dot(-ray.d, n), dot(n, -refractingRay.d) );
+                }
+
+                color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentMedium);
+                color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial);
+            }
+
+            //color += objMaterial.refraction_index * getRayColor(reflectingRay, depth-1, false, currentRefractionIndex);
+
+            //TODO
+            //add current medium's refraction index to getRayColor function
+            //then call the next function with new refraction index
+            //depending on whether we are exiting or not
+            //refract(n, ray, objMaterial.refraction_index/)
+            float attunuationDistance = length(ray.o - closestObjData.intersectionPoint);
+            color = color * (exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
+
+        }
+        else if(objMaterial.type == CONDUCTOR)
+        {
+            Ray reflectingRay;
+            reflectingRay.d = reflect(n, -ray.d);
+            reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+
+            float reflectionRatio = conductorReflectionRatio(objMaterial.refraction_index, objMaterial.absorption_index, dot(-ray.d, n));
+            //color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentRefractionIndex);
+            color += reflectionRatio * objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
         }
         
         return color;
@@ -447,6 +520,11 @@ void parser::Scene::render(Camera camera)
 
     vec3f m = e - w * camera.near_distance;
     vec3f q = m + l * u + t * v;
+    Material airMedium;
+    airMedium.type = AIR;
+    airMedium.absorption_index = 0.f;
+    airMedium.refraction_index = 1.f;
+    airMedium.absorption_coefficent = vec3f(0.f);
 
     for(y = 0; y < camera.image_height; ++y)
     {
@@ -461,7 +539,7 @@ void parser::Scene::render(Camera camera)
             ray.d = norm(s - e);
 
             
-            vec3f color = getRayColor(ray, max_recursion_depth, true);
+            vec3f color = getRayColor(ray, max_recursion_depth, true, airMedium);
             vec3i c = clamp(vec3i(color), 0, 255);
             
             img[(camera.image_width*y + x)*3] = c.r;

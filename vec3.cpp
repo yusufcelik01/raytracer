@@ -105,7 +105,9 @@ vec3f refract(vec3f n, vec3f incoming, float eta)
     }
     else
     {
-        return norm((incoming + n*cosTheta)*eta - n * sqrt(cosPhi_squared));
+        //return norm((incoming + n*cosTheta)*eta - n * sqrt(cosPhi_squared));
+        //return eta * (-incoming) - (eta * dot(n, -incoming) + sqrt(cosPhi_squared) ) * n;
+        return (incoming + n * cosTheta)*eta - (n * sqrt(cosPhi_squared));
     }
 }
 
@@ -275,3 +277,28 @@ vec3f& vec3f::operator-=(const vec3f& rhs)
     this->z -= rhs.z;
     return *this;
 }
+
+bool vec3f::operator==(const vec3f& rhs) 
+{
+    if (x == rhs.x 
+     && y == rhs.y
+     && z == rhs.z)
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+
+vec3f exp(vec3f v)
+{
+    v.x = exp(v.x);
+    v.y = exp(v.y);
+    v.z = exp(v.z);
+    return v;
+}
+
+
