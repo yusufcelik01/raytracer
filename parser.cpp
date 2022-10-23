@@ -395,6 +395,13 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
 
     }
     retData = closestObjData;
+    //if(closestObjData.hitType == MESH){
+    //    std::cout << "hit mesh" << std::endl;
+    //}
+    //else if (closestObjData.hitType == SPHERE){
+    //    std::cout << "hit sphere" << std::endl;
+    //}
+
     return hit;
 }
 
@@ -412,14 +419,19 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
         vec3f n = getObjNorm(closestObjData);
+
+        vec3f color = vec3f(0.f);
+        if(currentMedium.type == AIR)
+        //if not we are inside an dielectric
+        //object and light can not directly contribute
+        {
+            color += objMaterial.ambient * ambient_light;
+            color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
+        }
         if(dot(n, ray.d) > 0)//if we are inside an object
         {
             n = -n;
         }
-
-        vec3f color = vec3f(0.f);
-        color += objMaterial.ambient * ambient_light;
-        color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
 
         //get refraction_index lightging
         if(objMaterial.type == MIRROR)
@@ -444,6 +456,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 
             if(refractingRay.d == vec3f(0.f))//total internal reflection
             {
+                //std::cout << "Total internal reflection" << std::endl;
                 color += getRayColor(reflectingRay, depth - 1, false, currentMedium);
             }
             else//refraction + reflection
@@ -451,15 +464,30 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
                 float reflectionRatio;
                 if(currentMedium.type == AIR)
                 {
-                reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, objMaterial.refraction_index, dot(-ray.d, n), dot(n, -refractingRay.d) );
+                    reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, objMaterial.refraction_index, dot(-ray.d, n), dot(n, -refractingRay.d) );
                 }
                 else
                 {
-                reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, 1.0f, dot(-ray.d, n), dot(n, -refractingRay.d) );
+                    reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, 1.0f, dot(-ray.d, n), dot(n, -refractingRay.d) );
                 }
 
+                //TODO enable reflections on dielectrics
                 color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentMedium);
-                color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial);
+                if(currentMedium.type == AIR)
+                {
+                    //if we are inside air now we will be entering a dielectric
+                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial);
+                }
+                else
+                {
+                    //if we are inside of a dielectric refracting ray will be exiting this medium
+                    Material air;
+                    air.type = AIR;
+                    air.refraction_index = 1.f;
+                    air.absorption_index = 0.f;
+                    air.absorption_coefficent = vec3f(0.f);
+                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, air);
+                }
             }
 
             //color += objMaterial.refraction_index * getRayColor(reflectingRay, depth-1, false, currentRefractionIndex);
@@ -469,8 +497,11 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             //then call the next function with new refraction index
             //depending on whether we are exiting or not
             //refract(n, ray, objMaterial.refraction_index/)
-            float attunuationDistance = length(ray.o - closestObjData.intersectionPoint);
-            color = color * (exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
+            if(currentMedium.type != AIR)
+            {
+                float attunuationDistance = length(ray.o - closestObjData.intersectionPoint);
+                color = color * (exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
+            }
 
         }
         else if(objMaterial.type == CONDUCTOR)
@@ -480,7 +511,6 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
 
             float reflectionRatio = conductorReflectionRatio(objMaterial.refraction_index, objMaterial.absorption_index, dot(-ray.d, n));
-            //color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentRefractionIndex);
             color += reflectionRatio * objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
         }
         
@@ -494,8 +524,6 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             return vec3f(0, 0, 0);
         }
     }
-    
-
 }
 
 
@@ -526,8 +554,10 @@ void parser::Scene::render(Camera camera)
     airMedium.refraction_index = 1.f;
     airMedium.absorption_coefficent = vec3f(0.f);
 
+    //for(y = 511; y < camera.image_height; ++y)
     for(y = 0; y < camera.image_height; ++y)
     {
+        //for(x = 430; x < 450 /*camera.image_width*/; ++x)
         for(x = 0; x < camera.image_width; ++x)
         {
             float s_u = (x + 0.5) * (r-l)/float(nx);
@@ -545,8 +575,9 @@ void parser::Scene::render(Camera camera)
             img[(camera.image_width*y + x)*3] = c.r;
             img[(camera.image_width*y + x)*3 + 1] = c.g;
             img[(camera.image_width*y + x)*3 + 2] = c.b;
-            
+            //std::cout << "pixel DONE \n----------------"  << std::endl;
         }
+        //break;
     }
     //write_ppm(camera.image_name.c_str() , img, nx, ny);
     write_png(camera.image_name.c_str() , nx, ny, img);
