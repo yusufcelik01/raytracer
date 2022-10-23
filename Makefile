@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g 
+CFLAGS = -g  -Ofast
 CXXFLAGS = -std=c++17
 
 
@@ -38,8 +38,8 @@ clean:
 	-rm *.o 
 	-rm raytracer
 
-test: raytracer
-	for foo in hw1/inputs/*.xml; do ./raytracer $$foo; done
+#test: raytracer
+#	for foo in hw1/inputs/*.xml; do ./raytracer $$foo; done
 
 simple_test: raytracer
 	./raytracer hw1/inputs/simple.xml
@@ -48,4 +48,12 @@ simple_test: raytracer
 	./raytracer hw1/inputs/two_spheres.xml
 	./raytracer hw1/inputs/four_spheres.xml
 	./raytracer hw1/inputs/spheres_mirror.xml
-	./raytracer hw1/inputs/cornellbox_recursive.xml
+	time ./raytracer hw1/inputs/cornellbox_recursive.xml
+
+test:
+	make simple_test
+	time ./raytracer hw1/inputs/scienceTree.xml
+	time ./raytracer hw1/inputs/scienceTree_glass.xml
+	time ./raytracer hw1/inputs/bunny.xml
+
+
