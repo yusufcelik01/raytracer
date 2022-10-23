@@ -1,5 +1,6 @@
 #include "Sphere.hpp"
 #include <cmath>
+#include <iostream>
 
 bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
@@ -10,7 +11,8 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     float d_dot__omc = dot(ray.d, o_min_c);
     float disc = (d_dot__omc*d_dot__omc) - (dot(ray.d, ray.d)*(dot(o_min_c, o_min_c) - radius*radius));
 
-    if(disc < 0)
+    //std::cout << "Discriminant: " << disc << std::endl;
+    if(disc <= 0)
     {
         return false;
     }
@@ -18,18 +20,41 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     float t1 = (-d_dot__omc + sqrt(disc))/ dot(ray.d, ray.d);
     float t2 = (-d_dot__omc - sqrt(disc))/ dot(ray.d, ray.d);
        
-    if(t1 < t2 && t1 > 0)
+    if(t1 >= 0)
     {
-        intData.t = t1;
-    }
-    else if (t2 > 0)
-    {
-        intData.t = t2;
+        if(t2 >= 0)
+        {
+            intData.t = (t1 < t2) ? t1 : t2;
+        }
+        else
+        {
+            //return t1;
+            intData.t = t1;
+        }
     }
     else
     {
-        return false;
+        if(t2 >= 0)
+        {
+            intData.t = t2;
+        }
+        else
+        {
+            return false;
+        }
     }
+    //if(t1 < t2 && t1 > 0)
+    //{
+    //    intData.t = t1;
+    //}
+    //else if (t2 > 0)
+    //{
+    //    intData.t = t2;
+    //}
+    //else
+    //{
+    //    return false;
+    //}
     intData.hitType = SPHERE;
     //intData.v0_id = -1;
     //intData.v1_id = -1;
@@ -39,6 +64,7 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     intData.intersectionPoint = ray.o + (ray.d * intData.t);
 
     return true;
+
 }
 
 
