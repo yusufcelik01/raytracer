@@ -425,8 +425,8 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
         //if not we are inside an dielectric
         //object and light can not directly contribute
         {
-            color += objMaterial.ambient * ambient_light;
             color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
+            color += objMaterial.ambient * ambient_light;
         }
         if(dot(n, ray.d) > 0)//if we are inside an object
         {
@@ -578,6 +578,7 @@ void parser::Scene::render(Camera camera)
             //std::cout << "pixel DONE \n----------------"  << std::endl;
         }
         //break;
+        //std::cout << "row " << y << " completed" << std::endl; 
     }
     //write_ppm(camera.image_name.c_str() , img, nx, ny);
     write_png(camera.image_name.c_str() , nx, ny, img);
