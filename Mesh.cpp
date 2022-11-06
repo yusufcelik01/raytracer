@@ -41,9 +41,9 @@ vec3f Mesh::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData&
 
     //return intersectionPoint.face.getSurfNormal(VAO, intersectionPoint);
     //return this->faces[intersectionPoint.faceId -1].getSurfNormal(VAO, intersectionPoint);
-    vec3f a = VAO[intersectionPoint.v0_id -1];
-    vec3f b = VAO[intersectionPoint.v1_id -1];
-    vec3f c = VAO[intersectionPoint.v2_id -1];
+    vec3f a = VAO[intersectionPoint.v0_id];
+    vec3f b = VAO[intersectionPoint.v1_id];
+    vec3f c = VAO[intersectionPoint.v2_id];
 
     return norm(cross(b-a, c-b));
 }

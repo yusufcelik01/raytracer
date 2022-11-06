@@ -310,6 +310,11 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     element = root->FirstChildElement("VertexData");
     stream << element->GetText() << std::endl;
     vec3f vertex;
+    
+    //insert one dummy vertex to make indices start from one
+    //this will allow other functions to directly acces the VAO 
+    vertex = vec3f(std::numeric_limits<float>::quiet_NaN());
+    vertex_data.push_back(vertex);
     while (!(stream >> vertex.x).eof())
     {
         stream >> vertex.y >> vertex.z;

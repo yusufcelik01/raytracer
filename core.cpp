@@ -15,13 +15,14 @@ vec3f parser::Scene::getObjNorm(const IntersectionData& data)
     switch(data.hitType)
     {
         case SPHERE:
-            n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId - 1]);
+            //n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId - 1]);
+            n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId]);
             break;
         case TRIANGLE://fall through mesh
         case MESH:
-            a = vertex_data[data.v0_id - 1]; 
-            b = vertex_data[data.v1_id - 1]; 
-            c = vertex_data[data.v2_id - 1]; 
+            a = vertex_data[data.v0_id]; 
+            b = vertex_data[data.v1_id]; 
+            c = vertex_data[data.v2_id]; 
             
             n = norm(cross(b-a, c-b));
 
@@ -159,7 +160,8 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
-        vec3f n = getObjNorm(closestObjData);
+        //vec3f n = getObjNorm(closestObjData);
+        vec3f n = closestObjData.normal;
 
         vec3f color = vec3f(0.f);
         if(currentMedium.type == AIR)

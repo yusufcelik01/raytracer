@@ -3,9 +3,12 @@
 
 bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
-        vec3f a = VAO[v0_id -1];
-        vec3f b = VAO[v1_id -1];
-        vec3f c = VAO[v2_id -1];
+        //vec3f a = VAO[v0_id -1];
+        //vec3f b = VAO[v1_id -1];
+        //vec3f c = VAO[v2_id -1];
+        vec3f a = VAO[v0_id];
+        vec3f b = VAO[v1_id];
+        vec3f c = VAO[v2_id];
         
         float ax_bx = a.x - b.x;
         float ay_by = a.y - b.y;
@@ -56,9 +59,12 @@ bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
             intData.intersectionPoint = r.o + r.d * t;
 
 
-            vec3f a = VAO[v0_id -1];
-            vec3f b = VAO[v1_id -1];
-            vec3f c = VAO[v2_id -1];
+            //vec3f a = VAO[v0_id -1];
+            //vec3f b = VAO[v1_id -1];
+            //vec3f c = VAO[v2_id -1];
+            vec3f a = VAO[v0_id];
+            vec3f b = VAO[v1_id];
+            vec3f c = VAO[v2_id];
 
             intData.normal = norm(cross(b-a, c-b));
             return true;
@@ -69,9 +75,9 @@ bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
 }
 vec3f Face::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const 
 {
-    vec3f a = VAO[v0_id -1];
-    vec3f b = VAO[v1_id -1];
-    vec3f c = VAO[v2_id -1];
+    vec3f a = VAO[v0_id];
+    vec3f b = VAO[v1_id];
+    vec3f c = VAO[v2_id];
 
     return norm(cross(b-a, c-b));
 }
