@@ -54,6 +54,13 @@ bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
             intData.v2_id = v2_id;
             intData.material_id = this->material_id;
             intData.intersectionPoint = r.o + r.d * t;
+
+
+            vec3f a = VAO[v0_id -1];
+            vec3f b = VAO[v1_id -1];
+            vec3f c = VAO[v2_id -1];
+
+            intData.normal = norm(cross(b-a, c-b));
             return true;
         }
 

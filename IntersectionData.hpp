@@ -23,6 +23,7 @@ class IntersectionData //this is where i break oop and go back to C
     
     vec3f intersectionPoint;
     int material_id;
+    vec3f normal;
 };
 
 #endif

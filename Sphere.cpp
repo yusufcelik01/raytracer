@@ -62,6 +62,7 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     intData.sphereCenterId = center_vertex_id;
     intData.material_id = this->material_id;
     intData.intersectionPoint = ray.o + (ray.d * intData.t);
+    intData.normal = intData.intersectionPoint - c;
 
     return true;
 
