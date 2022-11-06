@@ -1,5 +1,18 @@
 #include "Triangle.hpp"
 
+Triangle::Triangle()
+{
+    indices = Face();
+    material_id = -1;
+}
+
+Triangle::Triangle(const Triangle& rhs)
+{
+    indices = rhs.indices;
+    material_id = rhs.material_id;
+}
+
+
 bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData) 
 {
     if(this->indices.intersectRay(VAO, r, intData))
