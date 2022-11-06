@@ -67,6 +67,12 @@ namespace parser
         vec3f getObjNorm(const IntersectionData& data);
         vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
     };
+
+    struct plyData
+    {
+        std::vector<vec3f> vertices;
+        std::vector<vec3i> triangles;
+    };
 }
 
 #endif
