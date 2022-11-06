@@ -83,10 +83,57 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
     vec3f color = vec3f(0.f);
 
     bool hit = false;
-    for(Sphere sphere : spheres)
+    //for(Sphere sphere : spheres)
+    //{
+    //    IntersectionData intData;
+    //    if(sphere.intersectRay(vertex_data, ray, intData))
+    //    {
+    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
+    //        {
+    //            if(isShadowRay) {return true;}
+    //            hit = true;
+    //            closestObjData = IntersectionData(intData);
+    //        }
+    //    }
+
+    //}
+
+    //for(Triangle triangle : triangles)
+    //{
+    //    IntersectionData intData;
+    //    if(triangle.intersectRay(vertex_data, ray, intData))
+    //    {
+    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
+    //        {
+    //            if(isShadowRay) {return true;}
+    //            hit = true;
+    //            closestObjData = intData;
+    //        }
+    //    }
+
+    //}
+
+    //int meshID = 1;
+    //for(Mesh mesh: meshes)
+    //{
+    //    IntersectionData intData;
+    //    if(mesh.intersectRay(vertex_data, ray, intData))
+    //    {
+    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
+    //        {
+
+    //            if(isShadowRay ) { return true;}
+    //            hit = true;
+    //            closestObjData = intData;
+    //        }
+    //    }
+    //    meshID++;
+
+    //}
+    for(Object* object: objects)
     {
         IntersectionData intData;
-        if(sphere.intersectRay(vertex_data, ray, intData))
+        if(object->intersectRay(vertex_data, ray, intData))
         {
             if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
             {
@@ -96,44 +143,6 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
             }
         }
 
-    }
-
-    for(Triangle triangle : triangles)
-    {
-        IntersectionData intData;
-        if(triangle.intersectRay(vertex_data, ray, intData))
-        {
-            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
-            {
-                if(isShadowRay) {return true;}
-                hit = true;
-                closestObjData = intData;
-            }
-        }
-
-    }
-
-    int meshID = 1;
-    for(Mesh mesh: meshes)
-    {
-        IntersectionData intData;
-        if(mesh.intersectRay(vertex_data, ray, intData))
-        {
-            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
-            {
-
-                if(isShadowRay ) {
-                //std::cout << "============" << std::endl;
-                //std::cout << "hit meshID: " << meshID << std::endl;
-                //std::cout << "t: " << intData.t << std::endl;
-                //std::cout << "============" << std::endl;
-
-                    return true;}
-                hit = true;
-                closestObjData = intData;
-            }
-        }
-        meshID++;
 
     }
     retData = closestObjData;

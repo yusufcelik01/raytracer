@@ -369,7 +369,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         }
         stream.clear();
 
-        meshes.push_back(mesh);
+        //meshes.push_back(mesh);
+        objects.push_back(new Mesh(mesh));//runtime polymorph
         mesh.faces.clear();
         element = element->NextSiblingElement("Mesh");
     }
@@ -389,7 +390,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
 
-        triangles.push_back(triangle);
+        //triangles.push_back(triangle);
+        objects.push_back(new Triangle(triangle));//runtime polymorph
         element = element->NextSiblingElement("Triangle");
     }
 
@@ -411,7 +413,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> sphere.radius;
 
-        spheres.push_back(sphere);
+        //spheres.push_back(sphere);
+        objects.push_back(new Sphere(sphere));//runtime polymorph
         element = element->NextSiblingElement("Sphere");
     }
 }

@@ -56,9 +56,9 @@ simple_test: raytracer
 
 test:
 	make simple_test
+	time ./raytracer hw1/inputs/bunny.xml
 	time ./raytracer hw1/inputs/scienceTree.xml
 	time ./raytracer hw1/inputs/scienceTree_glass.xml
-	time ./raytracer hw1/inputs/bunny.xml
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h

@@ -57,6 +57,7 @@ namespace parser
         std::vector<Mesh> meshes;
         std::vector<Triangle> triangles;
         std::vector<Sphere> spheres;
+        std::vector<Object*> objects;
 
         //Functions
         void loadFromXml(const std::string &filepath);
