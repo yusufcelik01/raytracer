@@ -2,6 +2,19 @@
 #include <cmath>
 #include <iostream>
 
+Sphere::Sphere()
+{
+    center_vertex_id = -1;
+    radius = 0;
+    material_id = -1;
+}
+Sphere::Sphere(const Sphere& rhs)
+{
+    center_vertex_id = rhs.center_vertex_id;
+    radius = rhs.radius;
+    material_id = rhs.material_id;
+}
+
 bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
     //vec3f c = VAO[center_vertex_id-1];

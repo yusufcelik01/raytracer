@@ -11,6 +11,8 @@ class Mesh :public Object
     public:
     std::vector<Face> faces;
 
+    Mesh();
+    Mesh(const Mesh& rhs);
     //member functions
     bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
     vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;

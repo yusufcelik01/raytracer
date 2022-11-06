@@ -2,6 +2,18 @@
 #include <cmath>
 #include <limits>
 
+
+Mesh::Mesh()
+{
+    faces = {};    
+    material_id = -1;
+}
+Mesh::Mesh(const Mesh& rhs)
+{
+    faces = rhs.faces;    
+    material_id = rhs.material_id;
+}
+
 bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
     float min_t = std::numeric_limits<float>::infinity();

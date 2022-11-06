@@ -1,6 +1,22 @@
 #include "Face.hpp"
 #include <cmath>
 
+Face::Face()
+{
+    v0_id = -1;
+    v1_id = -1;
+    v2_id = -1;
+    material_id = -1;
+}
+
+Face::Face(const Face& rhs)
+{
+    v0_id = rhs.v0_id;
+    v1_id = rhs.v1_id;
+    v2_id = rhs.v2_id;
+    material_id = rhs.material_id;
+}
+
 bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
         //vec3f a = VAO[v0_id -1];

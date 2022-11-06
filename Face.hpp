@@ -10,6 +10,11 @@ class Face : public Object
     int v1_id;
     int v2_id;
     
+    //constructors
+    Face();
+    Face(const Face& rhs);
+
+    //member functions
     bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
     vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
     int getMaterialId();
