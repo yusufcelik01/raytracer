@@ -3,20 +3,26 @@
 
 #include "Object.hpp"
 #include "Face.hpp"
+#include "BVH.hpp"
 #include <vector>
 
 
 class Mesh :public Object
 {
     public:
-    std::vector<Face> faces;
+        Object* AccBVH = NULL;
+        std::vector<Face*> faces;
 
-    Mesh();
-    Mesh(const Mesh& rhs);
-    //member functions
-    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
-    vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
-    int getMaterialId();
+        Mesh();
+        Mesh(const Mesh& rhs);
+        ~Mesh();
+
+        //member functions
+        bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+        vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
+        int getMaterialId();
+        BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO);
+        BoundingBox* getBoundingBox() const;
 
 };
 

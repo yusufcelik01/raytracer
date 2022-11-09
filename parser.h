@@ -54,10 +54,11 @@ namespace parser
         std::vector<PointLight> point_lights;
         std::vector<Material> materials;
         std::vector<vec3f> vertex_data;
-        std::vector<Mesh> meshes;
-        std::vector<Triangle> triangles;
-        std::vector<Sphere> spheres;
+        //std::vector<Sphere*> spheres;
+        //std::vector<Triangle*> triangles;
+        std::vector<Mesh*> meshes;
         std::vector<Object*> objects;
+        Object* AccStrBVH;
 
         //Functions
         void loadFromXml(const std::string &filepath);

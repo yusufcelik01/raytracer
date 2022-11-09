@@ -1,4 +1,5 @@
 #include "Triangle.hpp"
+#include <cstddef>
 
 Triangle::Triangle()
 {
@@ -12,6 +13,14 @@ Triangle::Triangle(const Triangle& rhs)
     material_id = rhs.material_id;
 }
 
+Triangle::~Triangle()
+{
+    if(bbox)
+    {
+        delete bbox;        
+    }
+    indices.~Face();
+}
 
 bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData) 
 {
@@ -43,3 +52,21 @@ int Triangle::getMaterialId()
 {
     return this->material_id;
 }
+
+BoundingBox* Triangle::getBoundingBox(const std::vector<vec3f>& VAO)
+{
+    if(bbox != NULL)
+    {
+        return bbox;
+    }
+    bbox = indices.getBoundingBox(VAO);     
+    return bbox;
+}
+
+BoundingBox* Triangle::getBoundingBox() const
+{
+    return bbox;
+}
+
+
+

@@ -6,14 +6,15 @@ CXXFLAGS = -std=c++17
 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o
-OBJECT_FILES= main.o  core.o parser.o  tinyxml2.o  vec3.o img.o $(GEOMETRY)
+OBJECT_FILES= main.o  core.o parser.o  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o vec3.o img.o $(GEOMETRY)
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)
 
 all:
 	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
-
+bahadir:
+	g++ $(CXXFLAGS) $(CFLAGS) *.cpp  -o main
 
 vec3.cpp: vec3.hpp
 main.o: main.cpp parser.h ppm.h
@@ -23,6 +24,10 @@ Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
 Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
+
+BoundingBox.o: BoundingBox.hpp BoundingBox.cpp rtmath.hpp 
+BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
+BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 
 core.o: parser.h img.hpp Ray.hpp $(OBJECT_HPP_DEP)
 

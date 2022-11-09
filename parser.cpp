@@ -325,12 +325,13 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     //Get Meshes
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Mesh");
-    Mesh mesh;
+    Mesh* mesh;
+    mesh = new Mesh();
     while (element)
     {
         child = element->FirstChildElement("Material");
         stream << child->GetText() << std::endl;
-        stream >> mesh.material_id;
+        stream >> mesh->material_id;
 
         child = element->FirstChildElement("Faces");
         //check if it is a ply file
@@ -361,19 +362,23 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         }
 
         stream << child->GetText() << std::endl;
-        Face face;
-        while (!(stream >> face.v0_id).eof())
+        Face* face;
+        face = new Face();
+        while (!(stream >> face->v0_id).eof())
         {
-            stream >> face.v1_id >> face.v2_id;
-            mesh.faces.push_back(face);
+            stream >> face->v1_id >> face->v2_id;
+            mesh->faces.push_back(face);
+            face = new Face();
         }
         stream.clear();
 
         //meshes.push_back(mesh);
-        objects.push_back(new Mesh(mesh));//runtime polymorph
-        mesh.faces.clear();
+        objects.push_back(mesh);//runtime polymorph
+        meshes.push_back(mesh);
+        mesh = new Mesh();
         element = element->NextSiblingElement("Mesh");
     }
+    delete mesh;//one extra was allotaced at the end of the loop
     stream.clear();
 
     //Get Triangles

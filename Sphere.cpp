@@ -15,6 +15,14 @@ Sphere::Sphere(const Sphere& rhs)
     material_id = rhs.material_id;
 }
 
+Sphere::~Sphere()
+{
+    if(bbox)
+    {
+        delete bbox;
+    }
+}
+
 bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
     //vec3f c = VAO[center_vertex_id-1];
@@ -93,4 +101,24 @@ vec3f Sphere::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionDat
 int Sphere::getMaterialId()
 {
     return this->material_id;
+}
+
+BoundingBox* Sphere::getBoundingBox(const std::vector<vec3f>& VAO) 
+{
+    if(bbox != NULL)
+    {
+        return bbox;
+    }
+
+    vec3f c = VAO[center_vertex_id];
+    bbox = new BoundingBox(c.x - radius, c.x + radius,
+                           c.y - radius, c.y + radius,
+                           c.z - radius, c.z + radius);
+
+    return bbox;
+}
+
+BoundingBox* Sphere::getBoundingBox() const
+{
+    return bbox;
 }

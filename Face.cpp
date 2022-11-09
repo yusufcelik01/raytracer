@@ -7,6 +7,7 @@ Face::Face()
     v1_id = -1;
     v2_id = -1;
     material_id = -1;
+    bbox = NULL;
 }
 
 Face::Face(const Face& rhs)
@@ -15,7 +16,17 @@ Face::Face(const Face& rhs)
     v1_id = rhs.v1_id;
     v2_id = rhs.v2_id;
     material_id = rhs.material_id;
+    bbox = new BoundingBox(*(rhs.bbox));
 }
+
+Face::~Face()
+{
+    if(bbox)
+    {
+        delete bbox;
+    }
+}
+
 
 bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
@@ -101,4 +112,31 @@ vec3f Face::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData&
 int Face::getMaterialId()
 {
     return this->material_id;
+}
+BoundingBox* Face::getBoundingBox(const std::vector<vec3f>& VAO)
+{
+    if(bbox != NULL){
+        return bbox;
+    }
+
+    vec3f v0 = VAO[v0_id],
+          v1 = VAO[v1_id],
+          v2 = VAO[v2_id];
+    
+    bbox = new BoundingBox();
+    bbox->xmin = std::min(std::min(v0.x, v1.x), v2.x);
+    bbox->xmax = std::max(std::max(v0.x, v1.x), v2.x);
+
+    bbox->ymin = std::min(std::min(v0.y, v1.y), v2.y);
+    bbox->ymax = std::max(std::max(v0.y, v1.y), v2.y);
+
+    bbox->zmin = std::min(std::min(v0.z, v1.z), v2.z);
+    bbox->zmax = std::max(std::max(v0.z, v1.z), v2.z);
+
+    return bbox;
+}
+
+BoundingBox* Face::getBoundingBox() const
+{
+    return bbox;
 }

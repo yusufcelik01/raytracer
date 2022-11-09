@@ -1,9 +1,11 @@
 #include "BVH.hpp"
+#include "Face.hpp"
+#include <algorithm>
 
 
 bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
 {
-    if(bbox.hitRay(ray) == false)
+    if(bbox->hitRay(ray) == false)
     {
         return false;
     }
@@ -33,3 +35,8 @@ int BVH::getMaterialId()
 {
     return -1;
 }
+
+
+
+//template Object* constructBVH<Object*>(std::vector<vec3f, std::allocator<vec3f> > const&, std::vector<Object*, std::allocator<Object*> > &, AXIS_TYPE);
+//template Object* constructBVH<Object*>(std::vector<vec3f, std::allocator<vec3f> > const&, std::vector<Object*, std::allocator<Object*> > const&, AXIS_TYPE);

@@ -20,6 +20,13 @@ BoundingBox::BoundingBox(float x_min, float x_max,
     this->zmin = z_min; this->zmax = z_max;
 }
 
+BoundingBox::BoundingBox(const BoundingBox& rhs)
+{
+    this->xmin = rhs.xmin; this->xmax = rhs.xmax;
+    this->ymin = rhs.ymin; this->ymax = rhs.ymax;
+    this->zmin = rhs.zmin; this->zmax = rhs.zmax;
+}
+
 bool BoundingBox::hitRay(const Ray& r)
 {
     float tx1, tx2;
