@@ -32,9 +32,15 @@ Mesh::~Mesh()
 
 bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
-    if(false && AccBVH != NULL)
+    if(AccBVH != NULL)
     {
-        //return BVH.intersect
+        bool hit = AccBVH->intersectRay(VAO, r, intData);
+        if(hit)
+        {
+            intData.hitType = MESH;
+            intData.material_id = this->material_id;
+        }
+        return hit;
     }
     float min_t = std::numeric_limits<float>::infinity();
     bool hit = false;
@@ -88,9 +94,9 @@ BoundingBox* Mesh::getBoundingBox(const std::vector<vec3f>& VAO)
         return bbox;
     }
     bbox = new BoundingBox();
-    bbox->xmax = std::numeric_limits<float>::min();
-    bbox->ymax = std::numeric_limits<float>::min();
-    bbox->zmax = std::numeric_limits<float>::min();
+    bbox->xmax = -std::numeric_limits<float>::max();
+    bbox->ymax = -std::numeric_limits<float>::max();
+    bbox->zmax = -std::numeric_limits<float>::max();
 
     bbox->xmin = std::numeric_limits<float>::max();
     bbox->ymin = std::numeric_limits<float>::max();

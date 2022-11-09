@@ -24,7 +24,8 @@ int main(int argc, char* argv[])
         {
             (*it)->getBoundingBox(scene.vertex_data);
         }
-        mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces, X_AXIS);
+        //mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces, X_AXIS);
+        mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
     }
     for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)
     {

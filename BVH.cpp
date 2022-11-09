@@ -1,26 +1,49 @@
 #include "BVH.hpp"
 #include "Face.hpp"
 #include <algorithm>
+#include <iostream>
 
 
+BVH::BVH()
+{
+    left = right = NULL;
+    bbox = NULL;
+}
+
+
+//TODO remove debug lines and iostream
 bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
 {
     if(bbox->hitRay(ray) == false)
     {
         return false;
+        //std::cout << "RAY MISSED BVH" << std::endl;
     }
+    //std::cout << "RAY HIT BVH" << std::endl;
     
     IntersectionData hit1, hit2;
+    hit1.t = FLOAT_MAX;
+    hit2.t = FLOAT_MAX;
 
-    bool hitLeft = left->intersectRay(VAO, ray, hit1);
-    bool hitRight = right->intersectRay(VAO, ray, hit2);
+    bool hitLeft = false;
+    bool hitRight = false;
+    if(left) {
+        //std::cout << "BVH has left" << std::endl;
+        hitLeft = left->intersectRay(VAO, ray, hit1);
+    }
+    if(right) {
+        //std::cout << "BVH has right" << std::endl;
+        hitRight = right->intersectRay(VAO, ray, hit2);
+    }
     
     if(hitLeft)
     {
+        //std::cout << "RAY HIT BVH Left" << std::endl;
         intersectionData = hit1;
     }
     if(hitRight)
     {
+        //std::cout << "RAY HIT BVH Right" << std::endl;
         intersectionData = (hit2.t < hit1.t) ? hit2 : intersectionData; 
     }
 
@@ -34,6 +57,14 @@ vec3f BVH::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& 
 int BVH::getMaterialId()
 {
     return -1;
+}
+BoundingBox* BVH::getBoundingBox(const std::vector<vec3f>& VAO)
+{
+    return bbox;
+}
+BoundingBox* BVH::getBoundingBox() const
+{
+    return bbox;
 }
 
 
