@@ -12,6 +12,7 @@ bool ObjectCmpBBoxx(const Object* a, const Object* b)
     bboxA = a->getBoundingBox();
     bboxB = b->getBoundingBox();
 
+
     float centerA = (bboxA->xmin + bboxA->xmax)/2.f;
     float centerB = (bboxB->xmin + bboxB->xmax)/2.f;
     return (centerA < centerB);
@@ -42,43 +43,55 @@ bool ObjectCmpBBoxz(Object*& a, Object*& b)
     return (centerA < centerB);
 }
 
-bool FaceCmpBBoxx( Face* a,  Face* b)
+struct FaceCmpBBoxx
 {
-    BoundingBox* bboxA;
-    BoundingBox* bboxB;
+    bool const operator()(Face* a, Face* b) const
+    {
 
-    bboxA = a->getBoundingBox();
-    bboxB = b->getBoundingBox();
+        BoundingBox* bboxA;
+        BoundingBox* bboxB;
 
-    float centerA = (bboxA->xmin + bboxA->xmax)/2.f;
-    float centerB = (bboxB->xmin + bboxB->xmax)/2.f;
-    return (centerA < centerB);
-}
-bool FaceCmpBBoxy(Face*& a, Face*& b)
+        bboxA = a->getBoundingBox();
+        bboxB = b->getBoundingBox();
+
+        float centerA = (bboxA->xmin + bboxA->xmax)/2.f;
+        float centerB = (bboxB->xmin + bboxB->xmax)/2.f;
+
+        return (centerA < centerB);
+    }
+};
+
+struct FaceCmpBBoxy
 {
-    BoundingBox* bboxA;
-    BoundingBox* bboxB;
+    bool const operator() (Face* a, Face* b) const
+    {
+        BoundingBox* bboxA;
+        BoundingBox* bboxB;
 
-    bboxA = a->getBoundingBox();
-    bboxB = b->getBoundingBox();
+        bboxA = a->getBoundingBox();
+        bboxB = b->getBoundingBox();
 
-    float centerA = (bboxA->ymin + bboxA->ymax)/2.f;
-    float centerB = (bboxB->ymin + bboxB->ymax)/2.f;
-    return (centerA < centerB);
-}
+        float centerA = (bboxA->ymin + bboxA->ymax)/2.f;
+        float centerB = (bboxB->ymin + bboxB->ymax)/2.f;
+        return (centerA < centerB);
+    }
+};
 
-bool FaceCmpBBoxz(Face*& a, Face*& b)
+struct FaceCmpBBoxz
 {
-    BoundingBox* bboxA;
-    BoundingBox* bboxB;
+    bool const operator() (Face* a, Face* b) const
+    {
+        BoundingBox* bboxA;
+        BoundingBox* bboxB;
 
-    bboxA = a->getBoundingBox();
-    bboxB = b->getBoundingBox();
+        bboxA = a->getBoundingBox();
+        bboxB = b->getBoundingBox();
 
-    float centerA = (bboxA->zmin + bboxA->zmax)/2.f;
-    float centerB = (bboxB->zmin + bboxB->zmax)/2.f;
-    return (centerA < centerB);
-}
+        float centerA = (bboxA->zmin + bboxA->zmax)/2.f;
+        float centerB = (bboxB->zmin + bboxB->zmax)/2.f;
+        return (centerA < centerB);
+    }
+};
 
 
 
@@ -151,6 +164,7 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
     size_t size = end - begin;
     size_t mid = size/2;
 
+    //std::cout << "BVH construction number of elements in this BVH: " << size << std::endl;
     if(size < 1)
     {
         return NULL;
@@ -169,6 +183,7 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
     for(auto it = begin; it < end; it++)
     {
         tmpBox = (*it)->getBoundingBox();    
+        //std::cout << "center of this BB: " << getBBcenter(**it, X_AXIS) << std::endl;
         
         if(globalBbox->xmax < tmpBox->xmax) { globalBbox->xmax = tmpBox->xmax;} 
         if(globalBbox->ymax < tmpBox->ymax) { globalBbox->ymax = tmpBox->ymax;} 
@@ -177,15 +192,17 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
         if(globalBbox->xmin > tmpBox->xmin) { globalBbox->xmin = tmpBox->xmin;} 
         if(globalBbox->ymin > tmpBox->ymin) { globalBbox->ymin = tmpBox->ymin;} 
         if(globalBbox->zmin > tmpBox->zmin) { globalBbox->zmin = tmpBox->zmin;} 
-        //std::cout << "xmin: " << globalBbox->xmin << " xmax: " << globalBbox->xmax << std::endl
-        //          << "ymin: " << globalBbox->ymin << " ymax: " << globalBbox->ymax << std::endl 
-        //          << "zmin: " << globalBbox->zmin << " zmax: " << globalBbox->zmax << std::endl; 
 
         //std::cout << "____________________________" << std::endl;
                   
     }
     BVH* boundingVolume = new BVH();
     boundingVolume->bbox = globalBbox;
+    //std::cout << "BOUNDING BOX OF SIZE:  " << size << std::endl;
+    //std::cout << "xmin: " << globalBbox->xmin << " xmax: " << globalBbox->xmax << std::endl
+    //          << "ymin: " << globalBbox->ymin << " ymax: " << globalBbox->ymax << std::endl 
+    //          << "zmin: " << globalBbox->zmin << " zmax: " << globalBbox->zmax << std::endl; 
+    //std::cout << "_______________________________" << std::endl;
 
 
 
@@ -193,20 +210,25 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
     switch(axis)
     {
         case X_AXIS:
-            std::sort(begin, end, FaceCmpBBoxx);         
+            std::sort(begin, end, FaceCmpBBoxx());         
             axis = Y_AXIS;
             break;
         case Y_AXIS:
-            std::sort(begin, end, FaceCmpBBoxy);         
+            std::sort(begin, end, FaceCmpBBoxy());         
             axis = Z_AXIS;
             break;
         case Z_AXIS:
-            std::sort(begin, end, FaceCmpBBoxz);         
+            std::sort(begin, end, FaceCmpBBoxz());         
             axis = X_AXIS;
             break;
     }
 
-   
+
+    //for(auto it = begin; it < end; it++)
+    //{
+    //    tmpBox = (*it)->getBoundingBox();    
+    //    std::cout << "center of this BB: " << getBBcenter(**it, X_AXIS) << std::endl;
+    //}
 
     boundingVolume->left = constructMeshBVH(VAO, begin, begin+mid, axis);
     boundingVolume->right = constructMeshBVH(VAO, begin+mid, end, axis);
@@ -215,4 +237,88 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
 
     return boundingVolume;
 }
+//Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>& objects, AXIS_TYPE axis)
+//{
+//    return constructMeshBVH(VAO, objects, 0, objects.size() - 1, AXIS_TYPE);
+//}
+//Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>& objects, size_t first, size_t last, AXIS_TYPE axis)
+//{
+//    //auto end = objects.end();
+//    //auto begin = objects.begin();
+//
+//    size_t size = last - first +1;
+//    //size_t size = end - begin;
+//    size_t mid = size/2;
+//
+//    std::cout << "BVH construction number of elements in this BVH: " << size << std::endl;
+//    if(size < 1)
+//    {
+//        return NULL;
+//    }
+//    if(size == 1)
+//    {
+//        return *begin;
+//    }
+//
+//    BoundingBox* globalBbox = new BoundingBox(FLOAT_MAX, -FLOAT_MAX,
+//                                              FLOAT_MAX, -FLOAT_MAX,
+//                                              FLOAT_MAX, -FLOAT_MAX);
+//    BoundingBox* tmpBox;
+//
+//    //for(Face* face: objects)
+//    for(auto it = begin; it < end; it++)
+//    {
+//        tmpBox = (*it)->getBoundingBox();    
+//        std::cout << "center of this BB: " << getBBcenter(**it, X_AXIS) << std::endl;
+//        
+//        if(globalBbox->xmax < tmpBox->xmax) { globalBbox->xmax = tmpBox->xmax;} 
+//        if(globalBbox->ymax < tmpBox->ymax) { globalBbox->ymax = tmpBox->ymax;} 
+//        if(globalBbox->zmax < tmpBox->zmax) { globalBbox->zmax = tmpBox->zmax;} 
+//
+//        if(globalBbox->xmin > tmpBox->xmin) { globalBbox->xmin = tmpBox->xmin;} 
+//        if(globalBbox->ymin > tmpBox->ymin) { globalBbox->ymin = tmpBox->ymin;} 
+//        if(globalBbox->zmin > tmpBox->zmin) { globalBbox->zmin = tmpBox->zmin;} 
+//        //std::cout << "xmin: " << globalBbox->xmin << " xmax: " << globalBbox->xmax << std::endl
+//        //          << "ymin: " << globalBbox->ymin << " ymax: " << globalBbox->ymax << std::endl 
+//        //          << "zmin: " << globalBbox->zmin << " zmax: " << globalBbox->zmax << std::endl; 
+//
+//        //std::cout << "____________________________" << std::endl;
+//                  
+//    }
+//    BVH* boundingVolume = new BVH();
+//    boundingVolume->bbox = globalBbox;
+//
+// 
+//
+//    //sort all objects and choose median
+//    switch(axis)
+//    {
+//        case X_AXIS:
+//            std::sort(begin, end, FaceCmpBBoxx);         
+//            axis = Y_AXIS;
+//            break;
+//        case Y_AXIS:
+//            std::sort(begin, end, FaceCmpBBoxy);         
+//            axis = Z_AXIS;
+//            break;
+//        case Z_AXIS:
+//            std::sort(begin, end, FaceCmpBBoxz);         
+//            axis = X_AXIS;
+//            break;
+//    }
+//
+//
+//    for(auto it = begin; it < end; it++)
+//    {
+//        tmpBox = (*it)->getBoundingBox();    
+//        std::cout << "center of this BB: " << getBBcenter(**it, X_AXIS) << std::endl;
+//    }
+//
+//    //boundingVolume->left = constructMeshBVH(VAO, begin, begin+mid, axis);
+//    //boundingVolume->right = constructMeshBVH(VAO, begin+mid, end, axis);
+//    //(*(begin + mid))->getBoundingBox();
+//
+//
+//    return boundingVolume;
+//}
 

@@ -50,10 +50,11 @@ bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersecti
     return (hitLeft || hitRight);
 }
 
-vec3f BVH::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const
-{
-    return vec3f(std::numeric_limits<float>::quiet_NaN());
-}
+//vec3f BVH::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const
+//{
+//    return vec3f(0.f);
+//    //return vec3f(std::numeric_limits<float>::quiet_NaN());
+//}
 int BVH::getMaterialId()
 {
     return -1;

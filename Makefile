@@ -1,7 +1,8 @@
 CC= gcc
 CXX= g++
-CFLAGS = -Ofast -pg
+CFLAGS = -Ofast
 CXXFLAGS = -std=c++17
+LDFLAGS = 
 
 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp

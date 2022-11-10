@@ -1,6 +1,7 @@
 #include "Mesh.hpp"
 #include <cmath>
 #include <limits>
+#include <iostream>
 
 
 Mesh::Mesh()
@@ -34,6 +35,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
 {
     if(AccBVH != NULL)
     {
+        //std::cout << "mesh BVH intersection " << std::endl;
         bool hit = AccBVH->intersectRay(VAO, r, intData);
         if(hit)
         {
