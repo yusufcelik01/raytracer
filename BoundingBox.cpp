@@ -1,5 +1,6 @@
 #include <limits>
 #include <algorithm>
+#include <iostream>
 
 #include "BoundingBox.hpp"
 
@@ -46,7 +47,9 @@ bool BoundingBox::hitRay(const Ray& r)
     if(tz1 > tz2){std::swap(tz1, tz2);}
 
     float t1 = std::max(std::max(tx1, ty1), tz1);
-    float t2 = std::max(std::max(tx2, ty2), tz2);
+    float t2 = std::min(std::min(tx2, ty2), tz2);
 
-    return !(t1 > t2);
+    bool ret = !(t1 > t2);
+    //std::cout << "bbox hit " << ret << std::endl;
+    return ret;
 }
