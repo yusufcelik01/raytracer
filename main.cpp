@@ -28,12 +28,13 @@ int main(int argc, char* argv[])
         mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
         //mesh->bbox = AccBVH->getBoundingBox();
     }
-    std::cout << " Mesh BVHs completed" << std::endl;
-    //for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)
-    //{
-    //    (*it)->getBoundingBox(scene.vertex_data);
-    //}
-    //scene.AccStrBVH = constructObjectBVH(scene.vertex_data, scene.objects, X_AXIS);
+    std::cout << " Mesh BVHs are completed" << std::endl;
+    for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)
+    {
+        (*it)->getBoundingBox(scene.vertex_data);
+    }
+    scene.AccStrBVH = constructObjectBVH(scene.vertex_data, scene.objects.begin(), scene.objects.end(), X_AXIS);
+    std::cout << "Global BVH is completed" << std::endl;
 
     for(Camera camera: scene.cameras)
     {
