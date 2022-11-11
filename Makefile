@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -Ofast
+CFLAGS = -Ofast 
 CXXFLAGS = -std=c++17
 LDFLAGS = 
 
@@ -42,6 +42,7 @@ core.o: parser.h img.hpp Ray.hpp $(OBJECT_HPP_DEP)
 del_images:
 	-rm *.ppm
 	-rm *.png
+	-rm time*.txt
 
 .PHONY: clean
 clean:
@@ -62,9 +63,11 @@ simple_test: raytracer
 
 test:
 	make simple_test
-	time ./raytracer hw1/inputs/bunny.xml
-	time ./raytracer hw1/inputs/scienceTree.xml
-	time ./raytracer hw1/inputs/scienceTree_glass.xml
+	(time ./raytracer hw1/inputs/bunny.xml) 2> time_bunny.txt
+	(time ./raytracer hw1/inputs/scienceTree.xml) 2> time_scienceTree.txt
+	(time ./raytracer hw1/inputs/scienceTree_glass.xml) 2> time_scienceTree_glass.txt
+	(time ./raytracer hw1/inputs/chinese_dragon.xml) 2> time_chinese_dragon.txt
+	(time ./raytracer hw1/inputs/horse_and_mug.xml) 2> time_horse_and_mug.txt
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h
