@@ -10,13 +10,27 @@ Face::Face()
     bbox = NULL;
 }
 
+Face::Face(size_t v0, size_t v1, size_t v2)
+{
+    v0_id = v0;
+    v1_id = v1;
+    v2_id = v2;
+    material_id = -1;
+    bbox = NULL;
+}
+
 Face::Face(const Face& rhs)
 {
     v0_id = rhs.v0_id;
     v1_id = rhs.v1_id;
     v2_id = rhs.v2_id;
     material_id = rhs.material_id;
-    bbox = new BoundingBox(*(rhs.bbox));
+    if(rhs.bbox == NULL){
+        bbox = NULL;
+    }
+    else {
+        bbox = new BoundingBox(*(rhs.bbox));
+    }
 }
 
 Face::~Face()

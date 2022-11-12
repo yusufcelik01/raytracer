@@ -73,7 +73,7 @@ namespace parser
     struct plyData
     {
         std::vector<vec3f> vertices;
-        std::vector<vec3i> triangles;
+        std::vector<Face> triangles;
     };
 }
 

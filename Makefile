@@ -1,25 +1,30 @@
 CC= gcc
 CXX= g++
-CFLAGS = -Ofast 
+CFLAGS = -g
 CXXFLAGS = -std=c++17
 LDFLAGS = 
 
 
+PARSER_FILES= parser.o plyfile.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o
-OBJECT_FILES= main.o  core.o parser.o  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o vec3.o img.o $(GEOMETRY)
+OBJECT_FILES= main.o  core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o vec3.o img.o $(GEOMETRY)
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)
 
 all:
 	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
-bahadir:
-	g++ $(CXXFLAGS) $(CFLAGS) *.cpp  -o main
+
+ply_test:
+	gcc plytest.c plyfile.c -o plytest -g
+
 
 vec3.cpp: vec3.hpp
 main.o: main.cpp parser.h ppm.h
-parser.o: parser.cpp parser.h tinyxml2.h $(OBJECT_HPP_DEP)
+parser.o: parser.cpp parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h
+plyfile.o: ply.h
+#plytest.o: ply.h
 
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)

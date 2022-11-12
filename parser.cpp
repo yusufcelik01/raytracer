@@ -1,5 +1,7 @@
 #include "parser.h"
+#include "rtmath.hpp"
 #include "tinyxml2.h"
+#include "ply.h"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -8,122 +10,117 @@
 #include <limits>
 
 
-#define BUFF_SIZE 512
-
-void getPlyLine(std::fstream& strm, char* buffer, size_t size)
+void parsePly(char* filePath, parser::plyData& plyMesh)
 {
-    strm.getline(buffer, size);     
-    while(strncmp(buffer, "comment", 7) == 0)
-    {
-        strm.getline(buffer, size);     
-    }
-}
+    /*
+       THIS FUNCTION IS CONSTRUCTED BY USING THE CODE IN plytest.c
+       by Greg Turk, March 1994
+       for details see
+http://paulbourke.net/dataformats/ply/
+     */
+    int i,j,k;
+    PlyFile *ply;
+    int nelems;
+    char **elist;
+    int file_type;
+    float version;
+    int nprops;
+    int num_elems;
+    PlyProperty **plist;
+    PLY_Vertex **vlist;
+    PLY_Face **flist;
+    char *elem_name;
+    int num_comments;
+    char **comments;
+    int num_obj_info;
+    char **obj_info;
 
-enum plyFormat
-{
-    ASCII,
-    BIN_LITTLE_ENDIAN,
-    BIN_BIG_ENDIAN
-};
+    PlyProperty vert_props[] = { /* list of property information for a vertex */
+        {"x", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
+        {"y", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,y), 0, 0, 0, 0},
+        {"z", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,z), 0, 0, 0, 0},
+    };
+    PlyProperty face_props[] = { /* list of property information for a vertex */
+        {"intensity", PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
+        {"vertex_indices", PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
+            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
+    };
+    /* open a PLY file for reading */
+    //ply = ply_open_for_reading("hw1/inputs/ply/dragon_remeshed_fixed.ply", &nelems, &elist, &file_type, &version);
+    ply = ply_open_for_reading(filePath, &nelems, &elist, &file_type, &version);
 
-void parsePly(const char* filePath, parser::plyData& plyMesh)
-{
-    std::ifstream file;
-    file.open(filePath);
-    plyFormat format;
+    printf ("version %f\n", version);
+    printf ("type %d\n", file_type);
+    for (i = 0; i < nelems; i++) {
 
-    char buffer[512];
-    file.getline(buffer, 512);
-    if(strcmp(buffer, "ply") != 0)
-    {
-        std::cerr << "ERR: " << filePath << " is not a ply file" << std::endl;
-        exit(1);
-    }
-    file.getline(buffer, 512);
-    if(strncmp(buffer, "format ", 7) !=0)
-    {
-        std::cerr << "ERR: incorrect file format" << std::endl;
-        exit(1);
-    }
-    if(strncmp(&buffer[7], "ascii", 5) == 0)
-    {
-        format = ASCII;
-    }
-    else if(strncmp(&buffer[7], "binary_little_endian", 20) == 0)
-    {
-        format = BIN_LITTLE_ENDIAN;
-    }
-    else if(strncmp(&buffer[7], "binary_big_endian", 17) == 0)
-    {
-        format = BIN_BIG_ENDIAN;
-    }
-    else
-    {
-        std::cerr << "ERR: incorrect file format" << std::endl;
-        exit(1);
-    }
+        /* get the description of the first element */
+        elem_name = elist[i];
+        plist = ply_get_element_description (ply, elem_name, &num_elems, &nprops);
 
-    std::stringstream stream;
-    size_t vertexCount, faceCount;
+        /* print the name of the element, for debugging */
+        printf ("element %s %d\n", elem_name, num_elems);
 
+        /* if we're on vertex elements, read them in */
+        if (equal_strings ("vertex", elem_name)) {
 
-    while(1)
-    {
-        file.getline(buffer, 512);
-        stream << buffer;
-        std::string tmp;
-        stream >> tmp;
-        if(tmp == "comment")
-        {
-            stream.str("");
-            continue;
-        }
-        if(tmp == "element")
-        {
-            stream >> tmp;
-            
-            file.getline(buffer, 512);
-            file.getline(buffer, 512);
-            file.getline(buffer, 512);
-            stream >> tmp;
-            if(tmp == "property")
+            /* create a vertex list to hold all the vertices */
+            vlist = (PLY_Vertex **) malloc (sizeof (PLY_Vertex *) * num_elems);
+
+            /* set up for getting vertex elements */
+
+            ply_get_property (ply, elem_name, &vert_props[0]);
+            ply_get_property (ply, elem_name, &vert_props[1]);
+            ply_get_property (ply, elem_name, &vert_props[2]);
+
+            /* grab all the vertex elements */
+            for (j = 0; j < num_elems; j++) 
             {
-                
+                /* grab and element from the file */
+                vlist[j] = (PLY_Vertex *) malloc (sizeof (PLY_Vertex));
+                ply_get_element (ply, (void *) vlist[j]);
+
+                /* print out vertex x,y,z for debugging */
+                //printf ("vertex: %g %g %g\n", vlist[j]->x, vlist[j]->y, vlist[j]->z);
+                plyMesh.vertices.push_back(vec3f(vlist[j]->x,vlist[j]->y,vlist[j]->z));
+
             }
         }
-    }
-    //if(tmp != "element")
-    //{
-    //    exit(1);    
-    //}
-    //file >> tmp;
-    //if(tmp != "vertex")
-    //{
-    //    exit(1);    
-    //}
-    //file >> vertexCount; 
-    ////consume "property float x/y/z" lines
-    //file >> tmp; file >> tmp; file >> tmp; 
-    //file >> tmp; file >> tmp; file >> tmp; 
-    //file >> tmp; file >> tmp; file >> tmp; 
-    //file >> tmp;
-    //if(tmp != "element")
-    //{
-    //    exit(1);    
-    //}
-    //file >> tmp;
-    //if(tmp != "face")
-    //{
-    //    exit(1);    
-    //}
-    //file >> faceCount;
-    //file >> tmp; file >> tmp; file >> tmp; file >> tmp;file >> tmp;
 
+        /* if we're on face elements, read them in */
+        if (equal_strings ("face", elem_name)) 
+        {
+            /* create a list to hold all the face elements */
+            flist = (PLY_Face **) malloc (sizeof (PLY_Face *) * num_elems);
 
-    
+            /* set up for getting face elements */
 
+            ply_get_property (ply, elem_name, &face_props[0]);
+            ply_get_property (ply, elem_name, &face_props[1]);
 
+            /* grab all the face elements */
+            for (j = 0; j < num_elems; j++) 
+            {
+                /* grab and element from the file */
+                flist[j] = (PLY_Face *) malloc (sizeof (PLY_Face));
+                ply_get_element (ply, (void *) flist[j]);
 
+                /* print out face info, for debugging */
+                //printf ("face: %d, list = ", flist[j]->intensity);
+                for (k = 2; k < flist[j]->nverts; k++)
+                {
+                    plyMesh.triangles.push_back(Face(flist[j]->verts[0  ], 
+                                                     flist[j]->verts[k-1], 
+                                                     flist[j]->verts[k  ])); 
+                    //printf ("%d ", flist[j]->verts[k]);
+                }
+                //printf ("\n");
+            }
+        }
+
+        /* print out the properties we got, for debugging */
+        //for (j = 0; j < nprops; j++)
+        //    printf ("property %s\n", plist[j]->name);
+        }
 }
 
 void parser::Scene::loadFromXml(const std::string &filepath)
@@ -185,28 +182,73 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     Camera camera;
     while (element)
     {
+
         auto child = element->FirstChildElement("Position");
         stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("Gaze");
-        stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("Up");
-        stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("NearPlane");
-        stream << child->GetText() << std::endl;
+        stream >> camera.position.x >> camera.position.y >> camera.position.z;
+
         child = element->FirstChildElement("NearDistance");
         stream << child->GetText() << std::endl;
+        stream >> camera.near_distance;
+
         child = element->FirstChildElement("ImageResolution");
         stream << child->GetText() << std::endl;
+        stream >> camera.image_width >> camera.image_height;
+
         child = element->FirstChildElement("ImageName");
         stream << child->GetText() << std::endl;
-
-        stream >> camera.position.x >> camera.position.y >> camera.position.z;
-        stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
-        stream >> camera.up.x >> camera.up.y >> camera.up.z;
-        stream >> camera.near_plane.x >> camera.near_plane.y >> camera.near_plane.z >> camera.near_plane.w;
-        stream >> camera.near_distance;
-        stream >> camera.image_width >> camera.image_height;
         stream >> camera.image_name;
+
+        child = element->FirstChildElement("Up");
+        stream << child->GetText() << std::endl;
+        stream >> camera.up.x >> camera.up.y >> camera.up.z;
+        camera.up = norm(camera.up);
+
+        const char* cameraType = element->Attribute("type");
+        if(cameraType != NULL && strcmp(cameraType, "lookAt") == 0 )
+        {
+            child = element->FirstChildElement("GazePoint");
+            stream << child->GetText() << std::endl;
+            vec3f gazePoint,gazeDir;
+            stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
+            gazeDir = norm(gazePoint - camera.position);
+            camera.gaze = gazeDir;
+
+            float fovY, aspectRatio;
+            child = element->FirstChildElement("FovY");
+            stream << child->GetText() << std::endl;
+            stream >> fovY;
+            //convert fovy to radians
+            fovY = fovY * M_PI / 180.f;
+            aspectRatio = camera.image_width / camera.image_height ;
+
+            vec3f nearCenter = camera.position + (camera.gaze * camera.near_distance);
+            vec3f right = norm(cross(camera.gaze, camera.up));
+
+            //camera.near_plane.z = nearCenter + (camera.up * (camera.near_distance * tan(fovY/2.f)));
+            //camera.near_plane.w = nearCenter - (camera.up * (camera.near_distance * tan(fovY/2.f)));
+            //camera.near_plane.x = near_plane - (camera.right * (camera.near_distance * tan(fovY/2.f) * aspectRatio));
+            //camera.near_plane.y = near_plane + (camera.right * (camera.near_distance * tan(fovY/2.f) * aspectRatio));
+
+            camera.near_plane.x = - (camera.near_distance * tan(fovY/2.f) * aspectRatio);
+            camera.near_plane.y = + (camera.near_distance * tan(fovY/2.f) * aspectRatio);
+            camera.near_plane.z = + (camera.near_distance * tan(fovY/2.f));
+            camera.near_plane.w = - (camera.near_distance * tan(fovY/2.f));
+
+
+        }
+        else
+        {
+            child = element->FirstChildElement("Gaze");
+            stream << child->GetText() << std::endl;
+            stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+
+            child = element->FirstChildElement("NearPlane");
+            stream << child->GetText() << std::endl;
+            stream >> camera.near_plane.x >> camera.near_plane.y >> camera.near_plane.z >> camera.near_plane.w;
+
+        }
+
 
         cameras.push_back(camera);
         element = element->NextSiblingElement("Camera");
@@ -338,6 +380,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         const char* plyFileName = child->Attribute("plyFile");
         if(plyFileName != NULL)//it is a ply file
         {
+            //std::cerr << "ply files are not implemented yet" << std::endl;
+            //exit(-1);
             char *plyFilePath;
             if(plyFileName[0] == '~' || plyFileName[0] == '/' )
             {
@@ -351,27 +395,47 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             {
                 const char* begin = filepath.c_str();
                 const char* end = rindex(begin, '/');
-                plyFilePath = new char[end-begin + 128];
+                size_t plyPathStrSize = end - begin + 128;
+                plyFilePath = new char[plyPathStrSize];
+                for(size_t foo = 0; foo < plyPathStrSize; ++foo) {
+                    plyFilePath[foo] = '\0';//fill the are with nulls
+                }
                 strncpy(plyFilePath, begin, end - begin + 1);
                 strncat(plyFilePath, plyFileName, 126);
             }
             //std::cout << plyFilePath << std::endl;
             plyData obj;
             parsePly(plyFilePath, obj);
-            
-        }
 
-        stream << child->GetText() << std::endl;
-        Face* face;
-        face = new Face();
-        while (!(stream >> face->v0_id).eof())
+            size_t numOfTotalVertices = vertex_data.size();
+            size_t numOfPlyVertices = obj.vertices.size();
+            for(size_t k=0; k < numOfPlyVertices; k++)
+            {
+               vertex_data.push_back(obj.vertices[k]); 
+            }
+            size_t numOfPlyFaces = obj.triangles.size();
+            for(size_t k=0; k < numOfPlyFaces; k++)
+            {
+                Face* face = new Face(numOfTotalVertices + obj.triangles[k].v0_id,
+                                      numOfTotalVertices + obj.triangles[k].v1_id,
+                                      numOfTotalVertices + obj.triangles[k].v2_id );
+                mesh->faces.push_back(face);
+            }
+        }
+        else// a regular non-ply mesh
         {
-            stream >> face->v1_id >> face->v2_id;
-            mesh->faces.push_back(face);
-            face = new Face();
-        }
-        stream.clear();
 
+            stream << child->GetText() << std::endl;
+            Face* face;
+            face = new Face();
+            while (!(stream >> face->v0_id).eof())
+            {
+                stream >> face->v1_id >> face->v2_id;
+                mesh->faces.push_back(face);
+                face = new Face();
+            }
+            stream.clear();
+        }
         //meshes.push_back(mesh);
         objects.push_back(mesh);//runtime polymorph
         meshes.push_back(mesh);

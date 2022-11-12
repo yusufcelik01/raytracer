@@ -13,6 +13,7 @@ class Face : public Object
     //constructors
     Face();
     Face(const Face& rhs);
+    Face(size_t v0, size_t v1, size_t v2);
     ~Face();
 
     //member functions
