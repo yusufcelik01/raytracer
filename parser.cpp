@@ -49,8 +49,8 @@ http://paulbourke.net/dataformats/ply/
     //ply = ply_open_for_reading("hw1/inputs/ply/dragon_remeshed_fixed.ply", &nelems, &elist, &file_type, &version);
     ply = ply_open_for_reading(filePath, &nelems, &elist, &file_type, &version);
 
-    printf ("version %f\n", version);
-    printf ("type %d\n", file_type);
+    //printf ("version %f\n", version);
+    //printf ("type %d\n", file_type);
     for (i = 0; i < nelems; i++) {
 
         /* get the description of the first element */
@@ -211,8 +211,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream << child->GetText() << std::endl;
             vec3f gazePoint,gazeDir;
             stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
-            gazeDir = norm(gazePoint - camera.position);
-            camera.gaze = gazeDir;
+            camera.gaze = norm(gazePoint - camera.position);
 
             float fovY, aspectRatio;
             child = element->FirstChildElement("FovY");
@@ -220,10 +219,10 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream >> fovY;
             //convert fovy to radians
             fovY = fovY * M_PI / 180.f;
-            aspectRatio = camera.image_width / camera.image_height ;
+            aspectRatio = float(camera.image_width) / float(camera.image_height) ;
 
-            vec3f nearCenter = camera.position + (camera.gaze * camera.near_distance);
-            vec3f right = norm(cross(camera.gaze, camera.up));
+            //vec3f nearCenter = camera.position + (camera.gaze * camera.near_distance);
+            //vec3f right = norm(cross(camera.gaze, camera.up));
 
             //camera.near_plane.z = nearCenter + (camera.up * (camera.near_distance * tan(fovY/2.f)));
             //camera.near_plane.w = nearCenter - (camera.up * (camera.near_distance * tan(fovY/2.f)));
@@ -232,8 +231,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
             camera.near_plane.x = - (camera.near_distance * tan(fovY/2.f) * aspectRatio);
             camera.near_plane.y = + (camera.near_distance * tan(fovY/2.f) * aspectRatio);
-            camera.near_plane.z = + (camera.near_distance * tan(fovY/2.f));
-            camera.near_plane.w = - (camera.near_distance * tan(fovY/2.f));
+            camera.near_plane.z = - (camera.near_distance * tan(fovY/2.f));
+            camera.near_plane.w = + (camera.near_distance * tan(fovY/2.f));
 
 
         }
