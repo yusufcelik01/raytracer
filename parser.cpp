@@ -221,13 +221,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             fovY = fovY * M_PI / 180.f;
             aspectRatio = float(camera.image_width) / float(camera.image_height) ;
 
-            //vec3f nearCenter = camera.position + (camera.gaze * camera.near_distance);
-            //vec3f right = norm(cross(camera.gaze, camera.up));
-
-            //camera.near_plane.z = nearCenter + (camera.up * (camera.near_distance * tan(fovY/2.f)));
-            //camera.near_plane.w = nearCenter - (camera.up * (camera.near_distance * tan(fovY/2.f)));
-            //camera.near_plane.x = near_plane - (camera.right * (camera.near_distance * tan(fovY/2.f) * aspectRatio));
-            //camera.near_plane.y = near_plane + (camera.right * (camera.near_distance * tan(fovY/2.f) * aspectRatio));
 
             camera.near_plane.x = - (camera.near_distance * tan(fovY/2.f) * aspectRatio);
             camera.near_plane.y = + (camera.near_distance * tan(fovY/2.f) * aspectRatio);
@@ -346,6 +339,62 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
+    stream.clear();
+
+
+    //get scaling transformations
+    element = root->FirstChildElement("Transformations");
+    if(element)
+    {
+        element = element->FirstChildElement("Scaling");
+        mat4x4 M(0.f);
+        float Sx, Sy, Sz;
+        scalings.push_back(M);//insert a dummy transformation
+                              //so indices start from 1
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            stream >> Sx >> Sy >> Sz;
+            M = scale(Sx, Sy, Sz);
+            scalings.push_back(M);
+            //std::cout << "Scaling: " << Sx << " " << Sy << " " << Sz << std::endl;
+            element = element->NextSiblingElement("Scaling");
+        }
+
+        //get translations
+        element = root->FirstChildElement("Transformations");
+        element = element->FirstChildElement("Translation");
+        M = mat4x4(0.f);
+        float Tx, Ty, Tz;
+        translations.push_back(M);//insert a dummy transformation
+                                  //so indices start from 1
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            stream >>Tx >> Ty >> Tz;
+            M = translate(Sx, Sy, Sz);
+            translations.push_back(M);
+            //std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
+            element = element->NextSiblingElement("Translation");
+        }
+
+        element = root->FirstChildElement("Transformations");
+        element = element->FirstChildElement("Rotation");
+        M = mat4x4(0.f);
+        rotations.push_back(M);
+        float angle, Rx, Ry, Rz;
+        while(element)
+        {
+            stream << element->GetText() << std::endl;
+            stream >> angle >> Rx >> Ry >> Rz;
+            M = rotate(angle, vec3f(Rx, Ry, Rz));
+            rotations.push_back(M);
+            //std::cout << "Rotation: " << angle << " " << Rx << " " << Ry << " " << Rz << std::endl;
+            element = element->NextSiblingElement("Translation"); 
+        }
+        stream.clear();
+    }
+
 
     //Get VertexData
     element = root->FirstChildElement("VertexData");
@@ -423,7 +472,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         }
         else// a regular non-ply mesh
         {
-
             stream << child->GetText() << std::endl;
             Face* face;
             face = new Face();
@@ -435,6 +483,20 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             }
             stream.clear();
         }
+
+        stream.clear();
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            std::string transformation;
+            while(!(stream >> transformation).eof())
+            {
+                std::cout << "mesh transformation: " << transformation << std::endl;
+            }
+        }
+        stream.clear();
+
         //meshes.push_back(mesh);
         objects.push_back(mesh);//runtime polymorph
         meshes.push_back(mesh);

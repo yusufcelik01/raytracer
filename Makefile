@@ -8,7 +8,10 @@ LDFLAGS =
 PARSER_FILES= parser.o plyfile.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o
-OBJECT_FILES= main.o  core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o vec3.o img.o $(GEOMETRY)
+MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp
+MATH_OBJECTS= vec3.o mat4x4.o vec4.o
+
+OBJECT_FILES= main.o core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY)
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)
@@ -20,7 +23,9 @@ ply_test:
 	gcc plytest.c plyfile.c -o plytest -g
 
 
-vec3.cpp: vec3.hpp
+vec3.o: vec3.hpp
+mat4x4.o: mat4x4.hpp
+
 main.o: main.cpp parser.h ppm.h
 parser.o: parser.cpp parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h
 plyfile.o: ply.h
@@ -31,7 +36,7 @@ Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
 Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
 
-BoundingBox.o: BoundingBox.hpp BoundingBox.cpp rtmath.hpp 
+BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
 BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 

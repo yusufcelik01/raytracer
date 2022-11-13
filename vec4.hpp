@@ -1,6 +1,8 @@
 #ifndef __VEC4__DEFINED__
 #define __VEC4__DEFINED__
 
+#include "vec3.hpp"
+
 class vec4f
 {
     public:
@@ -10,6 +12,11 @@ class vec4f
         struct{float r, g, b, a;};
         struct{float s, t, p, q;};
     };
+
+    vec4f();
+    vec4f(float);
+    vec4f(float, float, float, float);
+    vec4f(vec3f, float);
 };
 
 class vec4i

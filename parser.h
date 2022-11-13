@@ -14,33 +14,11 @@
 
 namespace parser
 {
-    //Notice that all the structures are as simple as possible
-    //so that you are not enforced to adopt any style or design.
-    //struct Vec3f
-    //{
-    //    float x, y, z;
-    //};
-
-    //struct Vec3i
-    //{
-    //    int x, y, z;
-    //};
-
-    //struct Vec4f
-    //{
-    //    float x, y, z, w;
-    //};
-
-
     struct PointLight
     {
         vec3f position;
         vec3f intensity;
     };
-
-
-
-
 
 
     struct Scene
@@ -53,6 +31,9 @@ namespace parser
         vec3f ambient_light;
         std::vector<PointLight> point_lights;
         std::vector<Material> materials;
+        std::vector<mat4x4> rotations;
+        std::vector<mat4x4> scalings;
+        std::vector<mat4x4> translations;
         std::vector<vec3f> vertex_data;
         //std::vector<Sphere*> spheres;
         //std::vector<Triangle*> triangles;
