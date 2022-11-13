@@ -51,7 +51,7 @@ mat4x4 mat4x4::operator*(const mat4x4& rhs) const
             for(int k = 0; k < 4; k++) {
                 sum += m[i][k] * rhs.m[k][j];
             }
-            res.m[i][j];
+            res.m[i][j] = sum;
         }
     }
     return res;
