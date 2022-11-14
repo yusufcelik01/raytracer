@@ -56,33 +56,37 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
         r.d = vec3f(tmp.x, tmp.y, tmp.z);
     }
 
+    bool hit = false;
     if(AccBVH != NULL)
     {
-        bool hit = AccBVH->intersectRay(VAO, r, intData);
+        hit = AccBVH->intersectRay(VAO, r, intData);
         if(hit)
         {
             intData.hitType = MESH;
             intData.material_id = this->material_id;
         }
-        return hit;
+        //return hit;
     }
-    float min_t = std::numeric_limits<float>::infinity();
-    bool hit = false;
-
-    IntersectionData temp;
-    int faceIndex = 0;
-    for(Face* face: faces)
+    else
     {
-        if(face->intersectRay(VAO, r, temp))
+        float min_t = std::numeric_limits<float>::infinity();
+        hit = false;
+
+        IntersectionData temp;
+        int faceIndex = 0;
+        for(Face* face: faces)
         {
-            hit = true;
-            if(temp.t < min_t)
+            if(face->intersectRay(VAO, r, temp))
             {
-                min_t = temp.t;
-                intData = temp;
+                hit = true;
+                if(temp.t < min_t)
+                {
+                    min_t = temp.t;
+                    intData = temp;
+                }
             }
+            faceIndex++;
         }
-        faceIndex++;
     }
 
     if(hit)
@@ -93,30 +97,33 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
 
         if(transformation != NULL)
         {
+            intData.intersectionPoint = ray.o + (ray.d * intData.t);
+
             vec4f tmp;
-            tmp = (*transformation) * vec4f(intData.normal, 0.f);
-            intData.normal = vec3f(tmp.x, tmp.y, tmp.z);
+            //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+            //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
 
 
-            tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-            intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+            mat4x4 invM = inverse(*transformation);
+            tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+            intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
         }
         //notice that temp is carry data of a face
     }
     return hit;
 }
 
-vec3f Mesh::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const 
-{
-
-    //return intersectionPoint.face.getSurfNormal(VAO, intersectionPoint);
-    //return this->faces[intersectionPoint.faceId -1].getSurfNormal(VAO, intersectionPoint);
-    vec3f a = VAO[intersectionPoint.v0_id];
-    vec3f b = VAO[intersectionPoint.v1_id];
-    vec3f c = VAO[intersectionPoint.v2_id];
-
-    return norm(cross(b-a, c-b));
-}
+//vec3f Mesh::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const 
+//{
+//
+//    //return intersectionPoint.face.getSurfNormal(VAO, intersectionPoint);
+//    //return this->faces[intersectionPoint.faceId -1].getSurfNormal(VAO, intersectionPoint);
+//    vec3f a = VAO[intersectionPoint.v0_id];
+//    vec3f b = VAO[intersectionPoint.v1_id];
+//    vec3f c = VAO[intersectionPoint.v2_id];
+//
+//    return norm(cross(b-a, c-b));
+//}
 
 int Mesh::getMaterialId()
 {

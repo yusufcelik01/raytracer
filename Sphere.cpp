@@ -13,6 +13,14 @@ Sphere::Sphere(const Sphere& rhs)
     center_vertex_id = rhs.center_vertex_id;
     radius = rhs.radius;
     material_id = rhs.material_id;
+    if(rhs.transformation)
+    {
+        transformation = new mat4x4(*(rhs.transformation));
+    }
+    else
+    {
+        transformation = NULL;
+    }
 }
 
 Sphere::~Sphere()
@@ -23,8 +31,21 @@ Sphere::~Sphere()
     }
 }
 
-bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
+    Ray ray = r;
+    if(transformation != NULL)
+    {
+        vec4f tmp;
+        mat4x4 invM = inverse(*transformation);
+
+        tmp = invM * vec4f(r.o, 1.f); 
+        ray.o = vec3f(tmp.x, tmp.y, tmp.z);
+
+        tmp = invM * vec4f(r.d, 0.f); 
+        ray.d = vec3f(tmp.x, tmp.y, tmp.z);
+    }
+
     //vec3f c = VAO[center_vertex_id-1];
     vec3f c = VAO[center_vertex_id];
     
@@ -85,6 +106,22 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     intData.material_id = this->material_id;
     intData.intersectionPoint = ray.o + (ray.d * intData.t);
     intData.normal = norm(intData.intersectionPoint - c);
+
+    if(transformation != NULL)
+    {
+        intData.intersectionPoint = r.o + (r.d * intData.t);
+        //vec4f movedCenter = (*transformation) * vec4f(c, 1.f);
+        //intData.normal = norm(intData.intersectionPoint - vec3f(movedCenter.x, movedCenter.y, movedCenter.z));
+
+        vec4f tmp;
+        //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+        //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+
+
+        mat4x4 invM = inverse(*transformation);
+        tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+        intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+    }
 
     return true;
 
