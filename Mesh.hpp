@@ -12,6 +12,7 @@ class Mesh :public Object
     public:
         Object* AccBVH = NULL;
         std::vector<Face*> faces;
+        mat4x4* transformation = NULL;
 
         Mesh();
         Mesh(const Mesh& rhs);

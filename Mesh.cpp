@@ -2,17 +2,27 @@
 #include <cmath>
 #include <limits>
 #include <iostream>
+#include "mat4x4.hpp"
 
 
 Mesh::Mesh()
 {
     faces = {};    
     material_id = -1;
+    transformation = NULL;
 }
 Mesh::Mesh(const Mesh& rhs)
 {
     faces = rhs.faces;    
     material_id = rhs.material_id;
+    if(rhs.transformation)
+    {
+        transformation = new mat4x4(*(rhs.transformation));
+    }
+    else
+    {
+        transformation = NULL;
+    }
 }
 
 Mesh::~Mesh()
@@ -31,11 +41,23 @@ Mesh::~Mesh()
     //TODO deallocate BVH 
 }
 
-bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
+bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
+    Ray r = ray;
+    if(transformation != NULL)
+    {
+        vec4f tmp;
+        mat4x4 invM = inverse(*transformation);
+
+        tmp = invM * vec4f(ray.o, 1.f); 
+        r.o = vec3f(tmp.x, tmp.y, tmp.z);
+
+        tmp = invM * vec4f(ray.d, 0.f); 
+        r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    }
+
     if(AccBVH != NULL)
     {
-        //std::cout << "mesh BVH intersection " << std::endl;
         bool hit = AccBVH->intersectRay(VAO, r, intData);
         if(hit)
         {
@@ -67,6 +89,18 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersectio
     {
         intData.hitType = MESH;
         intData.material_id = this->material_id;
+
+
+        if(transformation != NULL)
+        {
+            vec4f tmp;
+            tmp = (*transformation) * vec4f(intData.normal, 0.f);
+            intData.normal = vec3f(tmp.x, tmp.y, tmp.z);
+
+
+            tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+            intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+        }
         //notice that temp is carry data of a face
     }
     return hit;
