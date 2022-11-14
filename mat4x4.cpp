@@ -239,6 +239,9 @@ mat4x4 inverse(const mat4x4& A)
     float trA = trace(A);
     mat4x4 I = mat4x4(1.f);
 
-    return ( 0.5*(trA*trA - trace(AA))* I - A * trA + AA)/detA;
+    //this is for 3x3 matrices
+    //return ( 0.5*(trA*trA - trace(AA))* I - A * trA + AA)/detA;
+    return (1.f/6.f*(trA*trA*trA - 3*trA*trace(AA) + 2*trace(AAA) )*I 
+             - 0.5*A*(trA*trA - trace(AA)) + AA * trA -AAA) / detA;
 
 }
