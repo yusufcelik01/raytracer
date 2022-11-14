@@ -490,9 +490,35 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         {
             stream << child->GetText() << std::endl;
             std::string transformation;
+            mat4x4 M = mat4x4(1.f);
+            bool isTransformed = false;
             while(!(stream >> transformation).eof())
             {
+                isTransformed = true;
                 std::cout << "mesh transformation: " << transformation << std::endl;
+                //if(transformation.substr(1) == "r")
+                if(transformation.c_str()[0] == 'r')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "R id: " << id << std::endl;
+                    M = rotations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 't')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "T id: " << id << std::endl;
+                    M = translations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 's')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "S id: " << id << std::endl;
+                    M = scalings[id] * M; 
+                }
+            }
+            if(isTransformed)
+            {
+                mesh->transformation = new mat4x4(M);
             }
         }
         stream.clear();
