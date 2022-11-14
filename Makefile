@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -O3
+CFLAGS = -g
 CXXFLAGS = -std=c++17
 LDFLAGS = 
 
@@ -80,5 +80,5 @@ test:
 	(time ./raytracer hw1/inputs/horse_and_mug.xml) 2> time_horse_and_mug.txt
 
 hw:
-	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h
+	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
 
