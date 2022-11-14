@@ -372,7 +372,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         {
             stream << element->GetText() << std::endl;
             stream >>Tx >> Ty >> Tz;
-            M = translate(Sx, Sy, Sz);
+            M = translate(Tx, Ty, Tz);
             translations.push_back(M);
             //std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
             element = element->NextSiblingElement("Translation");
@@ -568,6 +568,46 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         child = element->FirstChildElement("Radius");
         stream << child->GetText() << std::endl;
         stream >> sphere.radius;
+
+
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            std::string transformation;
+            mat4x4 M = mat4x4(1.f);
+            bool isTransformed = false;
+            while(!(stream >> transformation).eof())
+            {
+                isTransformed = true;
+                std::cout << "sphere transformation: " << transformation << std::endl;
+                //if(transformation.substr(1) == "r")
+                if(transformation.c_str()[0] == 'r')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "R id: " << id << std::endl;
+                    M = rotations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 't')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "T id: " << id << std::endl;
+                    M = translations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 's')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "S id: " << id << std::endl;
+                    M = scalings[id] * M; 
+                }
+            }
+            if(isTransformed)
+            {
+                sphere.transformation = new mat4x4(M);
+            }
+        }
+        stream.clear();
+        
 
         //spheres.push_back(sphere);
         objects.push_back(new Sphere(sphere));//runtime polymorph
