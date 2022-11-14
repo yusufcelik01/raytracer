@@ -134,9 +134,9 @@ mat4x4 translate(float x, float y, float z)
 {
     mat4x4 T(1.f);
 
-    T.m[0][0] = x;
-    T.m[1][1] = y;
-    T.m[2][2] = z;
+    T.m[0][3] = x;
+    T.m[1][3] = y;
+    T.m[2][3] = z;
 
     return T;
 }
@@ -245,3 +245,20 @@ mat4x4 inverse(const mat4x4& A)
              - 0.5*A*(trA*trA - trace(AA)) + AA * trA -AAA) / detA;
 
 }
+
+
+mat4x4 transpose(const mat4x4& A)
+{
+    mat4x4 trans;
+
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            trans.m[j][i] = A.m[i][j];
+        }
+    }
+
+    return trans;
+}
+

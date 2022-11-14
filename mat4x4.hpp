@@ -41,6 +41,7 @@ mat4x4 rotateZ(float angle);
 mat4x4 rotate(float angle, vec3f axis);
 
 mat4x4 inverse(const mat4x4& m);
+mat4x4 transpose(const mat4x4& A);
 
 mat4x4 operator*(float c, mat4x4);
 //mat4x4 operator*(const vec3& rhs) const;
