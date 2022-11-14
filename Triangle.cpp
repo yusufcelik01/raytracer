@@ -11,6 +11,14 @@ Triangle::Triangle(const Triangle& rhs)
 {
     indices = rhs.indices;
     material_id = rhs.material_id;
+    if(rhs.transformation)
+    {
+        transformation = new mat4x4(*(rhs.transformation));
+    }
+    else
+    {
+        transformation = NULL;
+    }
 }
 
 Triangle::~Triangle()
