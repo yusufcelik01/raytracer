@@ -546,6 +546,44 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
 
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            std::string transformation;
+            mat4x4 M = mat4x4(1.f);
+            bool isTransformed = false;
+            while(!(stream >> transformation).eof())
+            {
+                isTransformed = true;
+                std::cout << "triangle transformation: " << transformation << std::endl;
+                //if(transformation.substr(1) == "r")
+                if(transformation.c_str()[0] == 'r')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "R id: " << id << std::endl;
+                    M = rotations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 't')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "T id: " << id << std::endl;
+                    M = translations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 's')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    std::cout << "S id: " << id << std::endl;
+                    M = scalings[id] * M; 
+                }
+            }
+            if(isTransformed)
+            {
+                triangle.transformation = new mat4x4(M);
+            }
+        }
+        stream.clear();
+
         //triangles.push_back(triangle);
         objects.push_back(new Triangle(triangle));//runtime polymorph
         element = element->NextSiblingElement("Triangle");

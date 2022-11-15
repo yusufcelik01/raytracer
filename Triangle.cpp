@@ -30,19 +30,46 @@ Triangle::~Triangle()
     indices.~Face();
 }
 
-bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData) 
+bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData) 
 {
-    if(this->indices.intersectRay(VAO, r, intData))
+    Ray r = ray;
+    if(transformation != NULL)
+    {
+        vec4f tmp;
+        mat4x4 invM = inverse(*transformation);
+
+        tmp = invM * vec4f(ray.o, 1.f); 
+        r.o = vec3f(tmp.x, tmp.y, tmp.z);
+
+        tmp = invM * vec4f(ray.d, 0.f); 
+        r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    }
+    bool hit = false;
+
+
+    hit = this->indices.intersectRay(VAO, r, intData);
+    if(hit)
     {
         //intData.obj = this;
         intData.hitType = TRIANGLE;
         intData.material_id = this->material_id;
-        return true;
+
+        if(transformation != NULL)
+        {
+            intData.intersectionPoint = ray.o + (ray.d * intData.t);
+
+            vec4f tmp;
+            //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+            //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+
+
+            mat4x4 invM = inverse(*transformation);
+            tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+            intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+        }
     }
-    else
-    {
-        return false;
-    }
+
+    return hit;
 }
 
 //vec3f Triangle::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const
