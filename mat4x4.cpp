@@ -43,7 +43,7 @@ mat4x4::mat4x4(const mat4x4& rhs)
 
 mat4x4 mat4x4::operator*(const mat4x4& rhs) const
 {
-    mat4x4 res;
+    mat4x4 res(0.f);
 
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
@@ -54,6 +54,7 @@ mat4x4 mat4x4::operator*(const mat4x4& rhs) const
             res.m[i][j] = sum;
         }
     }
+
     return res;
 }
 
