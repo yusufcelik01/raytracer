@@ -348,49 +348,51 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     {
         element = element->FirstChildElement("Scaling");
         mat4x4 M(0.f);
-        float Sx, Sy, Sz;
         scalings.push_back(M);//insert a dummy transformation
                               //so indices start from 1
         while(element)
         {
+            float Sx, Sy, Sz;
             stream << element->GetText() << std::endl;
             stream >> Sx >> Sy >> Sz;
             M = scale(Sx, Sy, Sz);
             scalings.push_back(M);
-            //std::cout << "Scaling: " << Sx << " " << Sy << " " << Sz << std::endl;
+            std::cout << "Scaling: " << Sx << " " << Sy << " " << Sz << std::endl;
             element = element->NextSiblingElement("Scaling");
         }
+        stream.clear();
 
         //get translations
         element = root->FirstChildElement("Transformations");
         element = element->FirstChildElement("Translation");
         M = mat4x4(0.f);
-        float Tx, Ty, Tz;
         translations.push_back(M);//insert a dummy transformation
                                   //so indices start from 1
         while(element)
         {
+            float Tx, Ty, Tz;
             stream << element->GetText() << std::endl;
             stream >>Tx >> Ty >> Tz;
             M = translate(Tx, Ty, Tz);
             translations.push_back(M);
-            //std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
+            std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
             element = element->NextSiblingElement("Translation");
         }
+        stream.clear();
 
         element = root->FirstChildElement("Transformations");
         element = element->FirstChildElement("Rotation");
         M = mat4x4(0.f);
         rotations.push_back(M);
-        float angle, Rx, Ry, Rz;
         while(element)
         {
+            float angle, Rx, Ry, Rz;
             stream << element->GetText() << std::endl;
             stream >> angle >> Rx >> Ry >> Rz;
             M = rotate(angle, vec3f(Rx, Ry, Rz));
             rotations.push_back(M);
-            //std::cout << "Rotation: " << angle << " " << Rx << " " << Ry << " " << Rz << std::endl;
-            element = element->NextSiblingElement("Translation"); 
+            std::cout << "Rotation: " << angle << "degrees, " << Rx << " " << Ry << " " << Rz << std::endl;
+            element = element->NextSiblingElement("Rotation"); 
         }
         stream.clear();
     }
@@ -515,6 +517,13 @@ void parser::Scene::loadFromXml(const std::string &filepath)
                     std::cout << "S id: " << id << std::endl;
                     M = scalings[id] * M; 
                 }
+                //std::cout << " MATRIX M" << std::endl;
+                //for (int i = 0; i < 4; i++) {
+                //    for (int j = 0; j < 4; j++) {
+                //        std::cout << M.m[i][j] << "  ";
+                //    }
+                //    std::cout << std::endl;
+                //}
             }
             if(isTransformed)
             {
@@ -556,24 +565,24 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             while(!(stream >> transformation).eof())
             {
                 isTransformed = true;
-                std::cout << "triangle transformation: " << transformation << std::endl;
+                //std::cout << "triangle transformation: " << transformation << std::endl;
                 //if(transformation.substr(1) == "r")
                 if(transformation.c_str()[0] == 'r')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "R id: " << id << std::endl;
+                    //std::cout << "R id: " << id << std::endl;
                     M = rotations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 't')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "T id: " << id << std::endl;
+                    //std::cout << "T id: " << id << std::endl;
                     M = translations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 's')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "S id: " << id << std::endl;
+                    //std::cout << "S id: " << id << std::endl;
                     M = scalings[id] * M; 
                 }
             }
@@ -618,24 +627,24 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             while(!(stream >> transformation).eof())
             {
                 isTransformed = true;
-                std::cout << "sphere transformation: " << transformation << std::endl;
+                //std::cout << "sphere transformation: " << transformation << std::endl;
                 //if(transformation.substr(1) == "r")
                 if(transformation.c_str()[0] == 'r')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "R id: " << id << std::endl;
+                    //std::cout << "R id: " << id << std::endl;
                     M = rotations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 't')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "T id: " << id << std::endl;
+                    //std::cout << "T id: " << id << std::endl;
                     M = translations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 's')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "S id: " << id << std::endl;
+                    //std::cout << "S id: " << id << std::endl;
                     M = scalings[id] * M; 
                 }
             }
@@ -651,5 +660,94 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         objects.push_back(new Sphere(sphere));//runtime polymorph
         element = element->NextSiblingElement("Sphere");
     }
+
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("MeshInstance");
+    Mesh* instance = new Mesh();
+    while (element)
+    {
+        instance->isInstanced = true;
+
+        int baseMeshId =  element->IntAttribute("baseMeshId", -1);
+        baseMeshId--;//indices doesn't start from 0 in input file
+        //std::cout << "base mesh id: " << baseMeshId << std::endl;
+        instance->baseMesh = meshes[baseMeshId];
+        instance->material_id = instance->baseMesh->material_id;
+        
+        child = element->FirstChildElement("Material");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> instance->material_id;
+        }
+
+        const char* resetTransformStr = element->Attribute("resetTransform");
+        
+        if(resetTransformStr == NULL)
+        {
+            instance->resetTransform = false;     
+        }
+        else
+        {
+            if(strcmp(resetTransformStr, "true") == 0)
+            {
+                instance->resetTransform = true;
+            }
+            else
+            {
+                instance->resetTransform = false;
+            }
+        }
+
+        child = element->FirstChildElement("Transformations");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            std::string transformation;
+            mat4x4 M = mat4x4(1.f);
+            bool isTransformed = false;
+            while(!(stream >> transformation).eof())
+            {
+                isTransformed = true;
+                //std::cout << "Mesh Instance transformation: " << transformation << std::endl;
+                //if(transformation.substr(1) == "r")
+                if(transformation.c_str()[0] == 'r')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    //std::cout << "R id: " << id << std::endl;
+                    M = rotations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 't')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    //std::cout << "T id: " << id << std::endl;
+                    M = translations[id] * M; 
+                }
+                else if(transformation.c_str()[0] == 's')
+                {
+                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                    //std::cout << "S id: " << id << std::endl;
+                    M = scalings[id] * M; 
+                }
+
+
+            }
+            if(isTransformed)
+            {
+                instance->transformation = new mat4x4(M);
+            }
+        }
+        stream.clear();
+        
+
+        //objects.push_back(instance);//runtime polymorph
+        meshes.push_back(instance);
+        objects.push_back(instance);
+        instance = new Mesh();
+        element = element->NextSiblingElement("MeshInstance");
+    }
+    delete instance;
+    stream.clear();
+
 }
 
