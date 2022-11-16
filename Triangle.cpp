@@ -95,6 +95,12 @@ BoundingBox* Triangle::getBoundingBox(const std::vector<vec3f>& VAO)
         return bbox;
     }
     bbox = indices.getBoundingBox(VAO);     
+
+    if(transformation)
+    {
+        *bbox = (*transformation) * (*bbox);
+    }
+
     return bbox;
 }
 
