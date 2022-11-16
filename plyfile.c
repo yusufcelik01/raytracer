@@ -917,8 +917,10 @@ void ply_get_element_setup(
     /* look for actual property */
     prop = find_property (elem, prop_list[i].name, &index);
     if (prop == NULL) {
+      /*
       fprintf (stderr, "Warning:  Can't find property '%s' in element '%s'\n",
                prop_list[i].name, elem_name);
+               */
       continue;
     }
 
@@ -2372,6 +2374,10 @@ Exit:
 int get_prop_type(char *type_name)
 {
   int i;
+  if(equal_strings(type_name, "uint8"))
+  {
+      type_name = "uchar";
+  }
 
   for (i = PLY_START_TYPE + 1; i < PLY_END_TYPE; i++)
     if (equal_strings (type_name, type_names[i]))
