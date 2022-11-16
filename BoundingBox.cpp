@@ -53,3 +53,38 @@ bool BoundingBox::hitRay(const Ray& r)
     //std::cout << "bbox hit " << ret << std::endl;
     return ret;
 }
+
+BoundingBox operator*(mat4x4 M, BoundingBox bbox)
+{
+    vec4f corners[8];
+    corners[0] = vec4f(bbox.xmin, bbox.ymin, bbox.zmin, 1.f);
+    corners[1] = vec4f(bbox.xmin, bbox.ymin, bbox.zmax, 1.f);
+    corners[2] = vec4f(bbox.xmin, bbox.ymax, bbox.zmin, 1.f);
+    corners[3] = vec4f(bbox.xmin, bbox.ymax, bbox.zmax, 1.f);
+    corners[4] = vec4f(bbox.xmax, bbox.ymin, bbox.zmin, 1.f);
+    corners[5] = vec4f(bbox.xmax, bbox.ymin, bbox.zmax, 1.f);
+    corners[6] = vec4f(bbox.xmax, bbox.ymax, bbox.zmin, 1.f);
+    corners[7] = vec4f(bbox.xmax, bbox.ymax, bbox.zmax, 1.f);
+
+    for(int i=0; i < 8; i++)
+    {
+        corners[i] = M * corners[i];
+    }
+
+    BoundingBox retval(corners[0].x, corners[0].x,
+                       corners[0].y, corners[0].y,
+                       corners[0].z, corners[0].z);
+
+    for(int i=1; i < 8; i++)
+    {
+        if(retval.xmin > corners[i].x) { retval.xmin = corners[i].x; }
+        if(retval.ymin > corners[i].y) { retval.ymin = corners[i].y; }
+        if(retval.zmin > corners[i].z) { retval.zmin = corners[i].z; }
+
+        if(retval.xmax < corners[i].x) { retval.xmax = corners[i].x; }
+        if(retval.ymax < corners[i].y) { retval.ymax = corners[i].y; }
+        if(retval.zmax < corners[i].z) { retval.zmax = corners[i].z; }
+    }
+
+    return retval;
+}

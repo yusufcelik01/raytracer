@@ -19,6 +19,11 @@ class BoundingBox
    BoundingBox(const BoundingBox& rhs);
    //member functions
    bool hitRay(const Ray& r);
+
 };
+
+BoundingBox operator*(mat4x4 M, BoundingBox bbox);
+
+
 
 #endif
