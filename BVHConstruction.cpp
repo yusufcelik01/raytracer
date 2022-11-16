@@ -225,6 +225,7 @@ Object* constructMeshBVH(const std::vector<vec3f>& VAO, std::vector<Face*>::iter
     boundingVolume->right = constructMeshBVH(VAO, begin+mid, end, axis);
 
 
+
     return boundingVolume;
 }
 Object* constructObjectBVH(const std::vector<vec3f>& VAO, std::vector<Object*>::iterator begin, std::vector<Object*>::iterator end, AXIS_TYPE axis)
@@ -276,6 +277,10 @@ Object* constructObjectBVH(const std::vector<vec3f>& VAO, std::vector<Object*>::
             axis = X_AXIS;
             break;
     }
+    //std::cout << "BVH NODE with size: " << size << " BOUNDING BOX" << std::endl;
+    //std::cout << "xmin, xmax: " << "(" << globalBbox->xmin << ", " << globalBbox->xmax << ")" << std::endl;
+    //std::cout << "ymin, ymax: " << "(" << globalBbox->ymin << ", " << globalBbox->ymax << ")" << std::endl;
+    //std::cout << "zmin, zmax: " << "(" << globalBbox->zmin << ", " << globalBbox->zmax << ")" << std::endl;
 
     boundingVolume->left = constructObjectBVH(VAO, begin, begin+mid, axis);
     boundingVolume->right = constructObjectBVH(VAO, begin+mid, end, axis);
