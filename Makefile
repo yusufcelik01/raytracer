@@ -7,7 +7,7 @@ LDFLAGS =
 
 PARSER_FILES= parser.o plyfile.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
-GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o InstancedMesh.o
+GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp
 MATH_OBJECTS= vec3.o mat4x4.o vec4.o
 
@@ -81,11 +81,11 @@ test: raytracer
 	(time ./raytracer hw1/inputs/horse_and_mug.xml) 2> time_horse_and_mug.txt
 
 
-#(time ./raytracer hw2/inputs/marching_dragons.xml) 2> time_marching_dragons.txt
 test2: raytracer
-	(time ./raytracer hw2/inputs/dragon_metal.xml) 2> time_dragon_metal.txt
 	./raytracer hw2/inputs/simple_transform.xml
 	./raytracer hw2/inputs/spheres.xml
+	(time ./raytracer hw2/inputs/marching_dragons.xml) 2> time_marching_dragons.txt
+	(time ./raytracer hw2/inputs/dragon_metal.xml) 2> time_dragon_metal.txt
 	(time ./raytracer hw2/inputs/ellipsoids.xml) 2> time_ellipsoids.txt
 	(time ./raytracer hw2/inputs/metal_glass_plates.xml) 2> time_metal_glass_plates.txt
 	(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
