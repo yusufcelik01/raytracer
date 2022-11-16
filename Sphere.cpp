@@ -152,6 +152,10 @@ BoundingBox* Sphere::getBoundingBox(const std::vector<vec3f>& VAO)
                            c.y - radius, c.y + radius,
                            c.z - radius, c.z + radius);
 
+    if(transformation)
+    {
+        *bbox = (*transformation) * (*bbox);
+    }
     return bbox;
 }
 
