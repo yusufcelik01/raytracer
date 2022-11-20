@@ -7,6 +7,10 @@
 #include <stdexcept>
 #include <cmath>
 #include <limits>
+#include <thread>
+#include <mutex>
+
+#define NUMBER_OF_THREADS 8
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -279,6 +283,111 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 }
 
 
+
+//void parser::Scene::render(Camera camera)
+//{
+//    vec3f e = camera.position;
+//    vec3f u, v, w;    
+//    v = norm(camera.up);
+//    w = norm(-camera.gaze);
+//    u = norm(cross(v, w));
+//    v = norm(cross(w, u));
+//
+//    int nx = camera.image_width;
+//    int ny = camera.image_height;
+//    float l = camera.near_plane.x;
+//    float r = camera.near_plane.y;
+//    float b = camera.near_plane.z;
+//    float t = camera.near_plane.w;
+//
+//    int x,y;
+//    unsigned char* img = new unsigned char[camera.image_width* camera.image_height * 3];
+//
+//    vec3f m = e - w * camera.near_distance;
+//    vec3f q = m + l * u + t * v;
+//    Material airMedium;
+//    airMedium.type = AIR;
+//    airMedium.absorption_index = 0.f;
+//    airMedium.refraction_index = 1.f;
+//    airMedium.absorption_coefficent = vec3f(0.f);
+//
+//    //for(y = 511; y < camera.image_height; ++y)
+//    for(y = 0; y < camera.image_height; ++y)
+//    {
+//        //for(x = 430; x < 450 /*camera.image_width*/; ++x)
+//        for(x = 0; x < camera.image_width; ++x)
+//        {
+//            float s_u = (x + 0.5) * (r-l)/float(nx);
+//            float s_v = (y + 0.5) * (t-b)/float(ny);
+//
+//            vec3f s = q + s_u * u - s_v * v;
+//            Ray ray; 
+//            ray.o = e;
+//            ray.d = norm(s - e);
+//
+//            
+//            vec3f color = getRayColor(ray, max_recursion_depth, true, airMedium);
+//            vec3i c = clamp(vec3i(color), 0, 255);
+//            
+//            img[(camera.image_width*y + x)*3] = c.r;
+//            img[(camera.image_width*y + x)*3 + 1] = c.g;
+//            img[(camera.image_width*y + x)*3 + 2] = c.b;
+//            //std::cout << "pixel DONE \n----------------"  << std::endl;
+//        }
+//        //break;
+//        //std::cout << "row " << y << " completed" << std::endl; 
+//    }
+//    write_png(camera.image_name.c_str() , nx, ny, img);
+//
+//    delete[] img;
+//}
+
+
+class ImageRows
+{
+    private:
+        int numOfRows = 0;
+        int nextAvaliableRow = 0;;
+        std::mutex lock;
+
+    public:
+        ImageRows() : numOfRows(0), nextAvaliableRow(0) {}
+        ImageRows(int rowCount) : numOfRows(rowCount) {}
+
+        int getNextAvaliableRow()
+        {
+            lock.lock();
+            if(nextAvaliableRow < numOfRows)
+            {
+                int temp = nextAvaliableRow;
+                nextAvaliableRow++;
+
+                lock.unlock();
+                return temp;
+            }
+            else 
+            {
+                lock.unlock();
+                return -1;
+            }
+        }
+
+};
+
+struct RowRendererArg
+{
+    vec3f u, v, w;//camera orientation
+    vec3f e;//camera position
+
+    int nx, ny;// image resolution
+    float l, r, b ,t;//image plane
+    vec3f q; //top-left corner of image plane
+    Material initialMedium;
+
+    ImageRows* rows;
+    unsigned char* img;//output image data
+};
+
 void parser::Scene::render(Camera camera)
 {
     vec3f e = camera.position;
@@ -306,37 +415,110 @@ void parser::Scene::render(Camera camera)
     airMedium.refraction_index = 1.f;
     airMedium.absorption_coefficent = vec3f(0.f);
 
-    //for(y = 511; y < camera.image_height; ++y)
-    for(y = 0; y < camera.image_height; ++y)
+    RowRendererArg threadArg;
+    threadArg.u  = u;
+    threadArg.v  = v;
+    threadArg.w  = w;
+
+    threadArg.e  = e;
+
+    threadArg.nx = nx;
+    threadArg.ny = ny;
+
+    threadArg.l = l;
+    threadArg.r = r;
+    threadArg.b = b;
+    threadArg.t = t;
+    threadArg.q = q;
+
+    threadArg.initialMedium = airMedium;
+
+    threadArg.img = img;
+    threadArg.rows = new ImageRows(ny);
+
+    std::thread threads[NUMBER_OF_THREADS];
+    for(int i = 0; i < NUMBER_OF_THREADS; i++)
     {
-        //for(x = 430; x < 450 /*camera.image_width*/; ++x)
-        for(x = 0; x < camera.image_width; ++x)
-        {
-            float s_u = (x + 0.5) * (r-l)/float(nx);
-            float s_v = (y + 0.5) * (t-b)/float(ny);
-
-            vec3f s = q + s_u * u - s_v * v;
-            Ray ray; 
-            ray.o = e;
-            ray.d = norm(s - e);
-
-            
-            vec3f color = getRayColor(ray, max_recursion_depth, true, airMedium);
-            vec3i c = clamp(vec3i(color), 0, 255);
-            
-            img[(camera.image_width*y + x)*3] = c.r;
-            img[(camera.image_width*y + x)*3 + 1] = c.g;
-            img[(camera.image_width*y + x)*3 + 2] = c.b;
-            //std::cout << "pixel DONE \n----------------"  << std::endl;
-        }
-        //break;
-        //std::cout << "row " << y << " completed" << std::endl; 
+        threads[i] = std::thread(&parser::Scene::renderRow, this, &threadArg);
     }
+
+
+    for(int i = 0; i < NUMBER_OF_THREADS; i++)
+    {
+        threads[i].join();
+    }
+
+    //for(y = 511; y < camera.image_height; ++y)
+    //for(y = 0; y < camera.image_height; ++y)
+    //{
+    //    //for(x = 430; x < 450 /*camera.image_width*/; ++x)
+    //    for(x = 0; x < camera.image_width; ++x)
+    //    {
+    //        float s_u = (x + 0.5) * (r-l)/float(nx);
+    //        float s_v = (y + 0.5) * (t-b)/float(ny);
+
+    //        vec3f s = q + s_u * u - s_v * v;
+    //        Ray ray; 
+    //        ray.o = e;
+    //        ray.d = norm(s - e);
+
+    //        
+    //        vec3f color = getRayColor(ray, max_recursion_depth, true, airMedium);
+    //        vec3i c = clamp(vec3i(color), 0, 255);
+    //        
+    //        img[(camera.image_width*y + x)*3] = c.r;
+    //        img[(camera.image_width*y + x)*3 + 1] = c.g;
+    //        img[(camera.image_width*y + x)*3 + 2] = c.b;
+    //        //std::cout << "pixel DONE \n----------------"  << std::endl;
+    //    }
+    //    //break;
+    //    //std::cout << "row " << y << " completed" << std::endl; 
+    //}
     write_png(camera.image_name.c_str() , nx, ny, img);
 
     delete[] img;
+    delete threadArg.rows;
 }
 
+
+
+
+void parser::Scene::renderRow(void* void_arg)
+{
+    RowRendererArg* arg = (RowRendererArg*) void_arg;
+
+    
+    //TODO get new row to render
+    int y;
+    int x;
+    y = arg->rows->getNextAvaliableRow();
+    while(y != -1)
+    {
+        for(x = 0; x < arg->nx; ++x)
+        {
+            float s_u = (x + 0.5) * (arg->r-arg->l)/float(arg->nx);
+            float s_v = (y + 0.5) * (arg->t-arg->b)/float(arg->ny);
+
+            vec3f s = arg->q + s_u * arg->u - s_v * arg->v;
+            Ray ray; 
+            ray.o = arg->e;
+            ray.d = norm(s - arg->e);
+
+
+            vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
+            vec3i c = clamp(vec3i(color), 0, 255);
+
+            arg->img[(arg->nx*y + x)*3] = c.r;
+            arg->img[(arg->nx*y + x)*3 + 1] = c.g;
+            arg->img[(arg->nx*y + x)*3 + 2] = c.b;
+            //std::cout << "pixel DONE \n----------------"  << std::endl;
+        }
+        //TODO get new row to render
+        y = arg->rows->getNextAvaliableRow();
+    }
+    
+
+}
 
 
 void parser::Scene::render(size_t cameraId)
