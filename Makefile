@@ -9,7 +9,7 @@ PARSER_FILES= parser.o plyfile.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp
-MATH_OBJECTS= vec3.o mat4x4.o vec4.o
+MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o 
 
 OBJECT_FILES= main.o core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY)
 
@@ -23,7 +23,9 @@ ply_test:
 	gcc plytest.c plyfile.c -o plytest -g
 
 
+vec2.o: vec2.hpp
 vec3.o: vec3.hpp
+vec4.o: vec4.hpp
 mat4x4.o: mat4x4.hpp
 
 main.o: main.cpp parser.h ppm.h

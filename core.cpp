@@ -9,6 +9,7 @@
 #include <limits>
 #include <thread>
 #include <mutex>
+#include <random>
 
 #define NUMBER_OF_THREADS 8
 
@@ -381,8 +382,10 @@ struct RowRendererArg
 
     int nx, ny;// image resolution
     float l, r, b ,t;//image plane
+    float pixelWidth, pixelHeight;
     vec3f q; //top-left corner of image plane
     Material initialMedium;
+    int numberOfSamples;
 
     ImageRows* rows;
     unsigned char* img;//output image data
@@ -430,6 +433,9 @@ void parser::Scene::render(Camera camera)
     threadArg.b = b;
     threadArg.t = t;
     threadArg.q = q;
+    threadArg.pixelWidth  = (r-l)/float(nx);
+    threadArg.pixelHeight = (t-b)/float(ny);
+    threadArg.numberOfSamples = camera.numSamples;
 
     threadArg.initialMedium = airMedium;
 
@@ -439,7 +445,8 @@ void parser::Scene::render(Camera camera)
     std::thread threads[NUMBER_OF_THREADS];
     for(int i = 0; i < NUMBER_OF_THREADS; i++)
     {
-        threads[i] = std::thread(&parser::Scene::renderRow, this, &threadArg);
+        //threads[i] = std::thread(&parser::Scene::renderRow, this, &threadArg);
+        threads[i] = std::thread(&parser::Scene::renderRowMultiSampled, this, &threadArg);
     }
 
 
@@ -482,7 +489,7 @@ void parser::Scene::render(Camera camera)
 
 
 
-
+//render single sample for each pixel
 void parser::Scene::renderRow(void* void_arg)
 {
     RowRendererArg* arg = (RowRendererArg*) void_arg;
@@ -496,10 +503,10 @@ void parser::Scene::renderRow(void* void_arg)
     {
         for(x = 0; x < arg->nx; ++x)
         {
-            float s_u = (x + 0.5) * (arg->r-arg->l)/float(arg->nx);
-            float s_v = (y + 0.5) * (arg->t-arg->b)/float(arg->ny);
+            float s_u = (x + 0.5) * arg->pixelWidth;
+            float s_v = (y + 0.5) * arg->pixelHeight;
 
-            vec3f s = arg->q + s_u * arg->u - s_v * arg->v;
+            vec3f s = arg->q + s_u * arg->u - s_v * arg->v;//pixel sample
             Ray ray; 
             ray.o = arg->e;
             ray.d = norm(s - arg->e);
@@ -521,6 +528,85 @@ void parser::Scene::renderRow(void* void_arg)
 }
 
 
-void parser::Scene::render(size_t cameraId)
+
+void generateJitteredSamples(std::vector<vec2f>& samples, int numberOfSamples )
 {
+    std::mt19937 gRandomGenerator;
+    std::uniform_real_distribution<> gNURandomDistribution(0, 1);
+
+    int x, y; 
+    x = int(sqrt(numberOfSamples) + 0.5);
+    y = int(float(numberOfSamples) / x);
+
+    for(int i = 0 ; i < x; ++i)
+    {
+        for(int j = 0; j < y; ++j)
+        {
+            float psi1 = gNURandomDistribution(gRandomGenerator);
+            float psi2 = gNURandomDistribution(gRandomGenerator);
+
+            vec2f sample;
+            sample.x = (i + psi1) / x;
+            sample.y = (j + psi2) / y;
+
+            samples.push_back(sample);
+        }
+    }
 }
+
+
+void parser::Scene::renderRowMultiSampled(void* void_arg)
+{
+    RowRendererArg* arg = (RowRendererArg*) void_arg;
+
+    
+    //TODO get new row to render
+    int y;
+    int x;
+    y = arg->rows->getNextAvaliableRow();
+    while(y != -1)//get another row if any left
+    {
+        for(x = 0; x < arg->nx; ++x)
+        {
+            std::vector<vec2f> samples  = {};
+            std::vector<vec3f> sampleColors = {};
+
+            generateJitteredSamples(samples, arg->numberOfSamples);
+            for(vec2f sample: samples)
+            {
+                float s_u = (x + sample.x) * arg->pixelWidth;
+                float s_v = (y + sample.y) * arg->pixelHeight;
+
+                vec3f s = arg->q + s_u * arg->u - s_v * arg->v;//pixel sample
+                Ray ray; 
+                ray.o = arg->e;
+                ray.d = norm(s - arg->e);
+
+                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
+
+                sampleColors.push_back(sampleColor);
+            }
+            
+            int sampleCount = sampleColors.size();
+            vec3f pixelColor = vec3f(0.f);
+            for(int i = 0; i < sampleCount; i++)
+            {
+                pixelColor += sampleColors[i];    
+            }
+            pixelColor = pixelColor / float(sampleCount);
+            vec3i c = clamp(vec3i(pixelColor), 0, 255);
+
+            arg->img[(arg->nx*y + x)*3] = c.r;
+            arg->img[(arg->nx*y + x)*3 + 1] = c.g;
+            arg->img[(arg->nx*y + x)*3 + 2] = c.b;
+            //std::cout << "pixel DONE \n----------------"  << std::endl;
+        }
+        y = arg->rows->getNextAvaliableRow();
+    }
+    
+
+}
+
+//void parser::Scene::render(size_t cameraId)
+//{
+//}

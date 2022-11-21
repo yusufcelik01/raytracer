@@ -12,6 +12,10 @@ struct Camera
     float near_distance;
     int image_width, image_height;
     std::string image_name;
+
+    int numSamples;
+    float focusDistance;
+    float apertureSize;
 };
 
 #endif
