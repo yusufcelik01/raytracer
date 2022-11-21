@@ -204,6 +204,30 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream >> camera.up.x >> camera.up.y >> camera.up.z;
         camera.up = norm(camera.up);
 
+        child = element->FirstChildElement("NumSamples");
+        if(child) {
+            stream << child->GetText() << std::endl;
+            stream >> camera.numSamples;
+        }
+        else {
+            camera.numSamples = 1;
+        }
+            
+
+        child = element->FirstChildElement("FocusDistance");
+        if(child) {
+            stream << child->GetText() << std::endl;
+            stream >> camera.apertureSize;
+        }
+
+        child = element->FirstChildElement("ApertureSize");
+        if(child) {
+            stream << child->GetText() << std::endl;
+            stream >> camera.focusDistance;
+        }
+
+        stream.clear();
+
         const char* cameraType = element->Attribute("type");
         if(cameraType != NULL && strcmp(cameraType, "lookAt") == 0 )
         {
@@ -357,7 +381,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream >> Sx >> Sy >> Sz;
             M = scale(Sx, Sy, Sz);
             scalings.push_back(M);
-            std::cout << "Scaling: " << Sx << " " << Sy << " " << Sz << std::endl;
+            //std::cout << "Scaling: " << Sx << " " << Sy << " " << Sz << std::endl;
             element = element->NextSiblingElement("Scaling");
         }
         stream.clear();
@@ -375,7 +399,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream >>Tx >> Ty >> Tz;
             M = translate(Tx, Ty, Tz);
             translations.push_back(M);
-            std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
+            //std::cout << "Translation: " << Tx << " " << Ty << " " << Tz << std::endl;
             element = element->NextSiblingElement("Translation");
         }
         stream.clear();
@@ -391,7 +415,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             stream >> angle >> Rx >> Ry >> Rz;
             M = rotate(angle, vec3f(Rx, Ry, Rz));
             rotations.push_back(M);
-            std::cout << "Rotation: " << angle << "degrees, " << Rx << " " << Ry << " " << Rz << std::endl;
+            //std::cout << "Rotation: " << angle << "degrees, " << Rx << " " << Ry << " " << Rz << std::endl;
             element = element->NextSiblingElement("Rotation"); 
         }
         stream.clear();
@@ -497,24 +521,24 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             while(!(stream >> transformation).eof())
             {
                 isTransformed = true;
-                std::cout << "mesh transformation: " << transformation << std::endl;
+                //std::cout << "mesh transformation: " << transformation << std::endl;
                 //if(transformation.substr(1) == "r")
                 if(transformation.c_str()[0] == 'r')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "R id: " << id << std::endl;
+                    //std::cout << "R id: " << id << std::endl;
                     M = rotations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 't')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "T id: " << id << std::endl;
+                    //std::cout << "T id: " << id << std::endl;
                     M = translations[id] * M; 
                 }
                 else if(transformation.c_str()[0] == 's')
                 {
                     int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    std::cout << "S id: " << id << std::endl;
+                    //std::cout << "S id: " << id << std::endl;
                     M = scalings[id] * M; 
                 }
                 //std::cout << " MATRIX M" << std::endl;

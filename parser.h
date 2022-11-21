@@ -45,11 +45,14 @@ namespace parser
         void loadFromXml(const std::string &filepath);
         void render(Camera camera);
         void render(size_t cameraId);
-        void renderRow(void*);
         bool rayQuery(Ray ray, IntersectionData& closestObjData, bool isShadowRay, float maxT);
         vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium);
         vec3f getObjNorm(const IntersectionData& data);
         vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
+
+        private:
+        void renderRow(void*);
+        void renderRowMultiSampled(void*);
     };
 
     struct plyData
