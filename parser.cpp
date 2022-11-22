@@ -227,6 +227,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         if(child) {
             stream << child->GetText() << std::endl;
             stream >> camera.apertureSize;
+            //std::cout << "apertureSize: " << camera.apertureSize << std::endl;
         }
         else {
             camera.apertureSize = -1.f;
@@ -309,6 +310,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         child = element->FirstChildElement("Normal");
         stream << child->GetText() << std::endl;
         stream >> areaLight.normal.x >> areaLight.normal.y >> areaLight.normal.z;
+        areaLight.normal = norm(areaLight.normal);
 
         child = element->FirstChildElement("Radiance");
         stream << child->GetText() << std::endl;
@@ -316,7 +318,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
         child = element->FirstChildElement("Size");
         stream << child->GetText() << std::endl;
-        stream >> extent;
+        stream >> areaLight.extent;
 
         area_lights.push_back(areaLight);
         element = element->FirstChildElement("AreaLight");

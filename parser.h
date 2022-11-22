@@ -12,6 +12,7 @@
 #include "Triangle.hpp"
 #include "Sphere.hpp"
 #include "PointLight.hpp"
+#include "AreaLight.hpp"
 
 namespace parser
 {

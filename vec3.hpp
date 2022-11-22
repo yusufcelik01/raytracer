@@ -42,6 +42,17 @@ struct vec3i
     vec3i(vec3f vf);
 };
 
+//orthonormal basis
+class ONB
+{
+    public:
+    vec3f n, u, v;
+
+    ONB();
+    ONB(vec3f); 
+};
+
+
 vec3f cross(const vec3f& a, const vec3f& b);
 float dot(const vec3f& a, const vec3f& b);
 float length(const vec3f& a);

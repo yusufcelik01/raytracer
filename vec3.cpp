@@ -301,4 +301,38 @@ vec3f exp(vec3f v)
     return v;
 }
 
+ONB::ONB()
+{
+    n = vec3f(1, 0, 0);
+    v = vec3f(0, 1, 0);
+    u = vec3f(0, 0, 1);
+}
 
+ONB::ONB(vec3f N)
+{
+    n = norm(N);
+    vec3f np = n;
+    if(abs(np.x) < abs(np.y)) {
+        if(abs(np.x) < abs(np.z)) { //npx smallest
+            if(np.x < 0) np.x = -1.f;       
+            else        np.x = 1.f;
+        }
+        else { // npz smallest
+            if(np.z < 0) np.z = -1.f;       
+            else        np.z = 1.f;
+        }
+    }
+    else {//npx > np.y
+        if(abs(np.y) < abs(np.z)) { //npy smallest
+            if(np.y < 0) np.y = -1.f;       
+            else        np.y = 1.f;
+        }
+        else {//npz smallest
+            if(np.z < 0) np.z = -1.f;       
+            else        np.z = 1.f;
+        }
+    }
+
+    u = norm(cross(np, n));
+    v = norm(cross(n, u));
+}

@@ -11,7 +11,7 @@
 #include <mutex>
 #include <random>
 
-#define NUMBER_OF_THREADS 1
+#define NUMBER_OF_THREADS 8
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -39,6 +39,27 @@ vec3f parser::Scene::getObjNorm(const IntersectionData& data)
     return n;
 }
 
+
+vec3f computeBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye, Material material)
+{
+    vec3f color = vec3f(0.f);
+
+    
+    float cosTheta = dot(surfNorm, w_light);
+    cosTheta = std::max(cosTheta, 0.0f);
+    color += material.diffuse * cosTheta * irradiance;
+
+    //specular shading 
+    vec3f half = norm(w_light + w_eye);
+    float cosAlpha = dot(half, surfNorm);
+    cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
+
+    //cosAlpha = material.phong_exponent
+    color += material.specular * cosAlpha * irradiance;
+
+    return color;
+}
+
 vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
 {
     //for now only calculate diffuse & spcular shading
@@ -62,18 +83,52 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
         float d_sqr = distance * distance;
 
         vec3f irradiance = light.intensity / d_sqr;
-        //diffuse shading
-        float cosTheta = dot(surfNorm, w_light);
-        cosTheta = std::max(cosTheta, 0.0f);
-        color += material.diffuse * cosTheta * irradiance;
+        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
+        ////diffuse shading
+        //float cosTheta = dot(surfNorm, w_light);
+        //cosTheta = std::max(cosTheta, 0.0f);
+        //color += material.diffuse * cosTheta * irradiance;
 
-        //specular shading 
-        vec3f half = norm(w_light + w_eye);
-        float cosAlpha = dot(half, surfNorm);
-        cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
+        ////specular shading 
+        //vec3f half = norm(w_light + w_eye);
+        //float cosAlpha = dot(half, surfNorm);
+        //cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
 
-        //cosAlpha = material.phong_exponent
-        color += material.specular * cosAlpha * irradiance;
+        ////cosAlpha = material.phong_exponent
+        //color += material.specular * cosAlpha * irradiance;
+    }
+
+    for(AreaLight light : area_lights)
+    {
+        ONB onb = light.getONB();
+        vec3f lightSample;
+        float psi1, psi2;
+        std::random_device rand;
+        std::mt19937 rnGen(rand());
+        std::uniform_real_distribution<> randNum(-0.5*light.extent, 0.5*light.extent);
+
+        psi1 = randNum(rnGen);
+        psi2 = randNum(rnGen);
+
+        lightSample = light.position + onb.u * psi1 + onb.v * psi2;
+        Ray shadowRay;
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = norm(lightSample - shadowRay.o);
+        vec3f w_light = lightSample - p;
+        float distance = length(w_light);
+        if(rayQuery(shadowRay, dummy, true, distance))//if shadow
+        {
+            continue;
+        }
+        w_light = norm(w_light);
+        float d_sqr = distance * distance;
+
+        float area = light.extent * light.extent;
+        float cosTheta = dot(light.normal, -w_light);
+        if( cosTheta < 0.f) {cosTheta = -cosTheta;}//unidirectional area light
+        vec3f irradiance = light.radiance * (area * cosTheta / d_sqr);
+
+        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
     }
 
     return color;
@@ -543,8 +598,10 @@ void parser::Scene::renderRow(void* void_arg)
 
 void generateJitteredSamples(std::vector<vec2f>& samples, int numberOfSamples )
 {
-    std::mt19937 gRandomGenerator;
-    std::uniform_real_distribution<> gNURandomDistribution(0, 1);
+    //std::random_device rand;
+    //std::mt19937 rnGen(rand());
+    std::mt19937 rnGen;
+    std::uniform_real_distribution<> randNum(0, 1);
 
     int x, y; 
     x = int(sqrt(numberOfSamples) + 0.5);
@@ -554,8 +611,8 @@ void generateJitteredSamples(std::vector<vec2f>& samples, int numberOfSamples )
     {
         for(int j = 0; j < y; ++j)
         {
-            float psi1 = gNURandomDistribution(gRandomGenerator);
-            float psi2 = gNURandomDistribution(gRandomGenerator);
+            float psi1 = randNum(rnGen);
+            float psi2 = randNum(rnGen);
 
             vec2f sample;
             sample.x = (i + psi1) / x;
@@ -597,29 +654,43 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
                     ray.o = arg->e;
                     ray.d = norm(s - arg->e);
                 }
-                else
+                else//depth of field
                 {
-                    std::mt19937 gRandomGenerator;
-                    std::uniform_real_distribution<> gNURandomDistribution(0, 1);
-
                     float apertureSize = arg->camera->apertureSize;
-                    float psi1 = gNURandomDistribution(gRandomGenerator);
-                    float psi2 = gNURandomDistribution(gRandomGenerator);
-
-                    psi1 = (psi1 * apertureSize - apertureSize*0.5);
-                    psi2 = (psi2 * apertureSize - apertureSize*0.5);
+                    float psi1, psi2;
                     
-                    vec3f a;
-                    a = arg->e + (arg->u * psi1 - arg->v * psi2) ;
+                    std::random_device rand;
+                    std::mt19937 rnGen(rand());
+                    std::uniform_real_distribution<> randDistribution(-0.5*apertureSize, 0.5*apertureSize);
 
-                    vec3f dir = s - arg->e;
-                    float t = arg->camera->focusDistance / (dot(dir, -arg->w));
+                    psi1 = randDistribution(rnGen);
+                    psi2 = randDistribution(rnGen);
 
-                    vec3f p = arg->e + t * dir;
-                    vec3f d = p - a;
-                    
-                    ray.o = a;
-                    ray.d = norm(d);
+                    vec3f u = arg->u;
+                    vec3f v = arg->v;
+                    vec3f o = arg->camera->position;
+
+                    vec3f apertureSample = o + u * psi1 + v * psi2;
+
+                    vec3f dir = norm(o - s);//TODO image plane is not behind lens
+                    float t_fd = arg->camera->focusDistance / dot(dir, -arg->w);
+                    vec3f p = o + t_fd * dir;
+
+                    vec3f d = p - apertureSample;
+                    ray.o = apertureSample;
+                    ray.d = d;
+
+                    //vec3f a;
+                    //a = arg->e + (arg->u * psi1 - arg->v * psi2) ;
+
+                    //vec3f dir = s - arg->e;
+                    //float t = arg->camera->focusDistance / (dot(dir, -arg->w));
+
+                    //vec3f p = arg->e + t * dir;
+                    //vec3f d = p - a;
+                    //
+                    //ray.o = a;
+                    //ray.d = norm(d);
                 }
 
                 vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);

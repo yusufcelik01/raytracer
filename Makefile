@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g
+CFLAGS = -O3
 CXXFLAGS = -std=c++17
 LDFLAGS = 
 
@@ -11,7 +11,7 @@ GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o 
 
-OBJECT_FILES= main.o core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY)
+OBJECT_FILES= main.o core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)
@@ -28,15 +28,18 @@ vec3.o: vec3.hpp
 vec4.o: vec4.hpp
 mat4x4.o: mat4x4.hpp
 
-main.o: main.cpp parser.h ppm.h
-parser.o: parser.cpp parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h
+AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
+POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
+AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
+
+PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp
+parser.o: parser.cpp $(PARSER_HEADERS)
 plyfile.o: ply.h
-#plytest.o: ply.h
 
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
-Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
+Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 
 
@@ -44,7 +47,9 @@ BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
 BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 
-core.o: parser.h img.hpp Ray.hpp $(OBJECT_HPP_DEP)
+core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
+
+main.o: main.cpp parser.h ppm.h
 
 %.o: %.cpp
 	$(CXX) $(CFLAGS) $(CXXFLAGS) -c $< 
@@ -93,6 +98,10 @@ test2: raytracer
 	(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
 	
 
+#(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
+test3:
+	(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
+	
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
