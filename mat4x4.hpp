@@ -29,6 +29,7 @@ class mat4x4
 
 mat4x4 translate(float s);
 mat4x4 translate(float x, float y, float z);
+mat4x4 translate(vec3f);
 
 mat4x4 scale(float s);
 mat4x4 scale(float x, float y, float z);

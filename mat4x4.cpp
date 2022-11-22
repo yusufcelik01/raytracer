@@ -141,6 +141,20 @@ mat4x4 translate(float x, float y, float z)
 
     return T;
 }
+
+mat4x4 translate(vec3f v)
+{
+    mat4x4 T(1.f);
+
+    T.m[0][3] = v.x;
+    T.m[1][3] = v.y;
+    T.m[2][3] = v.z;
+
+    return T;
+
+}
+
+
 mat4x4 scale(float x, float y, float z)
 {
     mat4x4 S(1.f);
