@@ -14,7 +14,7 @@ MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o
 OBJECT_FILES= main.o core.o $(PARSER_FILES)  tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o
 
 raytracer: $(OBJECT_FILES)
-	$(CXX) -o raytracer $(OBJECT_FILES) $(CFLAGS) $(CXXFLAGS) $(LDFLAGS)
+	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
 
 all:
 	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
@@ -34,7 +34,8 @@ AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
 
 PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp
 parser.o: parser.cpp $(PARSER_HEADERS)
-plyfile.o: ply.h
+plyfile.o: plyfile.c ply.h
+	$(CC) $(CFLAGS) -w -c plyfile.c
 
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
@@ -99,8 +100,10 @@ test2: raytracer
 	
 
 #(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
+#(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
 test3:
-	(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
+	(time ./raytracer hw3/inputs/metal_glass_plates.xml) 2> time_metal_glass_plates_brushed.txt
+
 	
 
 hw:

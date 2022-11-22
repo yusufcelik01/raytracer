@@ -40,6 +40,19 @@ vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 }
 
 
+vec3f deviateRay(vec3f originalRay, float roughness)
+{
+    std::random_device rn;
+    std::mt19937 rand(rn());
+    std::uniform_real_distribution<> randDistribution(-0.5 * roughness, 0.5 * roughness);
+    float psi1 = randDistribution(rand);
+    float psi2 = randDistribution(rand);
+
+    ONB onb = ONB(originalRay);
+
+    return norm(originalRay + (psi1 * onb.v) + (psi2 * onb.u) );
+}
+
 vec3f computeBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye, Material material)
 {
     vec3f color = vec3f(0.f);
@@ -262,6 +275,11 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+
+            if(objMaterial.roughness != -0.f)
+            {
+                reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
+            }
             color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
         }
         else if(objMaterial.type == DIELECTRIC)
@@ -276,13 +294,23 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             else { eta = currentMedium.refraction_index ;}
             refractingRay.d = refract(n, ray.d, eta);
 
+
             if(refractingRay.d == vec3f(0.f))//total internal reflection
             {
+                if(objMaterial.roughness != -0.f)
+                {
+                    reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
+                }
                 //std::cout << "Total internal reflection" << std::endl;
                 color += getRayColor(reflectingRay, depth - 1, false, currentMedium);
             }
             else//refraction + reflection
             {
+                if(objMaterial.roughness != -0.f)
+                {
+                    refractingRay.d = deviateRay(refractingRay.d, objMaterial.roughness); 
+                    reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
+                }
                 float reflectionRatio;
                 if(currentMedium.type == AIR)
                 {
@@ -332,6 +360,11 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
 
+            if(objMaterial.roughness != -0.f)
+            {
+                reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
+            }
+            
             float reflectionRatio = conductorReflectionRatio(objMaterial.refraction_index, objMaterial.absorption_index, dot(-ray.d, n));
             color += reflectionRatio * objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
         }
@@ -693,6 +726,11 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
                     //ray.d = norm(d);
                 }
 
+                std::random_device rn;
+                std::mt19937 rand(rn());
+                std::uniform_real_distribution<> randDistribution(0, 1);
+
+                ray.time =  randDistribution(rand);
                 vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
 
                 sampleColors.push_back(sampleColor);
