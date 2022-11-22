@@ -11,14 +11,10 @@
 #include "Mesh.hpp"
 #include "Triangle.hpp"
 #include "Sphere.hpp"
+#include "PointLight.hpp"
 
 namespace parser
 {
-    struct PointLight
-    {
-        vec3f position;
-        vec3f intensity;
-    };
 
 
     struct Scene
@@ -28,8 +24,11 @@ namespace parser
         float shadow_ray_epsilon;
         int max_recursion_depth;
         std::vector<Camera> cameras;
+        
         vec3f ambient_light;
         std::vector<PointLight> point_lights;
+        std::vector<AreaLight> area_lights;
+
         std::vector<Material> materials;
         std::vector<mat4x4> rotations;
         std::vector<mat4x4> scalings;

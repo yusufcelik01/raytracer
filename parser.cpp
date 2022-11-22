@@ -217,13 +217,19 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         child = element->FirstChildElement("FocusDistance");
         if(child) {
             stream << child->GetText() << std::endl;
-            stream >> camera.apertureSize;
+            stream >> camera.focusDistance;
+        }
+        else {
+            camera.apertureSize = -1.f;
         }
 
         child = element->FirstChildElement("ApertureSize");
         if(child) {
             stream << child->GetText() << std::endl;
-            stream >> camera.focusDistance;
+            stream >> camera.apertureSize;
+        }
+        else {
+            camera.apertureSize = -1.f;
         }
 
         stream.clear();
@@ -290,6 +296,33 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         point_lights.push_back(point_light);
         element = element->NextSiblingElement("PointLight");
     }
+
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("AreaLight");
+    AreaLight areaLight;
+    while (element)
+    {
+        child = element->FirstChildElement("Position");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight.position.x >> areaLight.position.y >> areaLight.position.z;
+
+        child = element->FirstChildElement("Normal");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight.normal.x >> areaLight.normal.y >> areaLight.normal.z;
+
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+        stream >> areaLight.radiance.r >> areaLight.radiance.g >> areaLight.radiance.b;
+
+        child = element->FirstChildElement("Size");
+        stream << child->GetText() << std::endl;
+        stream >> extent;
+
+        area_lights.push_back(areaLight);
+        element = element->FirstChildElement("AreaLight");
+    }
+
+
 
     //Get Materials
     element = root->FirstChildElement("Materials");
