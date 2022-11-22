@@ -8,6 +8,7 @@ class Ray
     public:
     vec3f o;
     vec3f d;
+    float time = 0.f;
 };
 
 #endif
