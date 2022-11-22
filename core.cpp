@@ -11,7 +11,7 @@
 #include <mutex>
 #include <random>
 
-#define NUMBER_OF_THREADS 8
+#define NUMBER_OF_THREADS 1
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -176,6 +176,16 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
         Material objMaterial = materials[closestObjData.material_id - 1];
         //vec3f n = getObjNorm(closestObjData);
         vec3f n = closestObjData.normal;
+        
+        //if(closestObjData.hitType == SPHERE) {
+        //    vec3f tmp = closestObjData.intersectionPoint;
+        //std::cout << "hit SPHERE at point: " << tmp.x << ", "<< tmp.y <<", " << tmp.z << std::endl;
+        //return vec3f(20.f, 70.f, 40.f);
+        //}
+        //else if(closestObjData.hitType == MESH) {
+        ////std::cout << "hit MESH" << std::endl;
+        //return vec3f(180.f, 20.f, 60.f);
+        //}
 
         vec3f color = vec3f(0.f);
         if(currentMedium.type == AIR)
@@ -386,6 +396,7 @@ struct RowRendererArg
     vec3f q; //top-left corner of image plane
     Material initialMedium;
     int numberOfSamples;
+    Camera* camera;
 
     ImageRows* rows;
     unsigned char* img;//output image data
@@ -439,6 +450,7 @@ void parser::Scene::render(Camera camera)
 
     threadArg.initialMedium = airMedium;
 
+    threadArg.camera = &camera;
     threadArg.img = img;
     threadArg.rows = new ImageRows(ny);
 
@@ -579,8 +591,36 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
 
                 vec3f s = arg->q + s_u * arg->u - s_v * arg->v;//pixel sample
                 Ray ray; 
-                ray.o = arg->e;
-                ray.d = norm(s - arg->e);
+                
+                if(arg->camera->apertureSize < 0.f)
+                {
+                    ray.o = arg->e;
+                    ray.d = norm(s - arg->e);
+                }
+                else
+                {
+                    std::mt19937 gRandomGenerator;
+                    std::uniform_real_distribution<> gNURandomDistribution(0, 1);
+
+                    float apertureSize = arg->camera->apertureSize;
+                    float psi1 = gNURandomDistribution(gRandomGenerator);
+                    float psi2 = gNURandomDistribution(gRandomGenerator);
+
+                    psi1 = (psi1 * apertureSize - apertureSize*0.5);
+                    psi2 = (psi2 * apertureSize - apertureSize*0.5);
+                    
+                    vec3f a;
+                    a = arg->e + (arg->u * psi1 - arg->v * psi2) ;
+
+                    vec3f dir = s - arg->e;
+                    float t = arg->camera->focusDistance / (dot(dir, -arg->w));
+
+                    vec3f p = arg->e + t * dir;
+                    vec3f d = p - a;
+                    
+                    ray.o = a;
+                    ray.d = norm(d);
+                }
 
                 vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
 
