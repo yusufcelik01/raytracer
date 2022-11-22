@@ -2,7 +2,7 @@ CC= gcc
 CXX= g++
 CFLAGS = -O3
 CXXFLAGS = -std=c++17
-LDFLAGS = 
+LDFLAGS = -pthread
 
 
 PARSER_FILES= parser.o plyfile.o
