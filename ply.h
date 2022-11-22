@@ -159,7 +159,7 @@ extern void ply_describe_other_elements ( PlyFile *, PlyOtherElems *);
 extern void ply_put_other_elements (PlyFile *);
 extern void ply_free_other_elements (PlyOtherElems *);
 
-extern int equal_strings(char *, char *);
+extern int equal_strings(const char *, const char *);
 
 typedef struct PLY_Vertex {
   float x,y,z;             /* the usual 3-space position of a vertex */

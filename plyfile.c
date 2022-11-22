@@ -59,7 +59,7 @@ int ply_type_size[] = {
 
 
 /* returns 1 if strings are equal, 0 if not */
-int equal_strings(char *, char *);
+int equal_strings(const char *, const char *);
 
 /* find an element in a plyfile's list */
 PlyElement *find_element(PlyFile *, char *);
@@ -1397,18 +1397,30 @@ void ply_get_info(PlyFile *ply, float *version, int *file_type)
 Compare two strings.  Returns 1 if they are the same, 0 if not.
 ******************************************************************************/
 
-int equal_strings(char *s1, char *s2)
+int equal_strings(const char *s1, const char *s2)
 {
   int i;
 
-  while (*s1 && *s2)
-    if (*s1++ != *s2++)
+  i = 0;
+  while(s1[i] && s2[i])
+  {
+    if(s1[i] != s2[i])
+        return (0);
+    s1++;
+    s2++;
+  }
+  if(s1[i] != s2[i])
       return (0);
-
-  if (*s1 != *s2)
-    return (0);
   else
-    return (1);
+      return (1);
+  //while (*s1 && *s2)
+  //  if (*s1++ != *s2++)
+  //    return (0);
+
+  //if (*s1 != *s2)
+  //  return (0);
+  //else
+  //  return (1);
 }
 
 
