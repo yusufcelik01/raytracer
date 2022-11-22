@@ -20,7 +20,6 @@ vec3f parser::Scene::getObjNorm(const IntersectionData& data)
     switch(data.hitType)
     {
         case SPHERE:
-            //n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId - 1]);
             n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId]);
             break;
         case TRIANGLE://fall through mesh
@@ -97,18 +96,6 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
 
         vec3f irradiance = light.intensity / d_sqr;
         color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
-        ////diffuse shading
-        //float cosTheta = dot(surfNorm, w_light);
-        //cosTheta = std::max(cosTheta, 0.0f);
-        //color += material.diffuse * cosTheta * irradiance;
-
-        ////specular shading 
-        //vec3f half = norm(w_light + w_eye);
-        //float cosAlpha = dot(half, surfNorm);
-        //cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
-
-        ////cosAlpha = material.phong_exponent
-        //color += material.specular * cosAlpha * irradiance;
     }
 
     for(AreaLight light : area_lights)
@@ -156,53 +143,6 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
     vec3f color = vec3f(0.f);
 
     bool hit = false;
-    //for(Sphere sphere : spheres)
-    //{
-    //    IntersectionData intData;
-    //    if(sphere.intersectRay(vertex_data, ray, intData))
-    //    {
-    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
-    //        {
-    //            if(isShadowRay) {return true;}
-    //            hit = true;
-    //            closestObjData = IntersectionData(intData);
-    //        }
-    //    }
-
-    //}
-
-    //for(Triangle triangle : triangles)
-    //{
-    //    IntersectionData intData;
-    //    if(triangle.intersectRay(vertex_data, ray, intData))
-    //    {
-    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
-    //        {
-    //            if(isShadowRay) {return true;}
-    //            hit = true;
-    //            closestObjData = intData;
-    //        }
-    //    }
-
-    //}
-
-    //int meshID = 1;
-    //for(Mesh mesh: meshes)
-    //{
-    //    IntersectionData intData;
-    //    if(mesh.intersectRay(vertex_data, ray, intData))
-    //    {
-    //        if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
-    //        {
-
-    //            if(isShadowRay ) { return true;}
-    //            hit = true;
-    //            closestObjData = intData;
-    //        }
-    //    }
-    //    meshID++;
-
-    //}
     for(Object* object: objects)
     {
         IntersectionData intData;
@@ -219,13 +159,6 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
 
     }
     retData = closestObjData;
-    //if(closestObjData.hitType == MESH){
-    //    std::cout << "hit mesh" << std::endl;
-    //}
-    //else if (closestObjData.hitType == SPHERE){
-    //    std::cout << "hit sphere" << std::endl;
-    //}
-
     return hit;
 }
 
@@ -242,18 +175,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
-        //vec3f n = getObjNorm(closestObjData);
         vec3f n = closestObjData.normal;
-        
-        //if(closestObjData.hitType == SPHERE) {
-        //    vec3f tmp = closestObjData.intersectionPoint;
-        //std::cout << "hit SPHERE at point: " << tmp.x << ", "<< tmp.y <<", " << tmp.z << std::endl;
-        //return vec3f(20.f, 70.f, 40.f);
-        //}
-        //else if(closestObjData.hitType == MESH) {
-        ////std::cout << "hit MESH" << std::endl;
-        //return vec3f(180.f, 20.f, 60.f);
-        //}
 
         vec3f color = vec3f(0.f);
         if(currentMedium.type == AIR)
@@ -271,7 +193,6 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
         //get refraction_index lightging
         if(objMaterial.type == MIRROR)
         {
-            //std::cout <<"MIRROR ENTER" << std::endl;
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
@@ -301,7 +222,6 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
                 {
                     reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
                 }
-                //std::cout << "Total internal reflection" << std::endl;
                 color += getRayColor(reflectingRay, depth - 1, false, currentMedium);
             }
             else//refraction + reflection
@@ -661,8 +581,6 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
 {
     RowRendererArg* arg = (RowRendererArg*) void_arg;
 
-    
-    //TODO get new row to render
     int y;
     int x;
     y = arg->rows->getNextAvaliableRow();
@@ -712,18 +630,6 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
                     vec3f d = p - apertureSample;
                     ray.o = apertureSample;
                     ray.d = d;
-
-                    //vec3f a;
-                    //a = arg->e + (arg->u * psi1 - arg->v * psi2) ;
-
-                    //vec3f dir = s - arg->e;
-                    //float t = arg->camera->focusDistance / (dot(dir, -arg->w));
-
-                    //vec3f p = arg->e + t * dir;
-                    //vec3f d = p - a;
-                    //
-                    //ray.o = a;
-                    //ray.d = norm(d);
                 }
 
                 std::random_device rn;
@@ -748,14 +654,9 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;
             arg->img[(arg->nx*y + x)*3 + 2] = c.b;
-            //std::cout << "pixel DONE \n----------------"  << std::endl;
         }
         y = arg->rows->getNextAvaliableRow();
     }
     
 
 }
-
-//void parser::Scene::render(size_t cameraId)
-//{
-//}
