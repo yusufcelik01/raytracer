@@ -17,6 +17,7 @@ class Object
         int material_id;
         BoundingBox* bbox = NULL;
         mat4x4* transformation = NULL;
+        mat4x4* motionBlur = NULL;
 
         //member functions
         virtual bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData) = 0;

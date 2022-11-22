@@ -36,13 +36,13 @@ http://paulbourke.net/dataformats/ply/
     char **obj_info;
 
     PlyProperty vert_props[] = { /* list of property information for a vertex */
-        {"x", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
-        {"y", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,y), 0, 0, 0, 0},
-        {"z", PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,z), 0, 0, 0, 0},
+        {strdup("x"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
+        {strdup("y"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,y), 0, 0, 0, 0},
+        {strdup("z"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,z), 0, 0, 0, 0},
     };
     PlyProperty face_props[] = { /* list of property information for a vertex */
-        {"intensity", PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
-        {"vertex_indices", PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
+        {strdup("intensity"), PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
+        {strdup("vertex_indices"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
             1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
     };
     /* open a PLY file for reading */
@@ -368,10 +368,15 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
         child = element->FirstChildElement("AmbientReflectance");
         stream << child->GetText() << std::endl;
+        stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
+
         child = element->FirstChildElement("DiffuseReflectance");
         stream << child->GetText() << std::endl;
+        stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
+
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
+        stream >> material.specular.x >> material.specular.y >> material.specular.z;
         //if(child)
         //{
         //    stream << child->GetText() << std::endl;
@@ -389,11 +394,18 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         {
             stream << "1" << std::endl;
         }
-
-        stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
-        stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
-        stream >> material.specular.x >> material.specular.y >> material.specular.z;
         stream >> material.phong_exponent;
+        child = element->FirstChildElement("Roughness");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >>material.roughness;
+        }
+        else
+        {
+            material.roughness = -0.f;
+        }
+
 
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
@@ -484,6 +496,16 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> mesh->material_id;
 
+        child = element->FirstChildElement("MotionBlur");
+        if(child)
+        {
+            vec3f motionBlur;
+            stream << child->GetText() << std::endl;
+            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+            mesh->motionBlur = new mat4x4();
+            *(mesh->motionBlur) = translate(motionBlur);
+        }
+
         child = element->FirstChildElement("Faces");
         //check if it is a ply file
         const char* plyFileName = child->Attribute("plyFile");
@@ -544,6 +566,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             }
             stream.clear();
         }
+        
 
         stream.clear();
         child = element->FirstChildElement("Transformations");
@@ -610,6 +633,16 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> triangle.material_id;
 
+        child = element->FirstChildElement("MotionBlur");
+        if(child)
+        {
+            vec3f motionBlur;
+            stream << child->GetText() << std::endl;
+            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+            triangle.motionBlur = new mat4x4();
+            *(triangle.motionBlur) = translate(motionBlur);
+        }
+
         child = element->FirstChildElement("Indices");
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
@@ -675,6 +708,15 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> sphere.radius;
 
+        child = element->FirstChildElement("MotionBlur");
+        if(child)
+        {
+            vec3f motionBlur;
+            stream << child->GetText() << std::endl;
+            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+            sphere.motionBlur = new mat4x4();
+            *(sphere.motionBlur) = translate(motionBlur);
+        }
 
         child = element->FirstChildElement("Transformations");
         if(child)
@@ -738,6 +780,16 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         {
             stream << child->GetText() << std::endl;
             stream >> instance->material_id;
+        }
+
+        child = element->FirstChildElement("MotionBlur");
+        if(child)
+        {
+            vec3f motionBlur;
+            stream << child->GetText() << std::endl;
+            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+            instance->motionBlur = new mat4x4();
+            *(instance->motionBlur) = translate(motionBlur);
         }
 
         const char* resetTransformStr = element->Attribute("resetTransform");

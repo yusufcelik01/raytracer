@@ -26,7 +26,8 @@ struct Material
     float absorption_index;
     //dielectric fields
     vec3f absorption_coefficent;
-    float phong_exponent;
+    float phong_exponent = 1.f;
+    float roughness = -0.f;
 };
 
 
