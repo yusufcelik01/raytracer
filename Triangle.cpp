@@ -44,6 +44,11 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Inter
         tmp = invM * vec4f(ray.d, 0.f); 
         r.d = vec3f(tmp.x, tmp.y, tmp.z);
     }
+    if(motionBlur)
+    {
+        //inverse translate ray
+        r.o = r.o - (*motionBlur) *r.time;
+    }
     bool hit = false;
 
 
@@ -67,6 +72,11 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Inter
             tmp = transpose(invM) * vec4f(intData.normal, 0.f);
             intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
         }
+        //if(motionBlur)
+        //{
+        //    //inverse translate ray
+        //    intData.intersectionPoint = intData.intersectionPoint + motionBlur * r.time;
+        //}
     }
 
     return hit;

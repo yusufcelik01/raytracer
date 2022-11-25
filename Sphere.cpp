@@ -45,6 +45,11 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersect
         tmp = invM * vec4f(r.d, 0.f); 
         ray.d = vec3f(tmp.x, tmp.y, tmp.z);
     }
+    if(motionBlur)
+    {
+        //inverse translate ray
+        ray.o = ray.o - (*motionBlur)*r.time;
+    }
 
     //vec3f c = VAO[center_vertex_id-1];
     vec3f c = VAO[center_vertex_id];
