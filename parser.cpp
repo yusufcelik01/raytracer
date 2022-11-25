@@ -502,8 +502,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             vec3f motionBlur;
             stream << child->GetText() << std::endl;
             stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            mesh->motionBlur = new mat4x4();
-            *(mesh->motionBlur) = translate(motionBlur);
+            mesh->motionBlur = new vec3f(motionBlur);
         }
 
         child = element->FirstChildElement("Faces");
@@ -639,8 +638,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             vec3f motionBlur;
             stream << child->GetText() << std::endl;
             stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            triangle.motionBlur = new mat4x4();
-            *(triangle.motionBlur) = translate(motionBlur);
+            triangle.motionBlur = new vec3f(motionBlur);
         }
 
         child = element->FirstChildElement("Indices");
@@ -688,6 +686,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         //triangles.push_back(triangle);
         objects.push_back(new Triangle(triangle));//runtime polymorph
         element = element->NextSiblingElement("Triangle");
+        triangle = Triangle();
     }
 
     //Get Spheres
@@ -714,8 +713,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             vec3f motionBlur;
             stream << child->GetText() << std::endl;
             stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            sphere.motionBlur = new mat4x4();
-            *(sphere.motionBlur) = translate(motionBlur);
+            sphere.motionBlur = new vec3f(motionBlur);
         }
 
         child = element->FirstChildElement("Transformations");
@@ -759,6 +757,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
         //spheres.push_back(sphere);
         objects.push_back(new Sphere(sphere));//runtime polymorph
+        sphere = Sphere();
         element = element->NextSiblingElement("Sphere");
     }
 
@@ -788,8 +787,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             vec3f motionBlur;
             stream << child->GetText() << std::endl;
             stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            instance->motionBlur = new mat4x4();
-            *(instance->motionBlur) = translate(motionBlur);
+            instance->motionBlur = new vec3f(motionBlur);
         }
 
         const char* resetTransformStr = element->Attribute("resetTransform");
