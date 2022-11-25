@@ -125,7 +125,7 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
 
         float area = light.extent * light.extent;
         float cosTheta = dot(light.normal, -w_light);
-        if( cosTheta < 0.f) {cosTheta = -cosTheta;}//unidirectional area light
+        if( cosTheta < 0.f) {cosTheta = -cosTheta;}//bi-idirectional area light
         vec3f irradiance = light.radiance * (area * cosTheta / d_sqr);
 
         color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
@@ -581,6 +581,10 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
 {
     RowRendererArg* arg = (RowRendererArg*) void_arg;
 
+    std::random_device rn_seed;
+    std::mt19937 rand_mt(rn_seed());
+    std::uniform_real_distribution<> randTime(0, 1);
+
     int y;
     int x;
     y = arg->rows->getNextAvaliableRow();
@@ -632,16 +636,15 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
                     ray.d = d;
                 }
 
-                std::random_device rn;
-                std::mt19937 rand(rn());
-                std::uniform_real_distribution<> randDistribution(0, 1);
 
-                ray.time =  randDistribution(rand);
+                ray.time =  randTime(rand_mt);
+                //std::cout << "ray time: " << ray.time << std::endl;
                 vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
 
                 sampleColors.push_back(sampleColor);
             }
             
+            //apply box filter to samples
             int sampleCount = sampleColors.size();
             vec3f pixelColor = vec3f(0.f);
             for(int i = 0; i < sampleCount; i++)
@@ -650,6 +653,7 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             }
             pixelColor = pixelColor / float(sampleCount);
             vec3i c = clamp(vec3i(pixelColor), 0, 255);
+            //end box filter
 
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;
