@@ -23,6 +23,13 @@ vec3f::vec3f(const vec3i& ivec)
     this->z = ivec.z;
 }
 
+//vec3f::vec3f(const vec3f& vec)
+//{
+//    this->x = vec.x;
+//    this->y = vec.y;
+//    this->z = vec.z;
+//}
+
 vec3f::vec3f(float x, float y, float z)
 {
     this->x = x;
@@ -335,4 +342,10 @@ ONB::ONB(vec3f N)
 
     u = norm(cross(np, n));
     v = norm(cross(n, u));
+}
+
+std::ostream& operator<<(std::ostream& os, const vec3f& v)
+{
+    os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
+    return os;
 }

@@ -277,3 +277,17 @@ mat4x4 transpose(const mat4x4& A)
     return trans;
 }
 
+std::ostream& operator<<(std::ostream& os, const mat4x4& M)
+{
+    os << "-----MATRIX-----" << std::endl;
+    for(int i = 0; i < 4; i++)
+    {
+        for(int j = 0; j < 4; j++)
+        {
+            os << M.m[i][j] << "  ";
+        }
+        os << '\n';
+    }
+    os << "----------------" << std::endl;
+    return os;
+}

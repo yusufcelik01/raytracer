@@ -1,5 +1,6 @@
 #ifndef __VEC3__DEFINED__
 #define __VEC3__DEFINED__
+#include <ostream>
 
 struct vec3i;
 
@@ -17,6 +18,7 @@ struct vec3f
     vec3f(float);
     vec3f(float, float, float);
     vec3f(const vec3i& ivec);
+    //vec3f(const vec3f& vec);
     vec3f operator-();
     vec3f operator-(const vec3f& rhs) const;
     vec3f operator+(const vec3f& rhs) const;
@@ -67,5 +69,6 @@ vec3f exp(vec3f v);
 
 
 vec3f operator*(const float& c, const vec3f& v);
+std::ostream& operator<<(std::ostream& os, const vec3f& v);
 
 #endif

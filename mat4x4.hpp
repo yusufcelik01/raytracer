@@ -3,6 +3,7 @@
 
 #include "vec3.hpp"
 #include "vec4.hpp"
+#include <ostream>
 
 class mat4x4
 {
@@ -46,5 +47,7 @@ mat4x4 transpose(const mat4x4& A);
 
 mat4x4 operator*(float c, mat4x4);
 //mat4x4 operator*(const vec3& rhs) const;
+
+std::ostream& operator<<(std::ostream& os, const mat4x4& M);
 
 #endif
