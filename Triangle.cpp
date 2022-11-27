@@ -32,25 +32,28 @@ Triangle::~Triangle()
 
 bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData) 
 {
+    mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
+
     if(transformation != NULL)
     {
-        vec4f tmp;
-        mat4x4 invM = inverse(*transformation);
-
-        tmp = invM * vec4f(ray.o, 1.f); 
-        r.o = vec3f(tmp.x, tmp.y, tmp.z);
-
-        tmp = invM * vec4f(ray.d, 0.f); 
-        r.d = vec3f(tmp.x, tmp.y, tmp.z);
+        compositeTransformation = *transformation;
     }
     if(motionBlur)
     {
-        //inverse translate ray
-        r.o = r.o - (*motionBlur) *r.time;
+        compositeTransformation = translate(*motionBlur * r.time) * compositeTransformation;
     }
-    bool hit = false;
+    invM = inverse(compositeTransformation);
+    
+    vec4f tmp;
+    tmp = invM * vec4f(ray.o, 1.f); 
+    r.o = vec3f(tmp.x, tmp.y, tmp.z);
 
+    tmp = invM * vec4f(ray.d, 0.f); 
+    r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    r.time = ray.time;
+
+    bool hit = false;
 
     hit = this->indices.intersectRay(VAO, r, intData);
     if(hit)
@@ -63,20 +66,9 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Inter
         {
             intData.intersectionPoint = ray.o + (ray.d * intData.t);
 
-            vec4f tmp;
-            //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-            //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
-
-
-            mat4x4 invM = inverse(*transformation);
             tmp = transpose(invM) * vec4f(intData.normal, 0.f);
             intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
         }
-        //if(motionBlur)
-        //{
-        //    //inverse translate ray
-        //    intData.intersectionPoint = intData.intersectionPoint + motionBlur * r.time;
-        //}
     }
 
     return hit;

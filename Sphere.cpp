@@ -31,42 +31,41 @@ Sphere::~Sphere()
     }
 }
 
-bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
+bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
-    Ray ray = r;
+    mat4x4 compositeTransformation(1.f), invM(1.f);
+    Ray r = ray;
+
     if(transformation != NULL)
     {
-        vec4f tmp;
-        mat4x4 invM = inverse(*transformation);
-
-        tmp = invM * vec4f(r.o, 1.f); 
-        ray.o = vec3f(tmp.x, tmp.y, tmp.z);
-
-        tmp = invM * vec4f(r.d, 0.f); 
-        ray.d = vec3f(tmp.x, tmp.y, tmp.z);
+        compositeTransformation = *transformation;
     }
     if(motionBlur)
     {
-        //inverse translate ray
-        ray.o = ray.o - (*motionBlur)*r.time;
+        compositeTransformation = translate(*motionBlur * r.time) * compositeTransformation;
     }
-
-    //vec3f c = VAO[center_vertex_id-1];
-    vec3f c = VAO[center_vertex_id];
+    invM = inverse(compositeTransformation);
     
+    vec4f tmp;
+    tmp = invM * vec4f(ray.o, 1.f); 
+    r.o = vec3f(tmp.x, tmp.y, tmp.z);
 
-    vec3f o_min_c = ray.o - c;
-    float d_dot__omc = dot(ray.d, o_min_c);
-    float disc = (d_dot__omc*d_dot__omc) - (dot(ray.d, ray.d)*(dot(o_min_c, o_min_c) - radius*radius));
+    tmp = invM * vec4f(ray.d, 0.f); 
+    r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    r.time = ray.time;
 
-    //std::cout << "Discriminant: " << disc << std::endl;
+
+    vec3f c = VAO[center_vertex_id];
+    vec3f o_min_c = r.o - c;
+    float d_dot__omc = dot(r.d, o_min_c);
+    float disc = (d_dot__omc*d_dot__omc) - (dot(r.d, r.d)*(dot(o_min_c, o_min_c) - radius*radius));
     if(disc <= 0)
     {
         return false;
     }
   
-    float t1 = (-d_dot__omc + sqrt(disc))/ dot(ray.d, ray.d);
-    float t2 = (-d_dot__omc - sqrt(disc))/ dot(ray.d, ray.d);
+    float t1 = (-d_dot__omc + sqrt(disc))/ dot(r.d, r.d);
+    float t2 = (-d_dot__omc - sqrt(disc))/ dot(r.d, r.d);
        
     if(t1 >= 0)
     {
@@ -76,7 +75,6 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersect
         }
         else
         {
-            //return t1;
             intData.t = t1;
         }
     }
@@ -91,42 +89,20 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, Intersect
             return false;
         }
     }
-    //if(t1 < t2 && t1 > 0)
-    //{
-    //    intData.t = t1;
-    //}
-    //else if (t2 > 0)
-    //{
-    //    intData.t = t2;
-    //}
-    //else
-    //{
-    //    return false;
-    //}
     intData.hitType = SPHERE;
-    //intData.v0_id = -1;
-    //intData.v1_id = -1;
-    //intData.v2_id = -1;
     intData.sphereCenterId = center_vertex_id;
     intData.material_id = this->material_id;
-    intData.intersectionPoint = ray.o + (ray.d * intData.t);
+
+    //object space intersection point and normal
+    intData.intersectionPoint = r.o + (r.d * intData.t);
     intData.normal = norm(intData.intersectionPoint - c);
 
-    if(transformation != NULL)
-    {
-        intData.intersectionPoint = r.o + (r.d * intData.t);
-        //vec4f movedCenter = (*transformation) * vec4f(c, 1.f);
-        //intData.normal = norm(intData.intersectionPoint - vec3f(movedCenter.x, movedCenter.y, movedCenter.z));
-
-        vec4f tmp;
-        //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-        //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
-
-
-        mat4x4 invM = inverse(*transformation);
-        tmp = transpose(invM) * vec4f(intData.normal, 0.f);
-        intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-    }
+    //transfrom them back to world space
+    tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
+    intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+    
+    tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+    intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
 
     return true;
 
