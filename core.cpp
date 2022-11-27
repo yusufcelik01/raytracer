@@ -12,7 +12,7 @@
 #include <random>
 #include <cassert>
 
-#define NUMBER_OF_THREADS 1
+#define NUMBER_OF_THREADS 8
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -598,36 +598,55 @@ void parser::Scene::renderRow(void* void_arg)
 
 
 
+//void generateJitteredSamples(UniformRandomGenerator& rng, std::vector<vec2f>& samples, int numberOfSamples )
+//{
+//    //std::random_device rand;
+//    //std::mt19937 rng1(rand());
+//    //std::mt19937 rng2(rand());
+//    //std::mt19937 rnGen;
+//    //std::uniform_real_distribution<> randNum1(0, 1);
+//    //std::uniform_real_distribution<> randNum2(0, 1);
+//
+//    int x, y; 
+//    x = int(sqrt(numberOfSamples) + 0.5);
+//    y = int(float(numberOfSamples) / x);
+//    for(int i = 0 ; i < x; ++i)
+//    {
+//        for(int j = 0; j < y; ++j)
+//        {
+//            //float psi1 = randNum1(rng1);
+//            //float psi2 = randNum2(rng2);
+//            float psi1 = rng.getUniformRandNumber(0.f, 1.0f);
+//            float psi2 = rng.getUniformRandNumber(0.f, 1.0f);
+//
+//            vec2f sample;
+//            sample.x = float(i + psi1) / x;
+//            sample.y = float(j + psi2) / y;
+//
+//            samples.push_back(sample);
+//        }
+//    }
+//}
+
 void generateJitteredSamples(UniformRandomGenerator& rng, std::vector<vec2f>& samples, int numberOfSamples )
 {
-    //std::random_device rand;
-    //std::mt19937 rng1(rand());
-    //std::mt19937 rng2(rand());
-    //std::mt19937 rnGen;
-    //std::uniform_real_distribution<> randNum1(0, 1);
-    //std::uniform_real_distribution<> randNum2(0, 1);
-
     int x, y; 
     x = int(sqrt(numberOfSamples) + 0.5);
     y = int(float(numberOfSamples) / x);
-    for(int i = 0 ; i < x; ++i)
+    float width = 1.f/ x;
+    float height = 1.f/ y;
+    for(size_t i = 0; i < x; ++i)
     {
-        for(int j = 0; j < y; ++j)
+        for(size_t j = 0; j < y; ++j)
         {
-            //float psi1 = randNum1(rng1);
-            //float psi2 = randNum2(rng2);
-            float psi1 = rng.getUniformRandNumber(0.f, 1.0f);
-            float psi2 = rng.getUniformRandNumber(0.f, 1.0f);
-
             vec2f sample;
-            sample.x = float(i + psi1) / x;
-            sample.y = float(j + psi2) / y;
+            sample.x = rng.getUniformRandNumber(i*width, (i+1)*width);
+            sample.y = rng.getUniformRandNumber(j*height, (j+1)*height);
 
             samples.push_back(sample);
         }
     }
 }
-
 
 
 float gauss(float sigma, float x, float y)
@@ -689,7 +708,8 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             }
             else
             {
-                generateJitteredSamples(arg->pixelSampler, samples, arg->numberOfSamples);
+                UniformRandomGenerator pixelSampler;
+                generateJitteredSamples(pixelSampler, samples, arg->numberOfSamples);
             }
             for(vec2f sample: samples)
             {
