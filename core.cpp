@@ -10,6 +10,7 @@
 #include <thread>
 #include <mutex>
 #include <random>
+#include <cassert>
 
 #define NUMBER_OF_THREADS 8
 
@@ -85,6 +86,7 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
         Ray shadowRay;
         shadowRay.o = p + surfNorm * shadow_ray_epsilon;
         shadowRay.d = norm(light.position - shadowRay.o);
+        shadowRay.time = eyeRay.time;
         float distance = length(w_light); 
         if(rayQuery(shadowRay, dummy, true, distance))//if shadow
         {
@@ -134,6 +136,34 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
     return color;
 }
 
+bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT, float nearDist, vec3f gaze)
+{
+    IntersectionData closestObjData;
+    closestObjData.material_id = -1;
+    closestObjData.t = std::numeric_limits<float>::infinity(); 
+
+    vec3f color = vec3f(0.f);
+
+    bool hit = false;
+    for(Object* object: objects)
+    {
+        IntersectionData intData;
+        if(object->intersectRay(vertex_data, ray, intData))
+        {
+            if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0 && dot(ray.d * intData.t, gaze) > nearDist )
+            {
+                if(isShadowRay) {return true;}
+                hit = true;
+                closestObjData = IntersectionData(intData);
+            }
+        }
+
+
+    }
+    retData = closestObjData;
+    return hit;
+
+}
 bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT)
 {
     IntersectionData closestObjData;
@@ -164,6 +194,10 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
 
 vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
 {
+    return getRayColor(ray, depth, false, currentMedium, vec3f(0.f), 0.f);
+}
+vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
+{
     if(depth < 0)
     {
         return vec3f(0.f, 0.f, 0.f);
@@ -171,7 +205,15 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 
     IntersectionData closestObjData;
     bool hit = false;
-    hit = rayQuery(ray, closestObjData, false, std::numeric_limits<float>::infinity());
+    if(isPrimaryRay)
+    {
+        assert(length(gaze) > 0.01f );
+        hit = rayQuery(ray, closestObjData, false, std::numeric_limits<float>::infinity(), nearDist, gaze);
+    }
+    else
+    {
+        hit = rayQuery(ray, closestObjData, false, std::numeric_limits<float>::infinity());
+    }
 
     if(hit){
         Material objMaterial = materials[closestObjData.material_id - 1];
@@ -196,6 +238,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+            reflectingRay.time = ray.time;
 
             if(objMaterial.roughness != -0.f)
             {
@@ -208,7 +251,10 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             Ray reflectingRay, refractingRay;
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+            reflectingRay.time = ray.time;
+
             refractingRay.o = closestObjData.intersectionPoint - n * shadow_ray_epsilon;
+            refractingRay.time = ray.time;
 
             float eta;
             if (currentMedium.type == AIR){ eta = 1.f / objMaterial.refraction_index; }
@@ -279,6 +325,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
+            reflectingRay.time = ray.time;
 
             if(objMaterial.roughness != -0.f)
             {
@@ -405,6 +452,7 @@ struct RowRendererArg
     Material initialMedium;
     int numberOfSamples;
     Camera* camera;
+    UniformRandomGenerator pixelSampler, apertureSampler;
 
     ImageRows* rows;
     unsigned char* img;//output image data
@@ -549,33 +597,60 @@ void parser::Scene::renderRow(void* void_arg)
 
 
 
-void generateJitteredSamples(std::vector<vec2f>& samples, int numberOfSamples )
+void generateJitteredSamples(UniformRandomGenerator& rng, std::vector<vec2f>& samples, int numberOfSamples )
 {
     //std::random_device rand;
-    //std::mt19937 rnGen(rand());
-    std::mt19937 rnGen;
-    std::uniform_real_distribution<> randNum(0, 1);
+    //std::mt19937 rng1(rand());
+    //std::mt19937 rng2(rand());
+    //std::mt19937 rnGen;
+    //std::uniform_real_distribution<> randNum1(0, 1);
+    //std::uniform_real_distribution<> randNum2(0, 1);
 
     int x, y; 
     x = int(sqrt(numberOfSamples) + 0.5);
     y = int(float(numberOfSamples) / x);
-
     for(int i = 0 ; i < x; ++i)
     {
         for(int j = 0; j < y; ++j)
         {
-            float psi1 = randNum(rnGen);
-            float psi2 = randNum(rnGen);
+            //float psi1 = randNum1(rng1);
+            //float psi2 = randNum2(rng2);
+            float psi1 = rng.getUniformRandNumber(0.f, 1.0f);
+            float psi2 = rng.getUniformRandNumber(0.f, 1.0f);
 
             vec2f sample;
-            sample.x = (i + psi1) / x;
-            sample.y = (j + psi2) / y;
+            sample.x = float(i + psi1) / x;
+            sample.y = float(j + psi2) / y;
 
             samples.push_back(sample);
         }
     }
 }
 
+
+
+float gauss(float sigma, float x, float y)
+{
+
+    float tmp = (1.f/(2 * M_PI * sigma*sigma)) * pow(std::exp(1.0), -0.5 *( (x*x + y*y ) /(sigma*sigma)) );
+    //std::cout << "gauss(" << x << ", " << y << ") = "  << tmp << std::endl;
+    return tmp;
+}
+
+vec3f filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<vec3f>& sampleValues)
+{
+    float totalWeight = 0.f;
+    vec3f totalValue = vec3f(0.f);
+
+    size_t sampleSize = sampleValues.size();
+    for(size_t i = 0; i < sampleSize; ++i)
+    {
+        float g = gauss(1/6.f, sampleCoords[i].x -0.5f, sampleCoords[i].y - 0.5f);
+        totalWeight += g;
+        totalValue += g * sampleValues[i];
+    }
+    return totalValue / totalWeight;
+}
 
 void parser::Scene::renderRowMultiSampled(void* void_arg)
 {
@@ -584,6 +659,7 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
     std::random_device rn_seed;
     std::mt19937 rand_mt(rn_seed());
     std::uniform_real_distribution<> randTime(0, 1);
+
 
     int y;
     int x;
@@ -594,8 +670,16 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
         {
             std::vector<vec2f> samples  = {};
             std::vector<vec3f> sampleColors = {};
+            float apertureSize = arg->camera->apertureSize;
 
-            generateJitteredSamples(samples, arg->numberOfSamples);
+            if(arg->numberOfSamples == 1)
+            {
+                samples.push_back(vec2f(0.5f, 0.5f));
+            }
+            else
+            {
+                generateJitteredSamples(arg->pixelSampler, samples, arg->numberOfSamples);
+            }
             for(vec2f sample: samples)
             {
                 float s_u = (x + sample.x) * arg->pixelWidth;
@@ -611,15 +695,11 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
                 }
                 else//depth of field
                 {
-                    float apertureSize = arg->camera->apertureSize;
                     float psi1, psi2;
                     
-                    std::random_device rand;
-                    std::mt19937 rnGen(rand());
-                    std::uniform_real_distribution<> randDistribution(-0.5*apertureSize, 0.5*apertureSize);
 
-                    psi1 = randDistribution(rnGen);
-                    psi2 = randDistribution(rnGen);
+                    psi1 = arg->apertureSampler.getUniformRandNumber(-0.5*apertureSize, 0.5*apertureSize);
+                    psi2 = arg->apertureSampler.getUniformRandNumber(-0.5*apertureSize, 0.5*apertureSize);
 
                     vec3f u = arg->u;
                     vec3f v = arg->v;
@@ -639,7 +719,8 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
 
                 ray.time =  randTime(rand_mt);
                 //std::cout << "ray time: " << ray.time << std::endl;
-                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
+                //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
+                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);
 
                 sampleColors.push_back(sampleColor);
             }
@@ -647,13 +728,14 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             //apply box filter to samples
             int sampleCount = sampleColors.size();
             vec3f pixelColor = vec3f(0.f);
-            for(int i = 0; i < sampleCount; i++)
-            {
-                pixelColor += sampleColors[i];    
-            }
-            pixelColor = pixelColor / float(sampleCount);
-            vec3i c = clamp(vec3i(pixelColor), 0, 255);
+            //for(int i = 0; i < sampleCount; i++)
+            //{
+            //    pixelColor += sampleColors[i];    
+            //}
+            //pixelColor = pixelColor / float(sampleCount);
+            pixelColor = filterGauss(samples, sampleColors); 
             //end box filter
+            vec3i c = clamp(vec3i(pixelColor), 0, 255);
 
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;
