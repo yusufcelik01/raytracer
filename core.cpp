@@ -12,7 +12,7 @@
 #include <random>
 #include <cassert>
 
-#define NUMBER_OF_THREADS 8
+#define NUMBER_OF_THREADS 1
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -102,17 +102,18 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
 
     for(AreaLight light : area_lights)
     {
-        ONB onb = light.getONB();
+        //ONB onb = light.getONB();
+        //float psi1, psi2;
+        //std::random_device rand;
+        //std::mt19937 rnGen(rand());
+        //std::uniform_real_distribution<> randNum(-0.5*light.extent, 0.5*light.extent);
+
+        //psi1 = randNum(rnGen);
+        //psi2 = randNum(rnGen);
+
         vec3f lightSample;
-        float psi1, psi2;
-        std::random_device rand;
-        std::mt19937 rnGen(rand());
-        std::uniform_real_distribution<> randNum(-0.5*light.extent, 0.5*light.extent);
-
-        psi1 = randNum(rnGen);
-        psi2 = randNum(rnGen);
-
-        lightSample = light.position + onb.u * psi1 + onb.v * psi2;
+        lightSample = light.getLightSample();
+        //lightSample = light.position + onb.u * psi1 + onb.v * psi2;
         Ray shadowRay;
         shadowRay.o = p + surfNorm * shadow_ray_epsilon;
         shadowRay.d = norm(lightSample - shadowRay.o);
