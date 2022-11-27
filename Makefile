@@ -8,8 +8,8 @@ LDFLAGS = -pthread
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
-MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp
-MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o 
+MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
+MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o
 
 OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o
 
@@ -62,7 +62,6 @@ main.o: main.cpp parser.h ppm.h
 del_images:
 	-rm *.ppm
 	-rm *.png
-	-rm time*.txt
 
 .PHONY: clean
 clean:
