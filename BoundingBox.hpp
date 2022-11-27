@@ -23,6 +23,7 @@ class BoundingBox
 };
 
 BoundingBox operator*(mat4x4 M, BoundingBox bbox);
+BoundingBox getCompositeBox(BoundingBox box1, BoundingBox box2);
 
 
 

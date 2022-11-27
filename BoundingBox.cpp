@@ -88,3 +88,18 @@ BoundingBox operator*(mat4x4 M, BoundingBox bbox)
 
     return retval;
 }
+
+BoundingBox getCompositeBox(BoundingBox box1, BoundingBox box2)
+{
+    BoundingBox bigBox;
+    bigBox.xmin = std::min(box1.xmin, box2.xmin);
+    bigBox.xmax = std::max(box1.xmax, box2.xmax);
+
+    bigBox.ymin = std::min(box1.ymin, box2.ymin);
+    bigBox.ymax = std::max(box1.ymax, box2.ymax);
+
+    bigBox.zmin = std::min(box1.zmin, box2.zmin);
+    bigBox.zmax = std::max(box1.zmax, box2.zmax);
+
+    return bigBox;
+}
