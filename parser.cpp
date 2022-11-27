@@ -44,6 +44,8 @@ http://paulbourke.net/dataformats/ply/
         {strdup("intensity"), PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
         {strdup("vertex_indices"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
             1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
+        {strdup("vertex_index"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
+            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
     };
     /* open a PLY file for reading */
     //ply = ply_open_for_reading("hw1/inputs/ply/dragon_remeshed_fixed.ply", &nelems, &elist, &file_type, &version);
@@ -94,9 +96,9 @@ http://paulbourke.net/dataformats/ply/
 
             /* set up for getting face elements */
 
-            ply_get_property (ply, elem_name, &face_props[0]);
+            //ply_get_property (ply, elem_name, &face_props[0]);
             ply_get_property (ply, elem_name, &face_props[1]);
-
+            ply_get_property (ply, elem_name, &face_props[2]);
             /* grab all the face elements */
             for (j = 0; j < num_elems; j++) 
             {
@@ -111,6 +113,9 @@ http://paulbourke.net/dataformats/ply/
                     plyMesh.triangles.push_back(Face(flist[j]->verts[0  ], 
                                                      flist[j]->verts[k-1], 
                                                      flist[j]->verts[k  ])); 
+                    Face f = plyMesh.triangles[ plyMesh.triangles.size()-1] ;
+                    //std::cout << "ply face : " << f.v0_id << ", " <<  f.v1_id << ", " << f.v2_id << std::endl;
+                    //std::cout << "END POLYGON" << std::endl;
                     //printf ("%d ", flist[j]->verts[k]);
                 }
                 //printf ("\n");
@@ -120,7 +125,7 @@ http://paulbourke.net/dataformats/ply/
         /* print out the properties we got, for debugging */
         //for (j = 0; j < nprops; j++)
         //    printf ("property %s\n", plist[j]->name);
-        }
+    }
 }
 
 void parser::Scene::loadFromXml(const std::string &filepath)
@@ -177,6 +182,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     stream >> max_recursion_depth;
 
     //Get Cameras
+    stream.clear();
     element = root->FirstChildElement("Cameras");
     element = element->FirstChildElement("Camera");
     Camera camera;
@@ -468,7 +474,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream.clear();
     }
 
-
+    stream.clear();
     //Get VertexData
     element = root->FirstChildElement("VertexData");
     stream << element->GetText() << std::endl;
@@ -549,6 +555,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
                 Face* face = new Face(numOfTotalVertices + obj.triangles[k].v0_id,
                                       numOfTotalVertices + obj.triangles[k].v1_id,
                                       numOfTotalVertices + obj.triangles[k].v2_id );
+                
                 mesh->faces.push_back(face);
             }
         }

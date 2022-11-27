@@ -16,6 +16,7 @@ Mesh::Mesh()
     isInstanced = false;
     baseMesh = NULL;
     resetTransform = false;
+    motionBlur = NULL;
 }
 Mesh::Mesh(const Mesh& rhs)
 {
@@ -36,7 +37,10 @@ Mesh::Mesh(const Mesh& rhs)
     else {
         bbox = NULL;
     }
-
+    if(rhs.motionBlur)
+    {
+        motionBlur = new vec3f(*(rhs.motionBlur));
+    }
 }
 
 Mesh::~Mesh()
@@ -59,113 +63,83 @@ Mesh::~Mesh()
     if(bbox) {
         delete bbox; 
     }
+    if(AccBVH)
+    {
+        delete AccBVH;
+    }
     //TODO deallocate BVH 
 }
 
 bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 {
+    //float timeSample = rng.getUniformRandNumber(0,1);
+    float timeSample = ray.time;
+    mat4x4 compositeTransformation(1.f), invM(1.f);
+    Ray r = ray;
+
+    if(transformation != NULL)
+    {
+        compositeTransformation = *transformation;
+        /////////////////////////////////
+    }
+    if(motionBlur)
+    {
+        compositeTransformation = translate(*motionBlur * r.time) * compositeTransformation;
+    }
+    invM = inverse(compositeTransformation);
+    
+    vec4f tmp;
+    tmp = invM * vec4f(ray.o, 1.f); 
+    r.o = vec3f(tmp.x, tmp.y, tmp.z);
+
+    tmp = invM * vec4f(ray.d, 0.f); 
+    r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    r.time = ray.time;
+
+    bool hit = false;
     if(isInstanced)
     {
-        Ray r = ray;
-        if(transformation != NULL)
-        {
-            vec4f tmp;
-            mat4x4 invM = inverse(*transformation);
-
-            tmp = invM * vec4f(ray.o, 1.f); 
-            r.o = vec3f(tmp.x, tmp.y, tmp.z);
-
-            tmp = invM * vec4f(ray.d, 0.f); 
-            r.d = vec3f(tmp.x, tmp.y, tmp.z);
-        }
-        if(motionBlur)
-        {
-            //inverse translate ray
-            r.o = r.o - (*motionBlur) *r.time;
-        }
-
-        bool hit = false;
-
         if(resetTransform)
         {
             hit = baseMesh->intersectRayResetTransform(VAO, r, intData);    
         }
         else
         {
-            hit = baseMesh->intersectRay(VAO, r, intData);
-        }
-        if(hit)
-        {
-            intData.hitType = MESH;
-            intData.material_id = this->material_id;
-
-
-            if(transformation != NULL)
-            {
-                intData.intersectionPoint = ray.o + (ray.d * intData.t);
-
-                vec4f tmp;
-                //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-                //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
-
-
-                mat4x4 invM = inverse(*transformation);
-                tmp = transpose(invM) * vec4f(intData.normal, 0.f);
-                intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-            }
-        }
-        return hit;
-    }
-
-
-    Ray r = ray;
-    if(transformation != NULL)
-    {
-        vec4f tmp;
-        mat4x4 invM = inverse(*transformation);
-
-        tmp = invM * vec4f(ray.o, 1.f); 
-        r.o = vec3f(tmp.x, tmp.y, tmp.z);
-
-        tmp = invM * vec4f(ray.d, 0.f); 
-        r.d = vec3f(tmp.x, tmp.y, tmp.z);
-    }
-    if(motionBlur)
-    {
-        //inverse translate ray
-        r.o = r.o - (*motionBlur) *r.time;
-    }
-
-    bool hit = false;
-    if(AccBVH != NULL)
-    {
-        hit = AccBVH->intersectRay(VAO, r, intData);
-        if(hit)
-        {
-            intData.hitType = MESH;
-            intData.material_id = this->material_id;
+            hit = baseMesh->intersectRayResetMotion(VAO, r, intData);
         }
         //return hit;
     }
     else
     {
-        float min_t = std::numeric_limits<float>::infinity();
-        hit = false;
-
-        IntersectionData temp;
-        //int faceIndex = 0;
-        for(Face* face: faces)
+        if(AccBVH != NULL)
         {
-            if(face->intersectRay(VAO, r, temp))
+            hit = AccBVH->intersectRay(VAO, r, intData);
+            if(hit)
             {
-                hit = true;
-                if(temp.t < min_t)
-                {
-                    min_t = temp.t;
-                    intData = temp;
-                }
+                intData.hitType = MESH;
+                intData.material_id = this->material_id;
             }
-            //faceIndex++;
+            //return hit;
+        }
+        else
+        {
+            float min_t = std::numeric_limits<float>::infinity();
+
+            IntersectionData temp;
+            //int faceIndex = 0;
+            for(Face* face: faces)
+            {
+                if(face->intersectRay(VAO, r, temp))
+                {
+                    hit = true;
+                    if(temp.t < min_t)
+                    {
+                        min_t = temp.t;
+                        intData = temp;
+                    }
+                }
+                //faceIndex++;
+            }
         }
     }
 
@@ -175,20 +149,13 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
         intData.material_id = this->material_id;
 
 
-        if(transformation != NULL)
-        {
-            intData.intersectionPoint = ray.o + (ray.d * intData.t);
+        intData.intersectionPoint = ray.o + (ray.d * intData.t);
 
-            vec4f tmp;
-            //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-            //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
-
-
-            mat4x4 invM = inverse(*transformation);
-            tmp = transpose(invM) * vec4f(intData.normal, 0.f);
-            intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-        }
-        //notice that temp is carry data of a face
+        vec4f tmp;
+        tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+        intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+        //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+        //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
     }
     return hit;
 }
@@ -228,6 +195,12 @@ BoundingBox* Mesh::getBoundingBox(const std::vector<vec3f>& VAO)
         if(transformation)
         {
             *bbox = (*transformation) * (*bbox);
+        }
+        if(motionBlur)
+        {
+            BoundingBox initBox = *bbox;
+            BoundingBox finalBox = translate(*motionBlur) * (*bbox);
+            *bbox = getCompositeBox(initBox, finalBox);
         }
 
         return bbox;
@@ -269,6 +242,12 @@ BoundingBox* Mesh::getBoundingBox(const std::vector<vec3f>& VAO)
         *bbox = (*transformation) * (*bbox);
     }
     
+    if(motionBlur)
+    {
+        BoundingBox initBox = *bbox;
+        BoundingBox finalBox = translate(*motionBlur) * (*bbox);
+        *bbox = getCompositeBox(initBox, finalBox);
+    }
     //std::cout << "MESH BOUNDING BOX with material: " << this->material_id << std::endl;
     //std::cout << "xmin, xmax: " << "(" << bbox->xmin << ", " << bbox->xmax << ")" << std::endl;
     //std::cout << "ymin, ymax: " << "(" << bbox->ymin << ", " << bbox->ymax << ")" << std::endl;
@@ -285,18 +264,6 @@ BoundingBox* Mesh::getBoundingBox() const
 
 bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 {
-    //Ray r = ray;
-    //if(transformation != NULL)
-    //{
-    //    vec4f tmp;
-    //    mat4x4 invM = inverse(*transformation);
-
-    //    tmp = invM * vec4f(ray.o, 1.f); 
-    //    r.o = vec3f(tmp.x, tmp.y, tmp.z);
-
-    //    tmp = invM * vec4f(ray.d, 0.f); 
-    //    r.d = vec3f(tmp.x, tmp.y, tmp.z);
-    //}
     if(isInstanced)
     {
         return baseMesh->intersectRay(VAO, r, intData);
@@ -340,21 +307,92 @@ bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& 
     {
         intData.hitType = MESH;
         intData.material_id = this->material_id;
+    }
+    return hit;
+}
+
+bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+{
+    //float timeSample = rng.getUniformRandNumber(0,1);
+    float timeSample = ray.time;
+    mat4x4 compositeTransformation(1.f), invM(1.f);
+    Ray r = ray;
+
+    if(transformation != NULL)
+    {
+        compositeTransformation = *transformation;
+        /////////////////////////////////
+    }
+    invM = inverse(compositeTransformation);
+    
+    vec4f tmp;
+    tmp = invM * vec4f(ray.o, 1.f); 
+    r.o = vec3f(tmp.x, tmp.y, tmp.z);
+
+    tmp = invM * vec4f(ray.d, 0.f); 
+    r.d = vec3f(tmp.x, tmp.y, tmp.z);
+    r.time = ray.time;
+
+    bool hit = false;
+    if(isInstanced)
+    {
+        if(resetTransform)
+        {
+            hit = baseMesh->intersectRayResetTransform(VAO, r, intData);    
+        }
+        else
+        {
+            hit = baseMesh->intersectRay(VAO, r, intData);
+        }
+        //return hit;
+    }
+    else
+    {
+        if(AccBVH != NULL)
+        {
+            hit = AccBVH->intersectRay(VAO, r, intData);
+            if(hit)
+            {
+                intData.hitType = MESH;
+                intData.material_id = this->material_id;
+            }
+            //return hit;
+        }
+        else
+        {
+            float min_t = std::numeric_limits<float>::infinity();
+
+            IntersectionData temp;
+            //int faceIndex = 0;
+            for(Face* face: faces)
+            {
+                if(face->intersectRay(VAO, r, temp))
+                {
+                    hit = true;
+                    if(temp.t < min_t)
+                    {
+                        min_t = temp.t;
+                        intData = temp;
+                    }
+                }
+                //faceIndex++;
+            }
+        }
+    }
+
+    if(hit)
+    {
+        intData.hitType = MESH;
+        intData.material_id = this->material_id;
 
 
-        //if(transformation != NULL)
-        //{
-        //    intData.intersectionPoint = ray.o + (ray.d * intData.t);
+        intData.intersectionPoint = ray.o + (ray.d * intData.t);
 
-        //    vec4f tmp;
-        //    //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-        //    //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
-
-
-        //    mat4x4 invM = inverse(*transformation);
-        //    tmp = transpose(invM) * vec4f(intData.normal, 0.f);
-        //    intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-        //}
+        vec4f tmp;
+        tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+        intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+        //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
+        //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
     }
     return hit;
 }

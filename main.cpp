@@ -24,9 +24,8 @@ int main(int argc, char* argv[])
         {
             (*it)->getBoundingBox(scene.vertex_data);
         }
-        //mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces, X_AXIS);
         mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
-        //mesh->bbox = AccBVH->getBoundingBox();
+        //mesh->bbox = mesh->AccBVH->getBoundingBox();
     }
     //std::cout << "Mesh BVHs are completed" << std::endl;
     for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)

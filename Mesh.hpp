@@ -12,6 +12,7 @@ class Mesh :public Object
     public:
         Object* AccBVH = NULL;
         std::vector<Face*> faces;
+        UniformRandomGenerator rng;
         
         bool isInstanced;
         Mesh* baseMesh;
@@ -25,6 +26,7 @@ class Mesh :public Object
         //vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
         bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData);
         bool intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData);
+        bool intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData);
         int getMaterialId();
         BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO);
         BoundingBox* getBoundingBox() const;
