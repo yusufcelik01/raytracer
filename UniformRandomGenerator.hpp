@@ -7,7 +7,7 @@
 class UniformRandomGenerator
 {
     private:
-        std::random_device device;
+        //std::random_device device;
         std::mt19937 rng;
         std::uniform_real_distribution<> uniformRand;
 
@@ -15,6 +15,7 @@ class UniformRandomGenerator
 
     public:
         UniformRandomGenerator();
+        UniformRandomGenerator(const UniformRandomGenerator& rhs);
         ~UniformRandomGenerator();
         float getUniformRandNumber(float min, float max);
 };

@@ -3,13 +3,20 @@
 
 UniformRandomGenerator::UniformRandomGenerator()
 {
-    rng = std::mt19937(device());
+    //rng = std::mt19937(device());
+    rng = std::mt19937(rand());
+    uniformRand = std::uniform_real_distribution<>(0.f, 1.f);
+}
+
+UniformRandomGenerator::UniformRandomGenerator(const UniformRandomGenerator& rhs)
+{
+    //rng = std::mt19937(device());
+    rng = std::mt19937(rand());
     uniformRand = std::uniform_real_distribution<>(0.f, 1.f);
 }
 
 UniformRandomGenerator::~UniformRandomGenerator()
 {
-    lock.~mutex();
 }
 
 float UniformRandomGenerator::getUniformRandNumber(float min, float max)

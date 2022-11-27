@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -Ofast
+CFLAGS = -Ofast -g 
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
