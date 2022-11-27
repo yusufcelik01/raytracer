@@ -12,7 +12,6 @@ class Mesh :public Object
     public:
         Object* AccBVH = NULL;
         std::vector<Face*> faces;
-        UniformRandomGenerator rng;
         
         bool isInstanced;
         Mesh* baseMesh;
