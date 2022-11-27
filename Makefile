@@ -98,10 +98,11 @@ test2: raytracer
 	(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
 	
 
-#(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
-#(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
 test3:
 	(time ./raytracer hw3/inputs/rough_metal_glass_plates.xml) 2> time_rough_metal_glass_plates_brushed.txt
+	(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
+	(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
+	(time ./raytracer hw3/inputs/cornellbox_boxes_dynamic.xml) 2> time_cornellbox_boxes_dynamic.txt
 
 	
 
