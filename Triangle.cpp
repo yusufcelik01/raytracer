@@ -19,6 +19,12 @@ Triangle::Triangle(const Triangle& rhs)
     {
         transformation = NULL;
     }
+    if(rhs.bbox) {
+        bbox = new BoundingBox(*(rhs.bbox));
+    }
+    if(rhs.motionBlur) {
+        motionBlur = new vec3f(*(rhs.motionBlur));
+    }
 }
 
 Triangle::~Triangle()
