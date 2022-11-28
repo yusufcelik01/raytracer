@@ -13,13 +13,18 @@ Sphere::Sphere(const Sphere& rhs)
     center_vertex_id = rhs.center_vertex_id;
     radius = rhs.radius;
     material_id = rhs.material_id;
-    if(rhs.transformation)
-    {
+    if(rhs.transformation) {
         transformation = new mat4x4(*(rhs.transformation));
     }
-    else
-    {
+    else {
         transformation = NULL;
+    }
+
+    if(rhs.bbox) {
+        bbox = new BoundingBox(*(rhs.bbox));
+    }
+    if(rhs.motionBlur) {
+        motionBlur = new vec3f(*(rhs.motionBlur));
     }
 }
 
@@ -136,6 +141,12 @@ BoundingBox* Sphere::getBoundingBox(const std::vector<vec3f>& VAO)
     if(transformation)
     {
         *bbox = (*transformation) * (*bbox);
+    }
+    if(motionBlur)
+    {
+        BoundingBox initBox = *bbox;
+        BoundingBox finalBox = translate(*motionBlur) * (*bbox);
+        *bbox = getCompositeBox(initBox, finalBox);
     }
     return bbox;
 }
