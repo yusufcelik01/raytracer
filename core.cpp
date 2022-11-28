@@ -12,7 +12,7 @@
 #include <random>
 #include <cassert>
 
-#define NUMBER_OF_THREADS 8
+//#define NUMBER_OF_THREADS 8
 
 vec3f parser::Scene::getObjNorm(const IntersectionData& data)
 {
@@ -117,6 +117,7 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
         Ray shadowRay;
         shadowRay.o = p + surfNorm * shadow_ray_epsilon;
         shadowRay.d = norm(lightSample - shadowRay.o);
+        shadowRay.time = eyeRay.time;
         vec3f w_light = lightSample - p;
         float distance = length(w_light);
         if(rayQuery(shadowRay, dummy, true, distance))//if shadow
@@ -511,6 +512,8 @@ void parser::Scene::render(Camera camera)
     threadArg.img = img;
     threadArg.rows = new ImageRows(ny);
 
+    unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
+    std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
     std::thread threads[NUMBER_OF_THREADS];
     for(int i = 0; i < NUMBER_OF_THREADS; i++)
     {
