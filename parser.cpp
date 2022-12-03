@@ -1,132 +1,14 @@
 #include "parser.h"
 #include "rtmath.hpp"
-#include "tinyxml2.h"
 #include "ply.h"
 #include <sstream>
 #include <iostream>
 #include <fstream>
 #include <stdexcept>
 #include <cmath>
+#include <cstring>
 #include <limits>
 
-
-void parsePly(char* filePath, parser::plyData& plyMesh)
-{
-    /*
-       THIS FUNCTION IS CONSTRUCTED BY USING THE CODE IN plytest.c
-       by Greg Turk, March 1994
-       for details see
-http://paulbourke.net/dataformats/ply/
-     */
-    int i,j,k;
-    PlyFile *ply;
-    int nelems;
-    char **elist;
-    int file_type;
-    float version;
-    int nprops;
-    int num_elems;
-    PlyProperty **plist;
-    PLY_Vertex **vlist;
-    PLY_Face **flist;
-    char *elem_name;
-    int num_comments;
-    char **comments;
-    int num_obj_info;
-    char **obj_info;
-
-    PlyProperty vert_props[] = { /* list of property information for a vertex */
-        {strdup("x"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
-        {strdup("y"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,y), 0, 0, 0, 0},
-        {strdup("z"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,z), 0, 0, 0, 0},
-    };
-    PlyProperty face_props[] = { /* list of property information for a vertex */
-        {strdup("intensity"), PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
-        {strdup("vertex_indices"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
-            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
-        {strdup("vertex_index"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
-            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
-    };
-    /* open a PLY file for reading */
-    //ply = ply_open_for_reading("hw1/inputs/ply/dragon_remeshed_fixed.ply", &nelems, &elist, &file_type, &version);
-    ply = ply_open_for_reading(filePath, &nelems, &elist, &file_type, &version);
-
-    //printf ("version %f\n", version);
-    //printf ("type %d\n", file_type);
-    for (i = 0; i < nelems; i++) {
-
-        /* get the description of the first element */
-        elem_name = elist[i];
-        plist = ply_get_element_description (ply, elem_name, &num_elems, &nprops);
-
-        /* print the name of the element, for debugging */
-        printf ("element %s %d\n", elem_name, num_elems);
-
-        /* if we're on vertex elements, read them in */
-        if (equal_strings ("vertex", elem_name)) {
-
-            /* create a vertex list to hold all the vertices */
-            vlist = (PLY_Vertex **) malloc (sizeof (PLY_Vertex *) * num_elems);
-
-            /* set up for getting vertex elements */
-
-            ply_get_property (ply, elem_name, &vert_props[0]);
-            ply_get_property (ply, elem_name, &vert_props[1]);
-            ply_get_property (ply, elem_name, &vert_props[2]);
-
-            /* grab all the vertex elements */
-            for (j = 0; j < num_elems; j++) 
-            {
-                /* grab and element from the file */
-                vlist[j] = (PLY_Vertex *) malloc (sizeof (PLY_Vertex));
-                ply_get_element (ply, (void *) vlist[j]);
-
-                /* print out vertex x,y,z for debugging */
-                //printf ("vertex: %g %g %g\n", vlist[j]->x, vlist[j]->y, vlist[j]->z);
-                plyMesh.vertices.push_back(vec3f(vlist[j]->x,vlist[j]->y,vlist[j]->z));
-
-            }
-        }
-
-        /* if we're on face elements, read them in */
-        if (equal_strings ("face", elem_name)) 
-        {
-            /* create a list to hold all the face elements */
-            flist = (PLY_Face **) malloc (sizeof (PLY_Face *) * num_elems);
-
-            /* set up for getting face elements */
-
-            //ply_get_property (ply, elem_name, &face_props[0]);
-            ply_get_property (ply, elem_name, &face_props[1]);
-            ply_get_property (ply, elem_name, &face_props[2]);
-            /* grab all the face elements */
-            for (j = 0; j < num_elems; j++) 
-            {
-                /* grab and element from the file */
-                flist[j] = (PLY_Face *) malloc (sizeof (PLY_Face));
-                ply_get_element (ply, (void *) flist[j]);
-
-                /* print out face info, for debugging */
-                //printf ("face: %d, list = ", flist[j]->intensity);
-                for (k = 2; k < flist[j]->nverts; k++)
-                {
-                    plyMesh.triangles.push_back(Face(flist[j]->verts[0  ], 
-                                                     flist[j]->verts[k-1], 
-                                                     flist[j]->verts[k  ])); 
-                    Face f = plyMesh.triangles[ plyMesh.triangles.size()-1] ;
-                    //std::cout << "ply face : " << f.v0_id << ", " <<  f.v1_id << ", " << f.v2_id << std::endl;
-                    //std::cout << "END POLYGON" << std::endl;
-                    //printf ("%d ", flist[j]->verts[k]);
-                }
-                //printf ("\n");
-            }
-        }
-
-        /* print out the properties we got, for debugging */
-        //for (j = 0; j < nprops; j++)
-        //    printf ("property %s\n", plist[j]->name);
-    }
-}
 
 void parser::Scene::loadFromXml(const std::string &filepath)
 {
@@ -139,7 +21,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         throw std::runtime_error("Error: The xml file cannot be loaded.");
     }
 
-    auto root = file.FirstChild();
+    tinyxml2::XMLNode* root = file.FirstChild();
     if (!root)
     {
         throw std::runtime_error("Error: Root is not found.");
@@ -285,9 +167,17 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
     //Get Lights
     element = root->FirstChildElement("Lights");
+
     auto child = element->FirstChildElement("AmbientLight");
-    stream << child->GetText() << std::endl;
-    stream >> ambient_light.x >> ambient_light.y >> ambient_light.z;
+    if(child) {
+        stream << child->GetText() << std::endl;
+        stream >> ambient_light.x >> ambient_light.y >> ambient_light.z;
+    }
+    else {
+        ambient_light = vec3f(0.f);
+    }
+
+
     element = element->FirstChildElement("PointLight");
     PointLight point_light;
     while (element)
@@ -419,6 +309,8 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     stream.clear();
 
 
+    parseTextures(root);
+
     //get scaling transformations
     element = root->FirstChildElement("Transformations");
     if(element)
@@ -438,6 +330,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             element = element->NextSiblingElement("Scaling");
         }
         stream.clear();
+
 
         //get translations
         element = root->FirstChildElement("Transformations");
@@ -498,18 +391,67 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     mesh = new Mesh();
     while (element)
     {
-        child = element->FirstChildElement("Material");
-        stream << child->GetText() << std::endl;
-        stream >> mesh->material_id;
+        //child = element->FirstChildElement("Material");
+        //stream << child->GetText() << std::endl;
+        //stream >> mesh->material_id;
 
-        child = element->FirstChildElement("MotionBlur");
-        if(child)
-        {
-            vec3f motionBlur;
-            stream << child->GetText() << std::endl;
-            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            mesh->motionBlur = new vec3f(motionBlur);
-        }
+        //child = element->FirstChildElement("MotionBlur");
+        //if(child)
+        //{
+        //    vec3f motionBlur;
+        //    stream << child->GetText() << std::endl;
+        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+        //    mesh->motionBlur = new vec3f(motionBlur);
+        //}
+
+
+        //stream.clear();
+        //child = element->FirstChildElement("Transformations");
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //    std::string transformation;
+        //    mat4x4 M = mat4x4(1.f);
+        //    bool isTransformed = false;
+        //    while(!(stream >> transformation).eof())
+        //    {
+        //        isTransformed = true;
+        //        //std::cout << "mesh transformation: " << transformation << std::endl;
+        //        //if(transformation.substr(1) == "r")
+        //        if(transformation.c_str()[0] == 'r')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "R id: " << id << std::endl;
+        //            M = rotations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 't')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "T id: " << id << std::endl;
+        //            M = translations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 's')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "S id: " << id << std::endl;
+        //            M = scalings[id] * M; 
+        //        }
+        //        //std::cout << " MATRIX M" << std::endl;
+        //        //for (int i = 0; i < 4; i++) {
+        //        //    for (int j = 0; j < 4; j++) {
+        //        //        std::cout << M.m[i][j] << "  ";
+        //        //    }
+        //        //    std::cout << std::endl;
+        //        //}
+        //    }
+        //    if(isTransformed)
+        //    {
+        //        mesh->transformation = new mat4x4(M);
+        //    }
+        //}
+        //stream.clear();
+
+        getObjAttributes(element, mesh); 
 
         child = element->FirstChildElement("Faces");
         //check if it is a ply file
@@ -574,51 +516,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         }
         
 
-        stream.clear();
-        child = element->FirstChildElement("Transformations");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            std::string transformation;
-            mat4x4 M = mat4x4(1.f);
-            bool isTransformed = false;
-            while(!(stream >> transformation).eof())
-            {
-                isTransformed = true;
-                //std::cout << "mesh transformation: " << transformation << std::endl;
-                //if(transformation.substr(1) == "r")
-                if(transformation.c_str()[0] == 'r')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "R id: " << id << std::endl;
-                    M = rotations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 't')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "T id: " << id << std::endl;
-                    M = translations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 's')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "S id: " << id << std::endl;
-                    M = scalings[id] * M; 
-                }
-                //std::cout << " MATRIX M" << std::endl;
-                //for (int i = 0; i < 4; i++) {
-                //    for (int j = 0; j < 4; j++) {
-                //        std::cout << M.m[i][j] << "  ";
-                //    }
-                //    std::cout << std::endl;
-                //}
-            }
-            if(isTransformed)
-            {
-                mesh->transformation = new mat4x4(M);
-            }
-        }
-        stream.clear();
 
         //meshes.push_back(mesh);
         objects.push_back(mesh);//runtime polymorph
@@ -635,60 +532,63 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     Triangle triangle;
     while (element)
     {
-        child = element->FirstChildElement("Material");
-        stream << child->GetText() << std::endl;
-        stream >> triangle.material_id;
-
-        child = element->FirstChildElement("MotionBlur");
-        if(child)
-        {
-            vec3f motionBlur;
-            stream << child->GetText() << std::endl;
-            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            triangle.motionBlur = new vec3f(motionBlur);
-        }
-
         child = element->FirstChildElement("Indices");
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
 
-        child = element->FirstChildElement("Transformations");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            std::string transformation;
-            mat4x4 M = mat4x4(1.f);
-            bool isTransformed = false;
-            while(!(stream >> transformation).eof())
-            {
-                isTransformed = true;
-                //std::cout << "triangle transformation: " << transformation << std::endl;
-                //if(transformation.substr(1) == "r")
-                if(transformation.c_str()[0] == 'r')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "R id: " << id << std::endl;
-                    M = rotations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 't')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "T id: " << id << std::endl;
-                    M = translations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 's')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "S id: " << id << std::endl;
-                    M = scalings[id] * M; 
-                }
-            }
-            if(isTransformed)
-            {
-                triangle.transformation = new mat4x4(M);
-            }
-        }
+        //child = element->FirstChildElement("Material");
+        //stream << child->GetText() << std::endl;
+        //stream >> triangle.material_id;
+
+        //child = element->FirstChildElement("MotionBlur");
+        //if(child)
+        //{
+        //    vec3f motionBlur;
+        //    stream << child->GetText() << std::endl;
+        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+        //    triangle.motionBlur = new vec3f(motionBlur);
+        //}
+
+
+        //child = element->FirstChildElement("Transformations");
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //    std::string transformation;
+        //    mat4x4 M = mat4x4(1.f);
+        //    bool isTransformed = false;
+        //    while(!(stream >> transformation).eof())
+        //    {
+        //        isTransformed = true;
+        //        //std::cout << "triangle transformation: " << transformation << std::endl;
+        //        //if(transformation.substr(1) == "r")
+        //        if(transformation.c_str()[0] == 'r')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "R id: " << id << std::endl;
+        //            M = rotations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 't')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "T id: " << id << std::endl;
+        //            M = translations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 's')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "S id: " << id << std::endl;
+        //            M = scalings[id] * M; 
+        //        }
+        //    }
+        //    if(isTransformed)
+        //    {
+        //        triangle.transformation = new mat4x4(M);
+        //    }
+        //}
         stream.clear();
+
+        getObjAttributes(element, &triangle);
 
         //triangles.push_back(triangle);
         objects.push_back(new Triangle(triangle));//runtime polymorph
@@ -702,9 +602,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     Sphere sphere;
     while (element)
     {
-        child = element->FirstChildElement("Material");
-        stream << child->GetText() << std::endl;
-        stream >> sphere.material_id;
 
         child = element->FirstChildElement("Center");
         stream << child->GetText() << std::endl;
@@ -714,51 +611,56 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> sphere.radius;
 
-        child = element->FirstChildElement("MotionBlur");
-        if(child)
-        {
-            vec3f motionBlur;
-            stream << child->GetText() << std::endl;
-            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            sphere.motionBlur = new vec3f(motionBlur);
-        }
+        //child = element->FirstChildElement("Material");
+        //stream << child->GetText() << std::endl;
+        //stream >> sphere.material_id;
 
-        child = element->FirstChildElement("Transformations");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            std::string transformation;
-            mat4x4 M = mat4x4(1.f);
-            bool isTransformed = false;
-            while(!(stream >> transformation).eof())
-            {
-                isTransformed = true;
-                //std::cout << "sphere transformation: " << transformation << std::endl;
-                //if(transformation.substr(1) == "r")
-                if(transformation.c_str()[0] == 'r')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "R id: " << id << std::endl;
-                    M = rotations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 't')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "T id: " << id << std::endl;
-                    M = translations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 's')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "S id: " << id << std::endl;
-                    M = scalings[id] * M; 
-                }
-            }
-            if(isTransformed)
-            {
-                sphere.transformation = new mat4x4(M);
-            }
-        }
+        //child = element->FirstChildElement("MotionBlur");
+        //if(child)
+        //{
+        //    vec3f motionBlur;
+        //    stream << child->GetText() << std::endl;
+        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+        //    sphere.motionBlur = new vec3f(motionBlur);
+        //}
+
+        //child = element->FirstChildElement("Transformations");
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //    std::string transformation;
+        //    mat4x4 M = mat4x4(1.f);
+        //    bool isTransformed = false;
+        //    while(!(stream >> transformation).eof())
+        //    {
+        //        isTransformed = true;
+        //        //std::cout << "sphere transformation: " << transformation << std::endl;
+        //        //if(transformation.substr(1) == "r")
+        //        if(transformation.c_str()[0] == 'r')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "R id: " << id << std::endl;
+        //            M = rotations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 't')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "T id: " << id << std::endl;
+        //            M = translations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 's')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "S id: " << id << std::endl;
+        //            M = scalings[id] * M; 
+        //        }
+        //    }
+        //    if(isTransformed)
+        //    {
+        //        sphere.transformation = new mat4x4(M);
+        //    }
+        //}
+        getObjAttributes(element, &sphere);
         stream.clear();
         
 
@@ -781,21 +683,62 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         instance->baseMesh = meshes[baseMeshId];
         instance->material_id = instance->baseMesh->material_id;
         
-        child = element->FirstChildElement("Material");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            stream >> instance->material_id;
-        }
+        getObjAttributes(element, instance);
+        //child = element->FirstChildElement("Material");
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //    stream >> instance->material_id;
+        //}
 
-        child = element->FirstChildElement("MotionBlur");
-        if(child)
-        {
-            vec3f motionBlur;
-            stream << child->GetText() << std::endl;
-            stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-            instance->motionBlur = new vec3f(motionBlur);
-        }
+        //child = element->FirstChildElement("MotionBlur");
+        //if(child)
+        //{
+        //    vec3f motionBlur;
+        //    stream << child->GetText() << std::endl;
+        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+        //    instance->motionBlur = new vec3f(motionBlur);
+        //}
+
+        //child = element->FirstChildElement("Transformations");
+        //if(child)
+        //{
+        //    stream << child->GetText() << std::endl;
+        //    std::string transformation;
+        //    mat4x4 M = mat4x4(1.f);
+        //    bool isTransformed = false;
+        //    while(!(stream >> transformation).eof())
+        //    {
+        //        isTransformed = true;
+        //        //std::cout << "Mesh Instance transformation: " << transformation << std::endl;
+        //        //if(transformation.substr(1) == "r")
+        //        if(transformation.c_str()[0] == 'r')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "R id: " << id << std::endl;
+        //            M = rotations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 't')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "T id: " << id << std::endl;
+        //            M = translations[id] * M; 
+        //        }
+        //        else if(transformation.c_str()[0] == 's')
+        //        {
+        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
+        //            //std::cout << "S id: " << id << std::endl;
+        //            M = scalings[id] * M; 
+        //        }
+
+
+        //    }
+        //    if(isTransformed)
+        //    {
+        //        instance->transformation = new mat4x4(M);
+        //    }
+        //}
+        stream.clear();
 
         const char* resetTransformStr = element->Attribute("resetTransform");
         
@@ -815,45 +758,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             }
         }
 
-        child = element->FirstChildElement("Transformations");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            std::string transformation;
-            mat4x4 M = mat4x4(1.f);
-            bool isTransformed = false;
-            while(!(stream >> transformation).eof())
-            {
-                isTransformed = true;
-                //std::cout << "Mesh Instance transformation: " << transformation << std::endl;
-                //if(transformation.substr(1) == "r")
-                if(transformation.c_str()[0] == 'r')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "R id: " << id << std::endl;
-                    M = rotations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 't')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "T id: " << id << std::endl;
-                    M = translations[id] * M; 
-                }
-                else if(transformation.c_str()[0] == 's')
-                {
-                    int id = std::stoi(transformation.substr(1, transformation.size()-1));
-                    //std::cout << "S id: " << id << std::endl;
-                    M = scalings[id] * M; 
-                }
-
-
-            }
-            if(isTransformed)
-            {
-                instance->transformation = new mat4x4(M);
-            }
-        }
-        stream.clear();
         
 
         //objects.push_back(instance);//runtime polymorph
@@ -866,4 +770,265 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     stream.clear();
 
 }
+
+void parsePly(char* filePath, parser::plyData& plyMesh)
+{
+    /*
+       THIS FUNCTION IS CONSTRUCTED BY USING THE CODE IN plytest.c
+       by Greg Turk, March 1994
+       for details see
+http://paulbourke.net/dataformats/ply/
+     */
+    int i,j,k;
+    PlyFile *ply;
+    int nelems;
+    char **elist;
+    int file_type;
+    float version;
+    int nprops;
+    int num_elems;
+    PlyProperty **plist;
+    PLY_Vertex **vlist;
+    PLY_Face **flist;
+    char *elem_name;
+    int num_comments;
+    char **comments;
+    int num_obj_info;
+    char **obj_info;
+
+    PlyProperty vert_props[] = { /* list of property information for a vertex */
+        {strdup("x"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
+        {strdup("y"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,y), 0, 0, 0, 0},
+        {strdup("z"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,z), 0, 0, 0, 0},
+    };
+    PlyProperty face_props[] = { /* list of property information for a vertex */
+        {strdup("intensity"), PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,intensity), 0, 0, 0, 0},
+        {strdup("vertex_indices"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
+            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
+        {strdup("vertex_index"), PLY_INT, PLY_INT, offsetof(PLY_Face,verts),
+            1, PLY_UCHAR, PLY_UCHAR, offsetof(PLY_Face,nverts)},
+    };
+    /* open a PLY file for reading */
+    //ply = ply_open_for_reading("hw1/inputs/ply/dragon_remeshed_fixed.ply", &nelems, &elist, &file_type, &version);
+    ply = ply_open_for_reading(filePath, &nelems, &elist, &file_type, &version);
+
+    //printf ("version %f\n", version);
+    //printf ("type %d\n", file_type);
+    for (i = 0; i < nelems; i++) {
+
+        /* get the description of the first element */
+        elem_name = elist[i];
+        plist = ply_get_element_description (ply, elem_name, &num_elems, &nprops);
+
+        /* print the name of the element, for debugging */
+        printf ("element %s %d\n", elem_name, num_elems);
+
+        /* if we're on vertex elements, read them in */
+        if (equal_strings ("vertex", elem_name)) {
+
+            /* create a vertex list to hold all the vertices */
+            vlist = (PLY_Vertex **) malloc (sizeof (PLY_Vertex *) * num_elems);
+
+            /* set up for getting vertex elements */
+
+            ply_get_property (ply, elem_name, &vert_props[0]);
+            ply_get_property (ply, elem_name, &vert_props[1]);
+            ply_get_property (ply, elem_name, &vert_props[2]);
+
+            /* grab all the vertex elements */
+            for (j = 0; j < num_elems; j++) 
+            {
+                /* grab and element from the file */
+                vlist[j] = (PLY_Vertex *) malloc (sizeof (PLY_Vertex));
+                ply_get_element (ply, (void *) vlist[j]);
+
+                /* print out vertex x,y,z for debugging */
+                //printf ("vertex: %g %g %g\n", vlist[j]->x, vlist[j]->y, vlist[j]->z);
+                plyMesh.vertices.push_back(vec3f(vlist[j]->x,vlist[j]->y,vlist[j]->z));
+
+            }
+        }
+
+        /* if we're on face elements, read them in */
+        if (equal_strings ("face", elem_name)) 
+        {
+            /* create a list to hold all the face elements */
+            flist = (PLY_Face **) malloc (sizeof (PLY_Face *) * num_elems);
+
+            /* set up for getting face elements */
+
+            //ply_get_property (ply, elem_name, &face_props[0]);
+            ply_get_property (ply, elem_name, &face_props[1]);
+            ply_get_property (ply, elem_name, &face_props[2]);
+            /* grab all the face elements */
+            for (j = 0; j < num_elems; j++) 
+            {
+                /* grab and element from the file */
+                flist[j] = (PLY_Face *) malloc (sizeof (PLY_Face));
+                ply_get_element (ply, (void *) flist[j]);
+
+                /* print out face info, for debugging */
+                //printf ("face: %d, list = ", flist[j]->intensity);
+                for (k = 2; k < flist[j]->nverts; k++)
+                {
+                    plyMesh.triangles.push_back(Face(flist[j]->verts[0  ], 
+                                                     flist[j]->verts[k-1], 
+                                                     flist[j]->verts[k  ])); 
+                    Face f = plyMesh.triangles[ plyMesh.triangles.size()-1] ;
+                    //std::cout << "ply face : " << f.v0_id << ", " <<  f.v1_id << ", " << f.v2_id << std::endl;
+                    //std::cout << "END POLYGON" << std::endl;
+                    //printf ("%d ", flist[j]->verts[k]);
+                }
+                //printf ("\n");
+            }
+        }
+
+        /* print out the properties we got, for debugging */
+        //for (j = 0; j < nprops; j++)
+        //    printf ("property %s\n", plist[j]->name);
+    }
+}
+
+void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode)
+{
+    tinyxml2::XMLElement* root = sceneNode->FirstChildElement("Textures"); 
+    root = sceneNode->FirstChildElement("Textures"); 
+    if(root == NULL) {//no textures
+        return;
+    }
+    
+    tinyxml2::XMLElement* child, *element; 
+    element = root->FirstChildElement("Images");
+    if(element)
+    {
+        element = element->FirstChildElement("Image");
+        while(element)
+        {
+            std::cout << element->GetText() << std::endl;
+            //TODO write image and texmap classes and replace this line
+
+            element = element->NextSiblingElement("Image");
+        }
+
+        //get texture maps
+    }
+
+    element = root->FirstChildElement("TextureMap");
+    while(element)
+    {
+        std::cout << "New Texture" << std::endl;
+
+        const char* texMapType = element->Attribute("type");
+        if(texMapType != NULL && strcmp(texMapType, "perlin") == 0)
+        {
+            //TODO check type of texture (perlin/img)
+            child = element->FirstChildElement("NoiseScale");
+            std::cout << child->GetText() << std::endl;
+            child = element->FirstChildElement("NoiseConversion");
+            std::cout << child->GetText() << std::endl;
+        }
+        else if(texMapType != NULL && strcmp(texMapType, "checkerboard") == 0)
+        {
+            child = element->FirstChildElement("Scale");
+            std::cout << child->GetText() << std::endl;
+            child = element->FirstChildElement("Offset");
+            std::cout << child->GetText() << std::endl;
+            child = element->FirstChildElement("BlackColor");
+            std::cout << child->GetText() << std::endl;
+            child = element->FirstChildElement("WhiteColor");
+            std::cout << child->GetText() << std::endl;
+        }
+        else if(texMapType != NULL && strcmp(texMapType, "image") == 0)
+        {
+            child = element->FirstChildElement("ImageId");
+            std::cout << child->GetText() << std::endl;
+
+
+            //TODO perlin noise do not have interpolation attribute
+            child = element->FirstChildElement("Interpolation");
+            std::cout << child->GetText() << std::endl;
+
+        }
+
+        child = element->FirstChildElement("DecalMode");
+        std::cout << child->GetText() << std::endl;
+        //TODO write image and texmap classes and replace this line
+        child = element->FirstChildElement("BumpFactor");
+        if(child) {
+            std::cout << child->GetText() << std::endl;
+        }
+
+        //next element
+        element = element->NextSiblingElement("TextureMap");
+    }
+
+
+    
+    tinyxml2::XMLNode* imgNode;
+}
+
+void parser::Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
+{
+    std::stringstream stream;
+
+    auto child = element->FirstChildElement("Material");
+    stream << child->GetText() << std::endl;
+    stream >> obj->material_id;
+
+    child = element->FirstChildElement("MotionBlur");
+    if(child)
+    {
+        vec3f motionBlur;
+        stream << child->GetText() << std::endl;
+        stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
+        obj->motionBlur = new vec3f(motionBlur);
+    }
+
+    stream.clear();
+    child = element->FirstChildElement("Transformations");
+    if(child)
+    {
+        stream << child->GetText() << std::endl;
+        std::string transformation;
+        mat4x4 M = mat4x4(1.f);
+        bool isTransformed = false;
+        while(!(stream >> transformation).eof())
+        {
+            isTransformed = true;
+            //std::cout << "mesh transformation: " << transformation << std::endl;
+            //if(transformation.substr(1) == "r")
+            if(transformation.c_str()[0] == 'r')
+            {
+                int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                //std::cout << "R id: " << id << std::endl;
+                M = rotations[id] * M; 
+            }
+            else if(transformation.c_str()[0] == 't')
+            {
+                int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                //std::cout << "T id: " << id << std::endl;
+                M = translations[id] * M; 
+            }
+            else if(transformation.c_str()[0] == 's')
+            {
+                int id = std::stoi(transformation.substr(1, transformation.size()-1));
+                //std::cout << "S id: " << id << std::endl;
+                M = scalings[id] * M; 
+            }
+            //std::cout << " MATRIX M" << std::endl;
+            //for (int i = 0; i < 4; i++) {
+            //    for (int j = 0; j < 4; j++) {
+            //        std::cout << M.m[i][j] << "  ";
+            //    }
+            //    std::cout << std::endl;
+            //}
+        }
+        if(isTransformed)
+        {
+            obj->transformation = new mat4x4(M);
+        }
+    }
+    stream.clear();
+}
+
 
