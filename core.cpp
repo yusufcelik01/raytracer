@@ -342,7 +342,12 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
     }
     else {
         if(isPrimaryRay) {
-            return this->background_color;
+            if(background_texture == NULL) {
+                return this->background_color;
+            }
+            else {
+                return background_texture->sample(ray.texCoord.s, ray.texCoord.t);
+            }
         }
         else {
             return vec3f(0, 0, 0);
@@ -716,6 +721,10 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             }
             for(vec2f sample: samples)
             {
+                vec2f backGroundCoords; 
+                backGroundCoords.x = (x + sample.x)/ arg->nx;
+                backGroundCoords.y = (y + sample.y)/ arg->ny;
+
                 float s_u = (x + sample.x) * arg->pixelWidth;
                 float s_v = (y + sample.y) * arg->pixelHeight;
 
@@ -752,6 +761,7 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
 
 
                 ray.time =  randTime(rand_mt);
+                ray.texCoord = backGroundCoords;
                 //std::cout << "ray time: " << ray.time << std::endl;
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
                 vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);

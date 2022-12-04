@@ -8,7 +8,35 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include "stb_image.h"
 
+
+char* navigateDirs(const char* curr_pwd, const char* action)
+{
+    char* newPath;
+    if(action[0] == '~' || action[0] == '/')
+    {
+        strcpy(newPath, action);
+    }
+    else if( index(curr_pwd, '/') == NULL)
+    {
+        strcpy(newPath, action);
+    }
+    else
+    {
+        const char* begin = curr_pwd;
+        const char* end = rindex(begin, '/');
+        size_t newPathSize = end - begin  + 256;
+        newPath = new char[newPathSize];
+        for(size_t i = 0; i < newPathSize; ++i)
+        {
+            newPath[i] = '\0';
+        }
+        strncpy(newPath, begin, end - begin + 1);
+        strncat(newPath, action, 254);
+    }
+    return newPath;
+}
 
 void parser::Scene::loadFromXml(const std::string &filepath)
 {
@@ -309,7 +337,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     stream.clear();
 
 
-    parseTextures(root);
+    parseTextures(root, filepath.c_str());
 
     //get scaling transformations
     element = root->FirstChildElement("Transformations");
@@ -391,64 +419,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
     mesh = new Mesh();
     while (element)
     {
-        //child = element->FirstChildElement("Material");
-        //stream << child->GetText() << std::endl;
-        //stream >> mesh->material_id;
-
-        //child = element->FirstChildElement("MotionBlur");
-        //if(child)
-        //{
-        //    vec3f motionBlur;
-        //    stream << child->GetText() << std::endl;
-        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-        //    mesh->motionBlur = new vec3f(motionBlur);
-        //}
-
-
-        //stream.clear();
-        //child = element->FirstChildElement("Transformations");
-        //if(child)
-        //{
-        //    stream << child->GetText() << std::endl;
-        //    std::string transformation;
-        //    mat4x4 M = mat4x4(1.f);
-        //    bool isTransformed = false;
-        //    while(!(stream >> transformation).eof())
-        //    {
-        //        isTransformed = true;
-        //        //std::cout << "mesh transformation: " << transformation << std::endl;
-        //        //if(transformation.substr(1) == "r")
-        //        if(transformation.c_str()[0] == 'r')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "R id: " << id << std::endl;
-        //            M = rotations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 't')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "T id: " << id << std::endl;
-        //            M = translations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 's')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "S id: " << id << std::endl;
-        //            M = scalings[id] * M; 
-        //        }
-        //        //std::cout << " MATRIX M" << std::endl;
-        //        //for (int i = 0; i < 4; i++) {
-        //        //    for (int j = 0; j < 4; j++) {
-        //        //        std::cout << M.m[i][j] << "  ";
-        //        //    }
-        //        //    std::cout << std::endl;
-        //        //}
-        //    }
-        //    if(isTransformed)
-        //    {
-        //        mesh->transformation = new mat4x4(M);
-        //    }
-        //}
         //stream.clear();
 
         getObjAttributes(element, mesh); 
@@ -461,28 +431,30 @@ void parser::Scene::loadFromXml(const std::string &filepath)
             //std::cerr << "ply files are not implemented yet" << std::endl;
             //exit(-1);
             char *plyFilePath;
-            if(plyFileName[0] == '~' || plyFileName[0] == '/' )
-            {
-                strcpy(plyFilePath, plyFileName);//abs path
-            }
-            else if( index(filepath.c_str(), '/') == NULL)
-            {
-                strcpy(plyFilePath, plyFileName);
-            }
-            else
-            {
-                const char* begin = filepath.c_str();
-                const char* end = rindex(begin, '/');
-                size_t plyPathStrSize = end - begin + 128;
-                plyFilePath = new char[plyPathStrSize];
-                for(size_t foo = 0; foo < plyPathStrSize; ++foo) {
-                    plyFilePath[foo] = '\0';//fill the are with nulls
-                }
-                strncpy(plyFilePath, begin, end - begin + 1);
-                strncat(plyFilePath, plyFileName, 126);
-            }
+            //if(plyFileName[0] == '~' || plyFileName[0] == '/' )
+            //{
+            //    strcpy(plyFilePath, plyFileName);//abs path
+            //}
+            //else if( index(filepath.c_str(), '/') == NULL)
+            //{
+            //    strcpy(plyFilePath, plyFileName);
+            //}
+            //else
+            //{
+            //    const char* begin = filepath.c_str();
+            //    const char* end = rindex(begin, '/');
+            //    size_t plyPathStrSize = end - begin + 128;
+            //    plyFilePath = new char[plyPathStrSize];
+            //    for(size_t foo = 0; foo < plyPathStrSize; ++foo) {
+            //        plyFilePath[foo] = '\0';//fill the are with nulls
+            //    }
+            //    strncpy(plyFilePath, begin, end - begin + 1);
+            //    strncat(plyFilePath, plyFileName, 126);
+            //}
             //std::cout << plyFilePath << std::endl;
             plyData obj;
+            plyFilePath = navigateDirs(filepath.c_str(), plyFileName);
+            std::cout << std::string(plyFilePath) << std::endl;
             parsePly(plyFilePath, obj);
 
             size_t numOfTotalVertices = vertex_data.size();
@@ -503,12 +475,29 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         }
         else// a regular non-ply mesh
         {
+            const char* vertexOffsetStr = child->Attribute("vertexOffset");
+            const char* textureOffsetStr = child->Attribute("textureOffset");
+            int vertexOffset = 0;
+            int textureOffset = 0;
+            if(vertexOffsetStr != NULL)
+            {
+                vertexOffset = std::stoi(vertexOffsetStr); 
+            }
+            if(textureOffsetStr != NULL)
+            {
+                textureOffset = std::stoi(textureOffsetStr); 
+            }
+
             stream << child->GetText() << std::endl;
             Face* face;
             face = new Face();
             while (!(stream >> face->v0_id).eof())
             {
                 stream >> face->v1_id >> face->v2_id;
+                face->v0_id += vertexOffset;
+                face->v1_id += vertexOffset;
+                face->v2_id += vertexOffset;
+
                 mesh->faces.push_back(face);
                 face = new Face();
             }
@@ -536,56 +525,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
 
-        //child = element->FirstChildElement("Material");
-        //stream << child->GetText() << std::endl;
-        //stream >> triangle.material_id;
-
-        //child = element->FirstChildElement("MotionBlur");
-        //if(child)
-        //{
-        //    vec3f motionBlur;
-        //    stream << child->GetText() << std::endl;
-        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-        //    triangle.motionBlur = new vec3f(motionBlur);
-        //}
-
-
-        //child = element->FirstChildElement("Transformations");
-        //if(child)
-        //{
-        //    stream << child->GetText() << std::endl;
-        //    std::string transformation;
-        //    mat4x4 M = mat4x4(1.f);
-        //    bool isTransformed = false;
-        //    while(!(stream >> transformation).eof())
-        //    {
-        //        isTransformed = true;
-        //        //std::cout << "triangle transformation: " << transformation << std::endl;
-        //        //if(transformation.substr(1) == "r")
-        //        if(transformation.c_str()[0] == 'r')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "R id: " << id << std::endl;
-        //            M = rotations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 't')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "T id: " << id << std::endl;
-        //            M = translations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 's')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "S id: " << id << std::endl;
-        //            M = scalings[id] * M; 
-        //        }
-        //    }
-        //    if(isTransformed)
-        //    {
-        //        triangle.transformation = new mat4x4(M);
-        //    }
-        //}
         stream.clear();
 
         getObjAttributes(element, &triangle);
@@ -611,55 +550,6 @@ void parser::Scene::loadFromXml(const std::string &filepath)
         stream << child->GetText() << std::endl;
         stream >> sphere.radius;
 
-        //child = element->FirstChildElement("Material");
-        //stream << child->GetText() << std::endl;
-        //stream >> sphere.material_id;
-
-        //child = element->FirstChildElement("MotionBlur");
-        //if(child)
-        //{
-        //    vec3f motionBlur;
-        //    stream << child->GetText() << std::endl;
-        //    stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
-        //    sphere.motionBlur = new vec3f(motionBlur);
-        //}
-
-        //child = element->FirstChildElement("Transformations");
-        //if(child)
-        //{
-        //    stream << child->GetText() << std::endl;
-        //    std::string transformation;
-        //    mat4x4 M = mat4x4(1.f);
-        //    bool isTransformed = false;
-        //    while(!(stream >> transformation).eof())
-        //    {
-        //        isTransformed = true;
-        //        //std::cout << "sphere transformation: " << transformation << std::endl;
-        //        //if(transformation.substr(1) == "r")
-        //        if(transformation.c_str()[0] == 'r')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "R id: " << id << std::endl;
-        //            M = rotations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 't')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "T id: " << id << std::endl;
-        //            M = translations[id] * M; 
-        //        }
-        //        else if(transformation.c_str()[0] == 's')
-        //        {
-        //            int id = std::stoi(transformation.substr(1, transformation.size()-1));
-        //            //std::cout << "S id: " << id << std::endl;
-        //            M = scalings[id] * M; 
-        //        }
-        //    }
-        //    if(isTransformed)
-        //    {
-        //        sphere.transformation = new mat4x4(M);
-        //    }
-        //}
         getObjAttributes(element, &sphere);
         stream.clear();
         
@@ -889,8 +779,9 @@ http://paulbourke.net/dataformats/ply/
     }
 }
 
-void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode)
+void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir)
 {
+    std::stringstream stream;
     tinyxml2::XMLElement* root = sceneNode->FirstChildElement("Textures"); 
     root = sceneNode->FirstChildElement("Textures"); 
     if(root == NULL) {//no textures
@@ -902,11 +793,16 @@ void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode)
     if(element)
     {
         element = element->FirstChildElement("Image");
+        Image image;
         while(element)
         {
-            std::cout << element->GetText() << std::endl;
+            //std::cout << element->GetText() << std::endl;
+            char* imgPath = navigateDirs(inputFileDir, element->GetText());
+            printf("Tex image path : %s\n", imgPath);
+            image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 3);
             //TODO write image and texmap classes and replace this line
 
+            images.push_back(image);
             element = element->NextSiblingElement("Image");
         }
 
@@ -914,8 +810,10 @@ void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode)
     }
 
     element = root->FirstChildElement("TextureMap");
+    Texture* tex = NULL;
     while(element)
     {
+        stream.clear();
         std::cout << "New Texture" << std::endl;
 
         const char* texMapType = element->Attribute("type");
@@ -940,24 +838,90 @@ void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode)
         }
         else if(texMapType != NULL && strcmp(texMapType, "image") == 0)
         {
+            ImageTexture* imgTex = new ImageTexture();
             child = element->FirstChildElement("ImageId");
             std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            int imgId;
+            stream >> imgId;
+            imgTex->img = images[imgId-1];
 
 
             //TODO perlin noise do not have interpolation attribute
             child = element->FirstChildElement("Interpolation");
-            std::cout << child->GetText() << std::endl;
+            std::string str;
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+            }
+            else
+            {
+                stream << "bilinear" << std::endl;
+            }
+            stream >> str;
 
+            if(str == "bilinear")
+            {
+                //std::cout << "INTERPOLATE BI LINEAR" << std::endl;
+                imgTex->interpolationType = INTERPOLATE_BI_LINEAR;
+            }
+            else if(str == "nearest")
+            {
+                std::cout << "INTERPOLATE NEAREST" << std::endl;
+                imgTex->interpolationType = INTERPOLATE_NEAREST;
+            }
+
+            tex = imgTex;
+        }
+        else//undefined texture type
+        {
+            std::cout << "IGNORING UNKNOWN TEXTURE TYPE: " << texMapType << std::endl;
+            element = element->NextSiblingElement("TextureMap");
+            continue;
         }
 
         child = element->FirstChildElement("DecalMode");
-        std::cout << child->GetText() << std::endl;
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "replace_kd";//deafult value 
+        }
+        std::string decalMode;
+        stream >> decalMode;
+        if(decalMode == "replace_kd")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_KD;
+        }
+        else if(decalMode == "replace_ks")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_KS;
+        }
+        else if(decalMode == "blend_kd")
+        {
+            tex->decalMode = TEX_MODE_BLEND_KD;
+        }
+        else if(decalMode == "replace_background")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_BACKGROUND;
+            background_texture = tex;
+        }
+
+
         //TODO write image and texmap classes and replace this line
         child = element->FirstChildElement("BumpFactor");
         if(child) {
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
         }
+        else {
+            stream << 1;
+        }
+        stream >> tex->bumpFactor;
 
+        textures.push_back(tex);
+        tex = NULL;
         //next element
         element = element->NextSiblingElement("TextureMap");
     }

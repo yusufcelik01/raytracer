@@ -14,6 +14,8 @@
 #include "PointLight.hpp"
 #include "AreaLight.hpp"
 #include "tinyxml2.h"
+#include "Texture.hpp"
+#include "ImageTexture.hpp"
 
 namespace parser
 {
@@ -23,9 +25,12 @@ namespace parser
     {
         //Data
         vec3i background_color;
+        Texture* background_texture = NULL; 
         float shadow_ray_epsilon;
         int max_recursion_depth;
         std::vector<Camera> cameras;
+        std::vector<Image> images;
+        std::vector<Texture*> textures;
         
         vec3f ambient_light;
         std::vector<PointLight> point_lights;
@@ -63,7 +68,8 @@ namespace parser
 
         //parsing helpers
         void getObjAttributes(tinyxml2::XMLNode* element, Object* obj);
-        void parseTextures(tinyxml2::XMLNode* sceneNode);
+        //void parseTextures(tinyxml2::XMLNode* sceneNode);
+        void parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir);
     };
 
     struct plyData
