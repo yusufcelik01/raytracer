@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -Ofast -g 
+CFLAGS = -g #-msse2 -Ofast
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
@@ -11,7 +11,7 @@ GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o
+OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
@@ -32,7 +32,7 @@ AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
 
-PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp
+PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
 parser.o: parser.cpp $(PARSER_HEADERS)
 plyfile.o: plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c plyfile.c
@@ -95,7 +95,7 @@ test2: raytracer
 	(time ./raytracer hw2/inputs/dragon_metal.xml) 2> time_dragon_metal.txt
 	(time ./raytracer hw2/inputs/ellipsoids.xml) 2> time_ellipsoids.txt
 	(time ./raytracer hw2/inputs/metal_glass_plates.xml) 2> time_metal_glass_plates.txt
-	(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
+	#(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
 	
 
 test3:
