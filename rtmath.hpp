@@ -10,4 +10,11 @@
 #define FLOAT_MAX std::numeric_limits<float>::max()
 #define FLOAT_MIN std::numeric_limits<float>::min()
 
+
+template <class T>
+T mix(T x, T y, float a);
+
+float clamp(float x, float min, float max);
+
+
 #endif
