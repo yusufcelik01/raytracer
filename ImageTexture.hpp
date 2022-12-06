@@ -14,7 +14,7 @@ enum  TexSamplerInterpolatorType
 class ImageTexture: public Texture
 {
     private:
-        //sampleBilinear(float s, float t);
+        vec3f sampleBilinear(float s, float t);
         vec3f sampleNearest(float s, float t);
     public:
         TexSamplerInterpolatorType interpolationType;

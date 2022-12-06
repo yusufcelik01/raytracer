@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g #-msse2 -Ofast
+CFLAGS = -msse2 -Ofast -g
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
@@ -9,9 +9,9 @@ PARSER_FILES= plyfile.o parser.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
-MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o
+MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o
+OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o Image.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
@@ -27,6 +27,7 @@ vec2.o: vec2.hpp
 vec3.o: vec3.hpp
 vec4.o: vec4.hpp
 mat4x4.o: mat4x4.hpp
+rtmath.o: rtmath.hpp
 
 AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
@@ -43,10 +44,11 @@ Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
 Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
 
-
 BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
 BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
+
+ImageTexture.o: ImageTexture.hpp rtmath.hpp
 
 core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 
