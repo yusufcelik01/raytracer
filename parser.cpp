@@ -867,7 +867,7 @@ void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inpu
             }
             else if(str == "nearest")
             {
-                std::cout << "INTERPOLATE NEAREST" << std::endl;
+                //std::cout << "INTERPOLATE NEAREST" << std::endl;
                 imgTex->interpolationType = INTERPOLATE_NEAREST;
             }
 
