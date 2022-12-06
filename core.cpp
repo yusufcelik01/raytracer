@@ -683,7 +683,7 @@ vec3f filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<vec3
     size_t sampleSize = sampleValues.size();
     for(size_t i = 0; i < sampleSize; ++i)
     {
-        float g = gauss(1/6.f, sampleCoords[i].x -0.5f, sampleCoords[i].y - 0.5f);
+        float g = gauss(1/4.f, sampleCoords[i].x -0.5f, sampleCoords[i].y - 0.5f);
         totalWeight += g;
         totalValue += g * sampleValues[i];
     }
@@ -771,8 +771,8 @@ void parser::Scene::renderRowMultiSampled(void* void_arg)
             
             //apply box filter to samples
             vec3f pixelColor = vec3f(0.f);
-            pixelColor = filterBox(sampleColors); 
-            //pixelColor = filterGauss(samples, sampleColors); 
+            //pixelColor = filterBox(sampleColors); 
+            pixelColor = filterGauss(samples, sampleColors); 
             //end box filter
             vec3i c = clamp(vec3i(pixelColor), 0, 255);
 
