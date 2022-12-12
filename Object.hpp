@@ -7,6 +7,7 @@
 #include "Ray.hpp"
 #include "IntersectionData.hpp"
 #include "BoundingBox.hpp"
+#include "Texture.hpp"
 #include "rtmath.hpp"
 
 
@@ -18,6 +19,8 @@ class Object
         BoundingBox* bbox = NULL;
         mat4x4* transformation = NULL;
         vec3f* motionBlur = NULL;
+
+        std::vector<Texture*> textures;
 
         //member functions
         virtual bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData) = 0;
