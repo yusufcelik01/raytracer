@@ -38,7 +38,7 @@ char* navigateDirs(const char* curr_pwd, const char* action)
     return newPath;
 }
 
-void parser::Scene::loadFromXml(const std::string &filepath)
+void Scene::loadFromXml(const std::string &filepath)
 {
     tinyxml2::XMLDocument file;
     std::stringstream stream;
@@ -661,7 +661,7 @@ void parser::Scene::loadFromXml(const std::string &filepath)
 
 }
 
-void parsePly(char* filePath, parser::plyData& plyMesh)
+void parsePly(char* filePath, plyData& plyMesh)
 {
     /*
        THIS FUNCTION IS CONSTRUCTED BY USING THE CODE IN plytest.c
@@ -779,7 +779,7 @@ http://paulbourke.net/dataformats/ply/
     }
 }
 
-void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir)
+void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir)
 {
     std::stringstream stream;
     tinyxml2::XMLElement* root = sceneNode->FirstChildElement("Textures"); 
@@ -931,7 +931,7 @@ void parser::Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inpu
     tinyxml2::XMLNode* imgNode;
 }
 
-void parser::Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
+void Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
 {
     std::stringstream stream;
 

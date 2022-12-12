@@ -14,7 +14,7 @@
 
 //#define NUMBER_OF_THREADS 8
 
-vec3f parser::Scene::getObjNorm(const IntersectionData& data)
+vec3f Scene::getObjNorm(const IntersectionData& data)
 {
     vec3f n;
     vec3f a,b,c;
@@ -73,7 +73,7 @@ vec3f computeBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w
     return color;
 }
 
-vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
+vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
 {
     //for now only calculate diffuse & spcular shading
     //for only point lights
@@ -138,7 +138,7 @@ vec3f parser::Scene::calculateLighting(Ray eyeRay, Material material, vec3f surf
     return color;
 }
 
-bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT, float nearDist, vec3f gaze)
+bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT, float nearDist, vec3f gaze)
 {
     IntersectionData closestObjData;
     closestObjData.material_id = -1;
@@ -166,7 +166,7 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
     return hit;
 
 }
-bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT)
+bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT)
 {
     IntersectionData closestObjData;
     closestObjData.material_id = -1;
@@ -194,11 +194,11 @@ bool parser::Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRa
     return hit;
 }
 
-vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
+vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
 {
     return getRayColor(ray, depth, false, currentMedium, vec3f(0.f), 0.f);
 }
-vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
+vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
 {
     if(depth < 0)
     {
@@ -357,7 +357,7 @@ vec3f parser::Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material
 
 
 
-//void parser::Scene::render(Camera camera)
+//void Scene::render(Camera camera)
 //{
 //    vec3f e = camera.position;
 //    vec3f u, v, w;    
@@ -465,7 +465,7 @@ struct RowRendererArg
     unsigned char* img;//output image data
 };
 
-void parser::Scene::render(Camera camera)
+void Scene::render(Camera camera)
 {
     vec3f e = camera.position;
     vec3f u, v, w;    
@@ -522,8 +522,8 @@ void parser::Scene::render(Camera camera)
     std::thread threads[NUMBER_OF_THREADS];
     for(int i = 0; i < NUMBER_OF_THREADS; i++)
     {
-        //threads[i] = std::thread(&parser::Scene::renderRow, this, &threadArg);
-        threads[i] = std::thread(&parser::Scene::renderRowMultiSampled, this, &threadArg);
+        //threads[i] = std::thread(&Scene::renderRow, this, &threadArg);
+        threads[i] = std::thread(&Scene::renderRowMultiSampled, this, &threadArg);
     }
 
 
@@ -567,7 +567,7 @@ void parser::Scene::render(Camera camera)
 
 
 //render single sample for each pixel
-void parser::Scene::renderRow(void* void_arg)
+void Scene::renderRow(void* void_arg)
 {
     RowRendererArg* arg = (RowRendererArg*) void_arg;
 
@@ -690,7 +690,7 @@ vec3f filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<vec3
     return totalValue / totalWeight;
 }
 
-void parser::Scene::renderRowMultiSampled(void* void_arg)
+void Scene::renderRowMultiSampled(void* void_arg)
 {
     RowRendererArg* arg = (RowRendererArg*) void_arg;
 
