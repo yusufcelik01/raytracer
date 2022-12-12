@@ -12,6 +12,7 @@ class Mesh :public Object
     public:
         Object* AccBVH = NULL;
         std::vector<Face*> faces;
+        std::vector<vec2f*> textureCoords;
         
         bool isInstanced;
         Mesh* baseMesh;

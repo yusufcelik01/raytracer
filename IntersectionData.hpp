@@ -1,6 +1,8 @@
 #ifndef __INTERSECTION__POINT__DATA
 #define __INTERSECTION__POINT__DATA
 
+#include "Material.hpp"
+
 enum hitObjectType
 {
     NONE,
@@ -23,6 +25,7 @@ class IntersectionData //this is where i break oop and go back to C
     
     vec3f intersectionPoint;
     int material_id;
+    Material material;
     vec3f normal;
 };
 

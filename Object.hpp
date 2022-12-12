@@ -16,6 +16,7 @@ class Object
 {
     public:
         int material_id;
+        Material material;
         BoundingBox* bbox = NULL;
         mat4x4* transformation = NULL;
         vec3f* motionBlur = NULL;

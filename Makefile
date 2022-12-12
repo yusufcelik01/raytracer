@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -msse2 -Ofast -g
+CFLAGS = -g #-msse2 -Ofast
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 

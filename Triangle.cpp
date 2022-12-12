@@ -11,6 +11,7 @@ Triangle::Triangle(const Triangle& rhs)
 {
     indices = rhs.indices;
     material_id = rhs.material_id;
+    material = rhs.material;
     if(rhs.transformation)
     {
         transformation = new mat4x4(*(rhs.transformation));
@@ -67,6 +68,7 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Inter
         //intData.obj = this;
         intData.hitType = TRIANGLE;
         intData.material_id = this->material_id;
+        intData.material = this->material;
 
         if(transformation != NULL)
         {

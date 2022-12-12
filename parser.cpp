@@ -939,6 +939,7 @@ void Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
     stream << child->GetText() << std::endl;
     stream >> obj->material_id;
     obj->material_id--;
+    obj->material = materials[obj->material_id];
 
     child = element->FirstChildElement("MotionBlur");
     if(child)

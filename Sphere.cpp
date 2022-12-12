@@ -13,6 +13,7 @@ Sphere::Sphere(const Sphere& rhs)
     center_vertex_id = rhs.center_vertex_id;
     radius = rhs.radius;
     material_id = rhs.material_id;
+    material = rhs.material;
     if(rhs.transformation) {
         transformation = new mat4x4(*(rhs.transformation));
     }
@@ -97,6 +98,7 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     intData.hitType = SPHERE;
     intData.sphereCenterId = center_vertex_id;
     intData.material_id = this->material_id;
+    intData.material = this->material;
 
     //object space intersection point and normal
     intData.intersectionPoint = r.o + (r.d * intData.t);

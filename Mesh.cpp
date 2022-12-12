@@ -118,6 +118,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
             {
                 intData.hitType = MESH;
                 intData.material_id = this->material_id;
+                intData.material = this->material;
             }
             //return hit;
         }
@@ -147,6 +148,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
     {
         intData.hitType = MESH;
         intData.material_id = this->material_id;
+        intData.material = this->material;
 
 
         //intData.intersectionPoint = ray.o + (ray.d * intData.t);
@@ -277,6 +279,7 @@ bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& 
         {
             intData.hitType = MESH;
             intData.material_id = this->material_id;
+            intData.material = this->material;
         }
         //return hit;
     }
@@ -307,6 +310,7 @@ bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& 
     {
         intData.hitType = MESH;
         intData.material_id = this->material_id;
+        intData.material = this->material;
     }
     return hit;
 }
@@ -355,6 +359,7 @@ bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray
             {
                 intData.hitType = MESH;
                 intData.material_id = this->material_id;
+                intData.material = this->material;
             }
             //return hit;
         }
@@ -384,6 +389,7 @@ bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray
     {
         intData.hitType = MESH;
         intData.material_id = this->material_id;
+        intData.material = this->material;
 
 
         intData.intersectionPoint = ray.o + (ray.d * intData.t);
