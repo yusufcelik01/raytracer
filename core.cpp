@@ -218,7 +218,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
     }
 
     if(hit){
-        Material objMaterial = materials[closestObjData.material_id - 1];
+        Material objMaterial = materials[closestObjData.material_id];
         vec3f n = closestObjData.normal;
 
         vec3f color = vec3f(0.f);
