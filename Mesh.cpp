@@ -149,13 +149,13 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
         intData.material_id = this->material_id;
 
 
-        intData.intersectionPoint = ray.o + (ray.d * intData.t);
+        //intData.intersectionPoint = ray.o + (ray.d * intData.t);
+        tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
+        intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
 
-        vec4f tmp;
+        //vec4f tmp;
         tmp = transpose(invM) * vec4f(intData.normal, 0.f);
         intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-        //tmp = (*transformation) * vec4f(intData.intersectionPoint, 1.f);
-        //intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
     }
     return hit;
 }
