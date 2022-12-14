@@ -11,9 +11,10 @@ BVH::BVH()
 }
 
 
-//TODO remove debug lines and iostream
-bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
+//bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
+bool BVH::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData)
 {
+    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     if(bbox->hitRay(ray) == false)
     {
         return false;
@@ -29,11 +30,11 @@ bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersecti
     bool hitRight = false;
     if(left) {
         //std::cout << "BVH has left" << std::endl;
-        hitLeft = left->intersectRay(VAO, ray, hit1);
+        hitLeft = left->intersectRay(vertexBuffers, ray, hit1);
     }
     if(right) {
         //std::cout << "BVH has right" << std::endl;
-        hitRight = right->intersectRay(VAO, ray, hit2);
+        hitRight = right->intersectRay(vertexBuffers, ray, hit2);
     }
     
     if(hitLeft)

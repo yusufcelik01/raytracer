@@ -69,8 +69,10 @@ Mesh::~Mesh()
     //}
 }
 
-bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+//bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData)
 {
+    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     //float timeSample = rng.getUniformRandNumber(0,1);
     float timeSample = ray.time;
     mat4x4 compositeTransformation(1.f), invM(1.f);
@@ -100,11 +102,11 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
     {
         if(resetTransform)
         {
-            hit = baseMesh->intersectRayResetTransform(VAO, r, intData);    
+            hit = baseMesh->intersectRayResetTransform(vertexBuffers, r, intData);    
         }
         else
         {
-            hit = baseMesh->intersectRayResetMotion(VAO, r, intData);
+            hit = baseMesh->intersectRayResetMotion(vertexBuffers, r, intData);
         }
         //return hit;
     }
@@ -112,7 +114,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
     {
         if(AccBVH != NULL)
         {
-            hit = AccBVH->intersectRay(VAO, r, intData);
+            hit = AccBVH->intersectRay(vertexBuffers, r, intData);
             if(hit)
             {
                 intData.hitType = MESH;
@@ -129,7 +131,7 @@ bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Intersect
             //int faceIndex = 0;
             for(Face* face: faces)
             {
-                if(face->intersectRay(VAO, r, temp))
+                if(face->intersectRay(vertexBuffers, r, temp))
                 {
                     hit = true;
                     if(temp.t < min_t)
@@ -263,17 +265,18 @@ BoundingBox* Mesh::getBoundingBox() const
     return bbox;
 }
 
-bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
+//bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
+bool Mesh::intersectRayResetTransform(const VertexBuffers& vertexBuffers, const Ray& r, IntersectionData& intData)
 {
     if(isInstanced)
     {
-        return baseMesh->intersectRay(VAO, r, intData);
+        return baseMesh->intersectRay(vertexBuffers, r, intData);
     }
 
     bool hit = false;
     if(AccBVH != NULL)
     {
-        hit = AccBVH->intersectRay(VAO, r, intData);
+        hit = AccBVH->intersectRay(vertexBuffers, r, intData);
         if(hit)
         {
             intData.hitType = MESH;
@@ -292,7 +295,7 @@ bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& 
         int faceIndex = 0;
         for(Face* face: faces)
         {
-            if(face->intersectRay(VAO, r, temp))
+            if(face->intersectRay(vertexBuffers, r, temp))
             {
                 hit = true;
                 if(temp.t < min_t)
@@ -314,7 +317,8 @@ bool Mesh::intersectRayResetTransform(const std::vector<vec3f>& VAO, const Ray& 
     return hit;
 }
 
-bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+//bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+bool Mesh::intersectRayResetMotion(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData)
 {
     //float timeSample = rng.getUniformRandNumber(0,1);
     float timeSample = ray.time;
@@ -341,11 +345,11 @@ bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray
     {
         if(resetTransform)
         {
-            hit = baseMesh->intersectRayResetTransform(VAO, r, intData);    
+            hit = baseMesh->intersectRayResetTransform(vertexBuffers, r, intData);    
         }
         else
         {
-            hit = baseMesh->intersectRay(VAO, r, intData);
+            hit = baseMesh->intersectRay(vertexBuffers, r, intData);
         }
         //return hit;
     }
@@ -353,7 +357,7 @@ bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray
     {
         if(AccBVH != NULL)
         {
-            hit = AccBVH->intersectRay(VAO, r, intData);
+            hit = AccBVH->intersectRay(vertexBuffers, r, intData);
             if(hit)
             {
                 intData.hitType = MESH;
@@ -370,7 +374,7 @@ bool Mesh::intersectRayResetMotion(const std::vector<vec3f>& VAO, const Ray& ray
             //int faceIndex = 0;
             for(Face* face: faces)
             {
-                if(face->intersectRay(VAO, r, temp))
+                if(face->intersectRay(vertexBuffers, r, temp))
                 {
                     hit = true;
                     if(temp.t < min_t)

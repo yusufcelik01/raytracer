@@ -16,6 +16,7 @@
 #include "tinyxml2.h"
 #include "Texture.hpp"
 #include "ImageTexture.hpp"
+#include "VertexBuffers.hpp"
 
 struct Scene
 {
@@ -40,8 +41,9 @@ struct Scene
     //std::vector<Images> images;
     //std::vector<Textures> textures;
 
-    std::vector<vec3f> vertex_data;
-    std::vector<vec2f> textureCoords;
+    //std::vector<vec3f> vertex_data;
+    //std::vector<vec2f> textureCoords;
+    VertexBuffers VAO;
     //std::vector<Sphere*> spheres;
     //std::vector<Triangle*> triangles;
     std::vector<Mesh*> meshes;

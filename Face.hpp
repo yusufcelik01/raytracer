@@ -17,7 +17,8 @@ class Face : public Object
     ~Face();
 
     //member functions
-    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    //bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    bool intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData);
     vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
     int getMaterialId();
     virtual BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO);

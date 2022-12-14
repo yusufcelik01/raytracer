@@ -13,6 +13,7 @@ class vec2f
 
     vec2f();
     vec2f(float X);
+    vec2f(const vec2f& rhs);
     vec2f(float X, float Y);
 };
 

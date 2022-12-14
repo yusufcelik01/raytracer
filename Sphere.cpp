@@ -33,7 +33,8 @@ Sphere::~Sphere()
 {
 }
 
-bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+//bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
+bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData)
 {
     mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
@@ -57,7 +58,7 @@ bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Interse
     r.time = ray.time;
 
 
-    vec3f c = VAO[center_vertex_id];
+    vec3f c = vertexBuffers.vertexCoords[center_vertex_id];
     vec3f o_min_c = r.o - c;
     float d_dot__omc = dot(r.d, o_min_c);
     float disc = (d_dot__omc*d_dot__omc) - (dot(r.d, r.d)*(dot(o_min_c, o_min_c) - radius*radius));

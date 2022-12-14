@@ -404,11 +404,13 @@ void Scene::loadFromXml(const std::string &filepath)
     //insert one dummy vertex to make indices start from one
     //this will allow other functions to directly acces the VAO 
     vertex = vec3f(std::numeric_limits<float>::quiet_NaN());
-    vertex_data.push_back(vertex);
+    //vertex_data.push_back(vertex);
+    VAO.vertexCoords.push_back(vertex);
     while (!(stream >> vertex.x).eof())
     {
         stream >> vertex.y >> vertex.z;
-        vertex_data.push_back(vertex);
+        //vertex_data.push_back(vertex);
+        VAO.vertexCoords.push_back(vertex);
     }
     stream.clear();
 
@@ -457,11 +459,11 @@ void Scene::loadFromXml(const std::string &filepath)
             std::cout << std::string(plyFilePath) << std::endl;
             parsePly(plyFilePath, obj);
 
-            size_t numOfTotalVertices = vertex_data.size();
+            size_t numOfTotalVertices = VAO.vertexCoords.size();
             size_t numOfPlyVertices = obj.vertices.size();
             for(size_t k=0; k < numOfPlyVertices; k++)
             {
-               vertex_data.push_back(obj.vertices[k]); 
+               VAO.vertexCoords.push_back(obj.vertices[k]); 
             }
             size_t numOfPlyFaces = obj.triangles.size();
             for(size_t k=0; k < numOfPlyFaces; k++)

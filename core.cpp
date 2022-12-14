@@ -21,13 +21,13 @@ vec3f Scene::getObjNorm(const IntersectionData& data)
     switch(data.hitType)
     {
         case SPHERE:
-            n = norm(data.intersectionPoint - vertex_data[data.sphereCenterId]);
+            n = norm(data.intersectionPoint - VAO.vertexCoords[data.sphereCenterId]);
             break;
         case TRIANGLE://fall through mesh
         case MESH:
-            a = vertex_data[data.v0_id]; 
-            b = vertex_data[data.v1_id]; 
-            c = vertex_data[data.v2_id]; 
+            a = VAO.vertexCoords[data.v0_id]; 
+            b = VAO.vertexCoords[data.v1_id]; 
+            c = VAO.vertexCoords[data.v2_id]; 
             
             n = norm(cross(b-a, c-b));
 
@@ -150,7 +150,8 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
     for(Object* object: objects)
     {
         IntersectionData intData;
-        if(object->intersectRay(vertex_data, ray, intData))
+        //if(object->intersectRay(VAO.vertexCoords, ray, intData))
+        if(object->intersectRay(VAO, ray, intData))
         {
             if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0 && dot(ray.d * intData.t, gaze) > nearDist )
             {
@@ -178,7 +179,8 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
     for(Object* object: objects)
     {
         IntersectionData intData;
-        if(object->intersectRay(vertex_data, ray, intData))
+        //if(object->intersectRay(VAO.vertexCoords, ray, intData))
+        if(object->intersectRay(VAO, ray, intData))
         {
             if(intData.t < closestObjData.t && intData.t < maxT && intData.t > 0)
             {

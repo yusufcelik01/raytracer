@@ -18,3 +18,9 @@ vec2f::vec2f(float X, float Y)
     this->x = X;
     this->y = Y;
 }
+
+vec2f::vec2f(const vec2f& rhs)
+{
+    x = rhs.x;
+    y = rhs.y;
+}

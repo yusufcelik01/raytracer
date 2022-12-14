@@ -22,17 +22,17 @@ int main(int argc, char* argv[])
     {
         for(auto it = mesh->faces.begin(); it < mesh->faces.end(); ++it)
         {
-            (*it)->getBoundingBox(scene.vertex_data);
+            (*it)->getBoundingBox(scene.VAO.vertexCoords);
         }
-        mesh->AccBVH = constructMeshBVH(scene.vertex_data, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
+        mesh->AccBVH = constructMeshBVH(scene.VAO.vertexCoords, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
         //mesh->bbox = mesh->AccBVH->getBoundingBox();
     }
     //std::cout << "Mesh BVHs are completed" << std::endl;
     for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)
     {
-        (*it)->getBoundingBox(scene.vertex_data);
+        (*it)->getBoundingBox(scene.VAO.vertexCoords);
     }
-    scene.AccStrBVH = constructObjectBVH(scene.vertex_data, scene.objects.begin(), scene.objects.end(), X_AXIS);
+    scene.AccStrBVH = constructObjectBVH(scene.VAO.vertexCoords, scene.objects.begin(), scene.objects.end(), X_AXIS);
     std::cout << "BVH is completed" << std::endl;
 
     for(Camera camera: scene.cameras)

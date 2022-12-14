@@ -14,7 +14,8 @@ class Sphere: public Object
     Sphere(const Sphere& rhs);
     ~Sphere();
 
-    bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    //bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData);
+    bool intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData);
     vec3f getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const;
     int getMaterialId();
     BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO);

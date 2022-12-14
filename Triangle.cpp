@@ -37,8 +37,10 @@ Triangle::~Triangle()
     indices.~Face();
 }
 
-bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData) 
+//bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData) 
+bool Triangle::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData) 
 {
+    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
 
@@ -62,7 +64,7 @@ bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, Inter
 
     bool hit = false;
 
-    hit = this->indices.intersectRay(VAO, r, intData);
+    hit = this->indices.intersectRay(vertexBuffers, r, intData);
     if(hit)
     {
         //intData.obj = this;
