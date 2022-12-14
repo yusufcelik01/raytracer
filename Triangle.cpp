@@ -7,33 +7,33 @@ Triangle::Triangle()
     material_id = -1;
 }
 
-Triangle::Triangle(const Triangle& rhs)
+Triangle::Triangle(const Triangle& rhs) : Object(rhs)
 {
     indices = rhs.indices;
-    material_id = rhs.material_id;
-    material = rhs.material;
-    if(rhs.transformation)
-    {
-        transformation = new mat4x4(*(rhs.transformation));
-    }
-    else
-    {
-        transformation = NULL;
-    }
-    if(rhs.bbox) {
-        bbox = new BoundingBox(*(rhs.bbox));
-    }
-    if(rhs.motionBlur) {
-        motionBlur = new vec3f(*(rhs.motionBlur));
-    }
+    //material_id = rhs.material_id;
+    //material = rhs.material;
+    //if(rhs.transformation)
+    //{
+    //    transformation = new mat4x4(*(rhs.transformation));
+    //}
+    //else
+    //{
+    //    transformation = NULL;
+    //}
+    //if(rhs.bbox) {
+    //    bbox = new BoundingBox(*(rhs.bbox));
+    //}
+    //if(rhs.motionBlur) {
+    //    motionBlur = new vec3f(*(rhs.motionBlur));
+    //}
 }
 
 Triangle::~Triangle()
 {
-    if(bbox)
-    {
-        delete bbox;        
-    }
+    //if(bbox)
+    //{
+    //    delete bbox;        
+    //}
     indices.~Face();
 }
 

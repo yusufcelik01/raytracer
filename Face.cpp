@@ -6,8 +6,8 @@ Face::Face()
     v0_id = -1;
     v1_id = -1;
     v2_id = -1;
-    material_id = -1;
-    bbox = NULL;
+    //material_id = -1;
+    //bbox = NULL;
 }
 
 Face::Face(size_t v0, size_t v1, size_t v2)
@@ -19,26 +19,22 @@ Face::Face(size_t v0, size_t v1, size_t v2)
     bbox = NULL;
 }
 
-Face::Face(const Face& rhs)
+Face::Face(const Face& rhs) : Object(rhs)
 {
     v0_id = rhs.v0_id;
     v1_id = rhs.v1_id;
     v2_id = rhs.v2_id;
     material_id = rhs.material_id;
-    if(rhs.bbox == NULL){
-        bbox = NULL;
-    }
-    else {
-        bbox = new BoundingBox(*(rhs.bbox));
-    }
+    //if(rhs.bbox == NULL){
+    //    bbox = NULL;
+    //}
+    //else {
+    //    bbox = new BoundingBox(*(rhs.bbox));
+    //}
 }
 
 Face::~Face()
 {
-    if(bbox)
-    {
-        delete bbox;
-    }
 }
 
 

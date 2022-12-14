@@ -18,37 +18,33 @@ Mesh::Mesh()
     resetTransform = false;
     motionBlur = NULL;
 }
-Mesh::Mesh(const Mesh& rhs)
+Mesh::Mesh(const Mesh& rhs) : Object(rhs)
 {
     faces = rhs.faces;    
     material_id = rhs.material_id;
 
     isInstanced = rhs.isInstanced;
-    if(rhs.transformation) {
-        transformation = new mat4x4(*(rhs.transformation));
-    }
-    else {
-        transformation = NULL;
-    }
+    //if(rhs.transformation) {
+    //    transformation = new mat4x4(*(rhs.transformation));
+    //}
+    //else {
+    //    transformation = NULL;
+    //}
 
-    if(rhs.bbox){
-        bbox = new BoundingBox(*(rhs.bbox));
-    }
-    else {
-        bbox = NULL;
-    }
-    if(rhs.motionBlur)
-    {
-        motionBlur = new vec3f(*(rhs.motionBlur));
-    }
+    //if(rhs.bbox){
+    //    bbox = new BoundingBox(*(rhs.bbox));
+    //}
+    //else {
+    //    bbox = NULL;
+    //}
+    //if(rhs.motionBlur)
+    //{
+    //    motionBlur = new vec3f(*(rhs.motionBlur));
+    //}
 }
 
 Mesh::~Mesh()
 {
-    if(bbox != NULL)
-    {
-        delete bbox;
-    }
     for(Face* face: faces)
     {
         if(face)
@@ -56,18 +52,21 @@ Mesh::~Mesh()
             delete face;
         }
     }
-
-    if(transformation){
-        delete transformation;
-    }
-    if(bbox) {
-        delete bbox; 
-    }
     if(AccBVH)
     {
         delete AccBVH;
     }
-    //TODO deallocate BVH 
+
+    //if(bbox != NULL)
+    //{
+    //    delete bbox;
+    //}
+    //if(transformation){
+    //    delete transformation;
+    //}
+    //if(bbox) {
+    //    delete bbox; 
+    //}
 }
 
 bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)

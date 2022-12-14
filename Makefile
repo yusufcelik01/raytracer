@@ -1,13 +1,13 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g #-msse2 -Ofast
+CFLAGS = -g -msse2 -Ofast
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
 
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
-GEOMETRY= Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
+GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o
 
@@ -38,6 +38,7 @@ parser.o: parser.cpp $(PARSER_HEADERS)
 plyfile.o: plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c plyfile.c
 
+Object.o: Object.cpp Object.hpp
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)

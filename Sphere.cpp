@@ -8,33 +8,29 @@ Sphere::Sphere()
     radius = 0;
     material_id = -1;
 }
-Sphere::Sphere(const Sphere& rhs)
+Sphere::Sphere(const Sphere& rhs) : Object(rhs)
 {
     center_vertex_id = rhs.center_vertex_id;
     radius = rhs.radius;
-    material_id = rhs.material_id;
-    material = rhs.material;
-    if(rhs.transformation) {
-        transformation = new mat4x4(*(rhs.transformation));
-    }
-    else {
-        transformation = NULL;
-    }
+    //material_id = rhs.material_id;
+    //material = rhs.material;
+    //if(rhs.transformation) {
+    //    transformation = new mat4x4(*(rhs.transformation));
+    //}
+    //else {
+    //    transformation = NULL;
+    //}
 
-    if(rhs.bbox) {
-        bbox = new BoundingBox(*(rhs.bbox));
-    }
-    if(rhs.motionBlur) {
-        motionBlur = new vec3f(*(rhs.motionBlur));
-    }
+    //if(rhs.bbox) {
+    //    bbox = new BoundingBox(*(rhs.bbox));
+    //}
+    //if(rhs.motionBlur) {
+    //    motionBlur = new vec3f(*(rhs.motionBlur));
+    //}
 }
 
 Sphere::~Sphere()
 {
-    if(bbox)
-    {
-        delete bbox;
-    }
 }
 
 bool Sphere::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
