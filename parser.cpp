@@ -414,6 +414,21 @@ void Scene::loadFromXml(const std::string &filepath)
     }
     stream.clear();
 
+    element = root->FirstChildElement("TexCoordData");
+    if(element)
+    {
+        stream << element->GetText() << std::endl;
+        vec2f texCoord;
+
+        VAO.textureCoords.push_back(texCoord);
+        while(!(stream >> texCoord.s).eof())
+        {
+            stream >> texCoord.t;
+            VAO.textureCoords.push_back(texCoord);
+        }
+    }
+    stream.clear();
+
     //Get Meshes
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Mesh");
@@ -950,6 +965,17 @@ void Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
         stream << child->GetText() << std::endl;
         stream >> motionBlur.x >> motionBlur.y >> motionBlur.z;
         obj->motionBlur = new vec3f(motionBlur);
+    }
+
+    child = element->FirstChildElement("Textures");
+    if(child)
+    {
+        stream << child->GetText() << std::endl;
+        int texId = -1;
+        while(!(stream >> texId).eof())
+        {
+            obj->textures.push_back(textures[texId-1]);
+        }
     }
 
     stream.clear();
