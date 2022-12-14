@@ -285,6 +285,13 @@ vec3f& vec3f::operator-=(const vec3f& rhs)
     return *this;
 }
 
+vec3f& vec3f::operator/=(const float c)
+{
+    x /= c;
+    y /= c;
+    z /= c;
+    return *this;
+}
 bool vec3f::operator==(const vec3f& rhs) 
 {
     if (x == rhs.x 
