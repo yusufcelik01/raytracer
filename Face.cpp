@@ -104,6 +104,17 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
             vec3f b = vertexBuffers.vertexCoords[v1_id];
             vec3f c = vertexBuffers.vertexCoords[v2_id];
 
+            if(vertexBuffers.textureCoords.size() > 1)
+            {
+                vec2f t0 = vertexBuffers.textureCoords[v0_id];
+                vec2f t1 = vertexBuffers.textureCoords[v1_id];
+                vec2f t2 = vertexBuffers.textureCoords[v2_id];
+
+                intData.texCoord = (1-beta-gamma) * t0 + 
+                                    beta * t1 + 
+                                    gamma * t2;
+            }
+
             intData.normal = norm(cross(b-a, c-b));
             return true;
         }
