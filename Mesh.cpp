@@ -159,6 +159,25 @@ bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, Inte
         //vec4f tmp;
         tmp = transpose(invM) * vec4f(intData.normal, 0.f);
         intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+        //Calculate textures values
+        float u = intData.texCoord.x;
+        float v = intData.texCoord.y;
+        for(Texture* texture: textures)
+        {
+            //std::cout << "mesh texture" << std::endl;
+            if(texture->decalMode == TEX_MODE_BLEND_KD)
+            {
+                //intData.material.diffuse = (intData.material.diffuse + texture->sample(u, v)/255.f)/2.f;
+                intData.material.diffuse += texture->sample(u, v)/255.f;
+                intData.material.diffuse /= 2.f;
+                //std::cout << "blend kd" << std::endl;
+            }
+            else if(texture->decalMode == TEX_MODE_REPLACE_KD)
+            {
+                intData.material.diffuse = texture->sample(u, v)/255.f;
+            }
+        }
+        //std::cout << "hit mesh" << std::endl;
     }
     return hit;
 }
