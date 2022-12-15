@@ -108,6 +108,11 @@ test3:
 	(time ./raytracer hw3/inputs/cornellbox_boxes_dynamic.xml) 2> time_cornellbox_boxes_dynamic.txt
 
 	
+test4:
+	./raytracer hw4/inputs/cube_wall.xml 
+	./raytracer hw4/inputs/galactica_static.xml 
+	./raytracer hw4/inputs/brickwall_with_normalmap.xml 
+	./raytracer hw4/inputs/wood_box.xml 
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
