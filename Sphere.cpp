@@ -108,6 +108,8 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
     tmp = transpose(invM) * vec4f(intData.normal, 0.f);
     intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
 
+    //this->processTextures(intData);
+
     return true;
 
 }
