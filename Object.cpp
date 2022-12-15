@@ -55,3 +55,32 @@ Object::~Object()
     }
 }
 
+void Object::processTextures(IntersectionData& intData)
+{
+    float u = intData.texCoord.x;
+    float v = intData.texCoord.y;
+    for(Texture* texture: textures)
+    {
+        //std::cout << "mesh texture" << std::endl;
+        if(texture->decalMode == TEX_MODE_REPLACE_KD)
+        {
+            intData.material.diffuse = texture->sample(u, v)/255.f;
+        }
+        else if(texture->decalMode == TEX_MODE_BLEND_KD)
+        {
+            intData.material.diffuse += texture->sample(u, v)/255.f;
+            intData.material.diffuse /= 2.f;
+        }
+        else if(texture->decalMode == TEX_MODE_REPLACE_KS)
+        {
+            intData.material.specular = texture->sample(u, v)/255.f;
+        }
+        else if(texture->decalMode == TEX_MODE_REPLACE_ALL)
+        {
+            vec3f texSample = texture->sample(u, v)/255.f;
+            intData.material.ambient  = texSample;
+            intData.material.diffuse  = texSample; 
+            intData.material.specular = texSample; 
+        }
+    }
+}

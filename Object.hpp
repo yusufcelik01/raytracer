@@ -34,6 +34,7 @@ class Object
         virtual BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO) = 0;
         virtual BoundingBox* getBoundingBox() const = 0;
         virtual int getMaterialId() = 0;
+        void processTextures(IntersectionData& hitData);
 };
 
 #endif
