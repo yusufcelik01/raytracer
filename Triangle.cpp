@@ -72,15 +72,14 @@ bool Triangle::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, 
         intData.material_id = this->material_id;
         intData.material = this->material;
 
-        if(transformation != NULL)
-        {
-            //intData.intersectionPoint = ray.o + (ray.d * intData.t);
-            tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
-            intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
+        //intData.intersectionPoint = ray.o + (ray.d * intData.t);
+        tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
+        intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
 
-            tmp = transpose(invM) * vec4f(intData.normal, 0.f);
-            intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
-        }
+        tmp = transpose(invM) * vec4f(intData.normal, 0.f);
+        intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+
+        this->processTextures(intData);
     }
 
     return hit;
