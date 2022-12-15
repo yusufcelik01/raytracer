@@ -816,7 +816,7 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             //std::cout << element->GetText() << std::endl;
             char* imgPath = navigateDirs(inputFileDir, element->GetText());
             printf("Tex image path : %s\n", imgPath);
-            image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 3);
+            image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 0);
             //TODO write image and texmap classes and replace this line
 
             images.push_back(image);
