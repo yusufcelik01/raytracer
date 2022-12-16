@@ -350,7 +350,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 return this->background_color;
             }
             else {
-                return background_texture->sample(ray.texCoord.s, ray.texCoord.t);
+                return background_texture->sample(ray.texCoord.s, ray.texCoord.t)*255.f;
             }
         }
         else {
