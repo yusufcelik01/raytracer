@@ -69,7 +69,8 @@ vec3f grad(int i, int j, int k)
 
 vec3f PerlinNoise::sample(float x, float y)
 {
-    return sample(vec3f(x, y, (x+y)/2));
+    //return sample(vec3f(x, y, (x+y)/2));
+    return sample(vec3f(x, y, 0.f));
 }
 
 vec3f PerlinNoise::sample(vec3f texCoords)
