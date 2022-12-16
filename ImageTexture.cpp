@@ -12,7 +12,8 @@ vec3f ImageTexture::sampleNearest(float s, float t)
     int x = img.width  * s + 0.5;
     int y = img.height * t + 0.5;
 
-    return img.getRGBpixel(x, y);
+    return img.getRGBpixel(x, y)/255.f;
+    //return img.getRGBpixel(x, y);
 }
 
 vec3f ImageTexture::sampleBilinear(float s, float t)
@@ -32,7 +33,7 @@ vec3f ImageTexture::sampleBilinear(float s, float t)
 
 
     return mix(mix(c00, c10, dx),
-               mix(c01, c11, dx), dy);
+               mix(c01, c11, dx), dy) /255.f;
 }
 
 
