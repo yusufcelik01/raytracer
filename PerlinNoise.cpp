@@ -9,6 +9,22 @@ PerlinNoise::PerlinNoise()
 
 }
 
+PerlinNoise::PerlinNoise(float scale, const std::string& conversion)
+{
+    noiseScale = scale;
+    if(conversion == "linear")
+    {
+        noiseConv = NOISE_CONV_LINEAR;
+    }
+    //else if(conversion == "absval")
+    else 
+    {
+        noiseConv = NOISE_CONV_ABSVAL;
+    }
+
+}
+
+
 vec3f gradients[16] = {
     vec3f(1, 1, 0),
     vec3f(-1, 1, 0),
@@ -59,7 +75,8 @@ vec3f PerlinNoise::sample(float x, float y)
 vec3f PerlinNoise::sample(vec3f texCoords)
 {
     //using glm::mix, glm::dot, glm::floor;
-    texCoords = float(pow(2, -1)) * texCoords;
+    texCoords = texCoords * noiseScale;
+    //texCoords = float(pow(2, -1)) * texCoords;
 
     int i = int(floor(texCoords.x)) & 255,
         j = int(floor(texCoords.y)) & 255,
@@ -101,5 +118,12 @@ vec3f PerlinNoise::sample(vec3f texCoords)
 
 
 
-    return (c+1)/2.0f;
+    if(noiseConv == NOISE_CONV_LINEAR)
+    {
+        return (c+1)/2.0f;
+    }
+    else//absval
+    {
+        return (c <= 0)? -c : c;
+    }
 }

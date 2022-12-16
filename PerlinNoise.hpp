@@ -2,6 +2,7 @@
 #define __PERLIN__NOISE__DEFINED__
 
 #include "Texture.hpp"
+#include <string>
 
 enum noiseConversionType
 {
@@ -19,6 +20,7 @@ class PerlinNoise: public Texture
         //perlin layers here
     public:
         PerlinNoise();
+        PerlinNoise(float scale, const std::string& conversion);
         vec3f sample(float x, float y);
         vec3f sample(float x, float y, float z);
         vec3f sample(vec3f texCoords);
