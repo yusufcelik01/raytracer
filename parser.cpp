@@ -831,19 +831,31 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
     while(element)
     {
         stream.clear();
-        std::cout << "New Texture" << std::endl;
+        //std::cout << "New Texture" << std::endl;
 
         const char* texMapType = element->Attribute("type");
         if(texMapType != NULL && strcmp(texMapType, "perlin") == 0)
         {
             //TODO check type of texture (perlin/img)
+            float noiseScale;
+            std::string noiseConversion;
             child = element->FirstChildElement("NoiseScale");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> noiseScale;
+           
+            //stream >> noise->noiseScale;
             child = element->FirstChildElement("NoiseConversion");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> noiseConversion;
+
+            PerlinNoise* noise = new PerlinNoise(noiseScale, noiseConversion);
+            tex = noise;
         }
         else if(texMapType != NULL && strcmp(texMapType, "checkerboard") == 0)
         {
+            //continue;
+            std::cout << "checkerboard texture is not supported yet" << std::endl;
+            exit(-1);
             child = element->FirstChildElement("Scale");
             std::cout << child->GetText() << std::endl;
             child = element->FirstChildElement("Offset");

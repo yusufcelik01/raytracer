@@ -16,6 +16,7 @@
 #include "tinyxml2.h"
 #include "Texture.hpp"
 #include "ImageTexture.hpp"
+#include "PerlinNoise.hpp"
 #include "VertexBuffers.hpp"
 
 struct Scene
