@@ -3,16 +3,25 @@
 
 #include "Texture.hpp"
 
+enum noiseConversionType
+{
+    NOISE_CONV_LINEAR,
+    NOISE_CONV_ABSVAL
+};
+
+
 class PerlinNoise: public Texture
 {
     private:
         float noiseScale;
-        float noiseConv;
+        enum noiseConversionType noiseConv;
         //color map
         //perlin layers here
     public:
-        sample(float x, float y);
-        sample(float x, float y, float z);
+        PerlinNoise();
+        vec3f sample(float x, float y);
+        vec3f sample(float x, float y, float z);
+        vec3f sample(vec3f texCoords);
 };
 
 
