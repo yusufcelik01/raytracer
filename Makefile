@@ -11,7 +11,7 @@ GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o Image.o
+OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o PerlinNoise.o Image.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
@@ -49,7 +49,8 @@ BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
 BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 
-ImageTexture.o: ImageTexture.hpp rtmath.hpp
+ImageTexture.o: ImageTexture.hpp ImageTexture.cpp rtmath.hpp
+PerlinNoise.o: PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
 
 core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 
