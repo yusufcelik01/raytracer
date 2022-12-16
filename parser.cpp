@@ -398,21 +398,24 @@ void Scene::loadFromXml(const std::string &filepath)
     stream.clear();
     //Get VertexData
     element = root->FirstChildElement("VertexData");
-    stream << element->GetText() << std::endl;
-    vec3f vertex;
-    
-    //insert one dummy vertex to make indices start from one
-    //this will allow other functions to directly acces the VAO 
-    vertex = vec3f(std::numeric_limits<float>::quiet_NaN());
-    //vertex_data.push_back(vertex);
-    VAO.vertexCoords.push_back(vertex);
-    while (!(stream >> vertex.x).eof())
+    if(element)
     {
-        stream >> vertex.y >> vertex.z;
+        stream << element->GetText() << std::endl;
+        vec3f vertex;
+
+        //insert one dummy vertex to make indices start from one
+        //this will allow other functions to directly acces the VAO 
+        vertex = vec3f(std::numeric_limits<float>::quiet_NaN());
         //vertex_data.push_back(vertex);
         VAO.vertexCoords.push_back(vertex);
+        while (!(stream >> vertex.x).eof())
+        {
+            stream >> vertex.y >> vertex.z;
+            //vertex_data.push_back(vertex);
+            VAO.vertexCoords.push_back(vertex);
+        }
+        stream.clear();
     }
-    stream.clear();
 
     element = root->FirstChildElement("TexCoordData");
     if(element)
@@ -815,7 +818,7 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         {
             //std::cout << element->GetText() << std::endl;
             char* imgPath = navigateDirs(inputFileDir, element->GetText());
-            printf("Tex image path : %s\n", imgPath);
+            //printf("Tex image path : %s\n", imgPath);
             image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 0);
             //TODO write image and texmap classes and replace this line
 
@@ -854,16 +857,24 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         else if(texMapType != NULL && strcmp(texMapType, "checkerboard") == 0)
         {
             //continue;
-            std::cout << "checkerboard texture is not supported yet" << std::endl;
-            exit(-1);
+            //std::cout << "checkerboard texture is not supported yet" << std::endl;
+            //exit(-1);
+            float scale, offset;
+            vec3f black, white;
             child = element->FirstChildElement("Scale");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> scale;
             child = element->FirstChildElement("Offset");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> offset;
             child = element->FirstChildElement("BlackColor");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> black.r >> black.g >> black.b;
             child = element->FirstChildElement("WhiteColor");
-            std::cout << child->GetText() << std::endl;
+            stream << child->GetText() << std::endl;
+            stream >> white.r >> white.g >> white.b;
+            CheckerBoard* checker = new CheckerBoard(scale, offset, black, white);
+            tex = checker;
         }
         else if(texMapType != NULL && strcmp(texMapType, "image") == 0)
         {

@@ -8,10 +8,11 @@ LDFLAGS = -pthread
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
+TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o ImageTexture.o PerlinNoise.o Image.o
+OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES)
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
@@ -51,6 +52,7 @@ BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 
 ImageTexture.o: ImageTexture.hpp ImageTexture.cpp rtmath.hpp
 PerlinNoise.o: PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
+CheckerBoard.o: CheckerBoard.hpp CheckerBoard.cpp
 
 core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 

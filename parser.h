@@ -17,6 +17,7 @@
 #include "Texture.hpp"
 #include "ImageTexture.hpp"
 #include "PerlinNoise.hpp"
+#include "CheckerBoard.hpp"
 #include "VertexBuffers.hpp"
 
 struct Scene
