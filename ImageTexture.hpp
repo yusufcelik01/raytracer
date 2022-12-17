@@ -19,6 +19,7 @@ class ImageTexture: public Texture
     public:
         TexSamplerInterpolatorType interpolationType;
         Image img; 
+        float normalizer;
         ImageTexture();
         vec3f sample(float x, float y);
 };
