@@ -101,16 +101,20 @@ Matrix Face::getTBN(const VertexBuffers& buffers)
 
 void Face::cacheData(const VertexBuffers& vertexBuffers)
 {
-    vec3f e1 = vertexBuffers.vertexCoords[vertexId[0]];
-    vec3f e2 = vertexBuffers.vertexCoords[vertexId[1]];
-    vec3f e3 = vertexBuffers.vertexCoords[vertexId[2]];
+    vec3f v1 = vertexBuffers.vertexCoords[vertexId[0]];
+    vec3f v2 = vertexBuffers.vertexCoords[vertexId[1]];
+    vec3f v3 = vertexBuffers.vertexCoords[vertexId[2]];
 
     //cache normal
-    normal = new vec3f(norm(cross(e2-e1, e3-e2)));
+    normal = new vec3f(norm(cross(v2-v1, v3-v2)));
     
     //cache TBN
     if(vertexBuffers.textureCoords.size() > 1)
     {
+        vec3f e1 = v2 - v1;
+        vec3f e2 = v3 - v2;
+
+
         vec2f t1 = vertexBuffers.textureCoords[vertexId[0]];
         vec2f t2 = vertexBuffers.textureCoords[vertexId[1]];
         vec2f t3 = vertexBuffers.textureCoords[vertexId[2]];
@@ -136,10 +140,17 @@ void Face::cacheData(const VertexBuffers& vertexBuffers)
 
         TBN = new Matrix(3,3);
         Matrix tangentMat = invTex * edgeMatrix;
+        //vec3f T = norm(vec3f(tangentMat.data[0][0], tangentMat.data[0][1], tangentMat.data[0][2]));
+        //vec3f B = norm(vec3f(tangentMat.data[1][0], tangentMat.data[1][1], tangentMat.data[1][2]));
+        vec3f T = (vec3f(tangentMat.data[0][0], tangentMat.data[0][1], tangentMat.data[0][2]));
+        vec3f B = (vec3f(tangentMat.data[1][0], tangentMat.data[1][1], tangentMat.data[1][2]));
+
         for(int i = 0; i < 3; ++i)
         {
-            TBN->data[i][0] = tangentMat.data[0][i];//T
-            TBN->data[i][1] = tangentMat.data[1][i];//B
+            //TBN->data[i][0] = tangentMat.data[0][i];//T
+            //TBN->data[i][1] = tangentMat.data[1][i];//B
+            TBN->data[i][0] = T[i];
+            TBN->data[i][1] = B[i];
             TBN->data[i][2] = (*normal)[i];//N
         }
     }
@@ -207,11 +218,11 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
 
             if(normal == NULL)
             {
-                vec3f e1 = vertexBuffers.vertexCoords[vertexId[0]];
-                vec3f e2 = vertexBuffers.vertexCoords[vertexId[1]];
-                vec3f e3 = vertexBuffers.vertexCoords[vertexId[2]];
+                vec3f v1 = vertexBuffers.vertexCoords[vertexId[0]];
+                vec3f v2 = vertexBuffers.vertexCoords[vertexId[1]];
+                vec3f v3 = vertexBuffers.vertexCoords[vertexId[2]];
 
-                intData.normal = norm(cross(e2-e1, e3-e2));
+                intData.normal = norm(cross(v2-v1, v3-v2));
             }
             else
             {
@@ -242,11 +253,11 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
 
                 //    for(size_t m = 0; m < 3; m++)
                 //    {
-                //        edgeMatrix.data[0][m] = e1[m];
+                //        edgeMatrix.data[0][m] = v1[m];
                 //    }
                 //    for(size_t m = 0; m < 3; m++)
                 //    {
-                //        edgeMatrix.data[1][m] = e2[m];
+                //        edgeMatrix.data[1][m] = v2[m];
                 //    }
                 //}
             }
