@@ -114,6 +114,7 @@ test3:
 	
 test4:
 	./raytracer hw4/inputs/cube_wall.xml 
+	./raytracer hw4/inputs/cube_wall_normal.xml 
 	./raytracer hw4/inputs/cube_perlin.xml 
 	./raytracer hw4/inputs/cube_cushion.xml 
 	./raytracer hw4/inputs/galactica_static.xml 
