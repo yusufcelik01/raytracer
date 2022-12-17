@@ -12,6 +12,7 @@ Object::Object(const Object& rhs)
 {
     material_id = rhs.material_id;
     material = rhs.material;
+    textures = rhs.textures;
     if(rhs.transformation) 
     {
         transformation = new mat4x4(*(rhs.transformation));
@@ -61,7 +62,6 @@ void Object::processTextures(IntersectionData& intData)
     float v = intData.texCoord.y;
     for(Texture* texture: textures)
     {
-        //std::cout << "mesh texture" << std::endl;
         if(texture->decalMode == TEX_MODE_REPLACE_KD)
         {
             intData.material.diffuse = texture->sample(u, v);
