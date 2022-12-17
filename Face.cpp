@@ -1,36 +1,48 @@
 #include "Face.hpp"
+#include "Matrix.hpp"
 #include <cmath>
 
 Face::Face()
 {
-    v0_id = -1;
-    v1_id = -1;
-    v2_id = -1;
+    vertexId[0] = -1;
+    vertexId[1] = -1;
+    vertexId[2] = -1;
+    normal = NULL;
+    TBN = NULL;
     //material_id = -1;
     //bbox = NULL;
 }
 
 Face::Face(size_t v0, size_t v1, size_t v2)
 {
-    v0_id = v0;
-    v1_id = v1;
-    v2_id = v2;
+    vertexId[0] = v0;
+    vertexId[1] = v1;
+    vertexId[2] = v2;
     material_id = -1;
     bbox = NULL;
+    TBN = NULL;
+    normal = NULL;
 }
 
 Face::Face(const Face& rhs) : Object(rhs)
 {
-    v0_id = rhs.v0_id;
-    v1_id = rhs.v1_id;
-    v2_id = rhs.v2_id;
+    vertexId[0] = rhs.vertexId[0];
+    vertexId[1] = rhs.vertexId[1];
+    vertexId[2] = rhs.vertexId[2];
     material_id = rhs.material_id;
-    //if(rhs.bbox == NULL){
-    //    bbox = NULL;
-    //}
-    //else {
-    //    bbox = new BoundingBox(*(rhs.bbox));
-    //}
+    if(rhs.TBN == NULL){
+        TBN = NULL;
+    }
+    else {
+        TBN = new Matrix(*(rhs.TBN));
+    }
+    if(rhs.normal == NULL){
+        normal = NULL;
+    }
+    else {
+        normal = new vec3f(*(rhs.normal));
+    }
+
 }
 
 Face::~Face()
@@ -38,15 +50,111 @@ Face::~Face()
 }
 
 
+Matrix Face::getTBN(const VertexBuffers& buffers)
+{
+    //if(TBN != NULL)
+    //{
+    //    return *TBN;
+    //}
+    //vec3f e1 = vertexBuffers.vertexCoords[vertexId[0]];
+    //vec3f e2 = vertexBuffers.vertexCoords[vertexId[1]];
+    //vec3f e3 = vertexBuffers.vertexCoords[vertexId[2]];
+
+    ////cache normal
+    //normal = new vec3f(norm(cross(e2-e1, e3-e2)));
+    //
+    ////cache TBN
+    //vec2f t1 = vertexBuffers.textureCoords[vertexId[0]];
+    //vec2f t2 = vertexBuffers.textureCoords[vertexId[1]];
+    //vec2f t3 = vertexBuffers.textureCoords[vertexId[2]];
+
+    ////normal map calc
+    //Matrix invTex(2,2);
+    //invTex.data[0][0] = t2.s - t1.s;
+    //invTex.data[0][1] = t2.t - t1.t;
+    //invTex.data[1][0] = t3.s - t2.s; 
+    //invTex.data[1][1] = t3.t - t2.t; 
+
+    //invTex = invTex.inverse();
+    //Matrix edgeMatrix(2,3);
+
+    //for(size_t m = 0; m < 3; m++)
+    //{
+    //    edgeMatrix.data[0][m] = e1[m];
+    //}
+    //for(size_t m = 0; m < 3; m++)
+    //{
+    //    edgeMatrix.data[1][m] = e2[m];
+    //}
+
+    //TBN = new Matrix(3,3);
+    //Matrix tangentMat = invTex * edgeMatrix;
+    //for(int i = 0; i < 3; ++i)
+    //{
+    //    TBN.data[i][0] = tangentMat.data[0][i];//T
+    //    TBN.data[i][1] = tangentMat.data[1][i];//B
+    //    TBN.data[i][2] = normal[i];//N
+    //}
+
+    return *TBN;
+}
+
+void Face::cacheData(const VertexBuffers& vertexBuffers)
+{
+    vec3f e1 = vertexBuffers.vertexCoords[vertexId[0]];
+    vec3f e2 = vertexBuffers.vertexCoords[vertexId[1]];
+    vec3f e3 = vertexBuffers.vertexCoords[vertexId[2]];
+
+    //cache normal
+    normal = new vec3f(norm(cross(e2-e1, e3-e2)));
+    
+    //cache TBN
+    if(vertexBuffers.textureCoords.size() > 1)
+    {
+        vec2f t1 = vertexBuffers.textureCoords[vertexId[0]];
+        vec2f t2 = vertexBuffers.textureCoords[vertexId[1]];
+        vec2f t3 = vertexBuffers.textureCoords[vertexId[2]];
+
+        //normal map calc
+        Matrix invTex(2,2);
+        invTex.data[0][0] = t2.s - t1.s;
+        invTex.data[0][1] = t2.t - t1.t;
+        invTex.data[1][0] = t3.s - t2.s; 
+        invTex.data[1][1] = t3.t - t2.t; 
+
+        invTex = invTex.inverse();
+        Matrix edgeMatrix(2,3);
+
+        for(size_t m = 0; m < 3; m++)
+        {
+            edgeMatrix.data[0][m] = e1[m];
+        }
+        for(size_t m = 0; m < 3; m++)
+        {
+            edgeMatrix.data[1][m] = e2[m];
+        }
+
+        TBN = new Matrix(3,3);
+        Matrix tangentMat = invTex * edgeMatrix;
+        for(int i = 0; i < 3; ++i)
+        {
+            TBN->data[i][0] = tangentMat.data[0][i];//T
+            TBN->data[i][1] = tangentMat.data[1][i];//B
+            TBN->data[i][2] = (*normal)[i];//N
+        }
+    }
+}
+
+
 //bool Face::intersectRay(const std::vector<vec3f>& VAO, const Ray& r, IntersectionData& intData)
 bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, IntersectionData& intData)
 {
-        //vec3f a = VAO[v0_id -1];
-        //vec3f b = VAO[v1_id -1];
-        //vec3f c = VAO[v2_id -1];
-        vec3f a = vertexBuffers.vertexCoords[v0_id];
-        vec3f b = vertexBuffers.vertexCoords[v1_id];
-        vec3f c = vertexBuffers.vertexCoords[v2_id];
+        //vec3f a = VAO[v[0] -1];
+        //vec3f b = VAO[v[1] -1];
+        //vec3f c = VAO[v[2] -1];
+        vec3f a = vertexBuffers.vertexCoords[vertexId[0]];
+        vec3f b = vertexBuffers.vertexCoords[vertexId[1]];
+        vec3f c = vertexBuffers.vertexCoords[vertexId[2]];
         
         float ax_bx = a.x - b.x;
         float ay_by = a.y - b.y;
@@ -90,32 +198,61 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
             && t > 0.f) 
         {
             intData.t = t;
-            intData.v0_id = v0_id;
-            intData.v1_id = v1_id;
-            intData.v2_id = v2_id;
+            //intData.vertexId[0] = vertexId[0];
+            //intData.vertexId[1] = vertexId[1];
+            //intData.vertexId[2] = vertexId[2];
             intData.material_id = this->material_id;
             intData.intersectionPoint = r.o + r.d * t;
 
 
-            //vec3f a = VAO[v0_id -1];
-            //vec3f b = VAO[v1_id -1];
-            //vec3f c = VAO[v2_id -1];
-            vec3f a = vertexBuffers.vertexCoords[v0_id];
-            vec3f b = vertexBuffers.vertexCoords[v1_id];
-            vec3f c = vertexBuffers.vertexCoords[v2_id];
+            if(normal == NULL)
+            {
+                vec3f e1 = vertexBuffers.vertexCoords[vertexId[0]];
+                vec3f e2 = vertexBuffers.vertexCoords[vertexId[1]];
+                vec3f e3 = vertexBuffers.vertexCoords[vertexId[2]];
+
+                intData.normal = norm(cross(e2-e1, e3-e2));
+            }
+            else
+            {
+                intData.normal = *normal;
+            }
 
             if(vertexBuffers.textureCoords.size() > 1)
             {
-                vec2f t0 = vertexBuffers.textureCoords[v0_id];
-                vec2f t1 = vertexBuffers.textureCoords[v1_id];
-                vec2f t2 = vertexBuffers.textureCoords[v2_id];
+                vec2f t1 = vertexBuffers.textureCoords[vertexId[0]];
+                vec2f t2 = vertexBuffers.textureCoords[vertexId[1]];
+                vec2f t3 = vertexBuffers.textureCoords[vertexId[2]];
 
-                intData.texCoord = (1-beta-gamma) * t0 + 
-                                    beta * t1 + 
-                                    gamma * t2;
+                intData.texCoord = (1-beta-gamma) * t1 + 
+                                    beta * t2 + 
+                                    gamma * t3;
+                intData.TBN = *TBN;
+                //normal map calc
+                //if(TBN == NULL)
+                //{
+                //    Matrix invTex(2,2);
+                //    invTex.data[0][0] = t2.s - t1.s;
+                //    invTex.data[0][1] = t2.t - t1.t;
+                //    invTex.data[1][0] = t3.s - t2.s; 
+                //    invTex.data[1][1] = t3.t - t2.t; 
+
+                //    invTex = invTex.inverse();
+                //    Matrix edgeMatrix(2,3);
+
+                //    for(size_t m = 0; m < 3; m++)
+                //    {
+                //        edgeMatrix.data[0][m] = e1[m];
+                //    }
+                //    for(size_t m = 0; m < 3; m++)
+                //    {
+                //        edgeMatrix.data[1][m] = e2[m];
+                //    }
+                //}
             }
 
-            intData.normal = norm(cross(b-a, c-b));
+            
+            
             return true;
         }
 
@@ -124,9 +261,9 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
 }
 vec3f Face::getSurfNormal(const std::vector<vec3f>& VAO, const IntersectionData& intersectionPoint) const 
 {
-    vec3f a = VAO[v0_id];
-    vec3f b = VAO[v1_id];
-    vec3f c = VAO[v2_id];
+    vec3f a = VAO[vertexId[0]];
+    vec3f b = VAO[vertexId[1]];
+    vec3f c = VAO[vertexId[2]];
 
     return norm(cross(b-a, c-b));
 }
@@ -141,9 +278,9 @@ BoundingBox* Face::getBoundingBox(const std::vector<vec3f>& VAO)
         return bbox;
     }
 
-    vec3f v0 = VAO[v0_id],
-          v1 = VAO[v1_id],
-          v2 = VAO[v2_id];
+    vec3f v0 = VAO[vertexId[0]],
+          v1 = VAO[vertexId[1]],
+          v2 = VAO[vertexId[2]];
     
     bbox = new BoundingBox();
     bbox->xmin = std::min(std::min(v0.x, v1.x), v2.x);
