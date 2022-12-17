@@ -239,27 +239,18 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
                                     beta * t2 + 
                                     gamma * t3;
                 intData.TBN = *TBN;
-                //normal map calc
-                //if(TBN == NULL)
-                //{
-                //    Matrix invTex(2,2);
-                //    invTex.data[0][0] = t2.s - t1.s;
-                //    invTex.data[0][1] = t2.t - t1.t;
-                //    invTex.data[1][0] = t3.s - t2.s; 
-                //    invTex.data[1][1] = t3.t - t2.t; 
+                //TODO move these lines to processTexture
+                vec3f T = vec3f((*TBN).data[0][0],
+                                (*TBN).data[1][0],
+                                (*TBN).data[2][0]);
 
-                //    invTex = invTex.inverse();
-                //    Matrix edgeMatrix(2,3);
+                vec3f B = vec3f((*TBN).data[0][1],
+                                (*TBN).data[1][1],
+                                (*TBN).data[2][1]);
 
-                //    for(size_t m = 0; m < 3; m++)
-                //    {
-                //        edgeMatrix.data[0][m] = v1[m];
-                //    }
-                //    for(size_t m = 0; m < 3; m++)
-                //    {
-                //        edgeMatrix.data[1][m] = v2[m];
-                //    }
-                //}
+                intData.dp_du = intData.intersectionPoint + vertexBuffers.epsilon * T;
+                intData.dp_dv = intData.intersectionPoint + vertexBuffers.epsilon * B;
+                /////////////////////////////////////////
             }
 
             

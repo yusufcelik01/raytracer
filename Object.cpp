@@ -56,7 +56,7 @@ Object::~Object()
     }
 }
 
-void Object::processTextures(IntersectionData& intData)
+void Object::processTextures(const VertexBuffers& buffers, IntersectionData& intData)
 {
     float u = intData.texCoord.x;
     float v = intData.texCoord.y;
@@ -87,6 +87,15 @@ void Object::processTextures(IntersectionData& intData)
             //undo the normalization
             vec3f normalSample = norm(texture->sample(u,v)*2.f - vec3f(1.f));
             intData.normal = norm(intData.TBN * normalSample); 
+        }
+        else if(texture->decalMode == TEX_MODE_BUMP_NORMAL)
+        {
+            vec3f normal = intData.normal * buffers.epsilon * texture->bumpFactor;
+            vec3f p = intData.intersectionPoint + normal * texture->sample(u,v);
+            vec3f pt = intData.dp_du + normal * texture->sample(u + buffers.epsilon, v);
+            vec3f pb = intData.dp_du + normal * texture->sample(u,v + buffers.epsilon);
+
+            intData.normal = norm(cross(pt-pb, p-pt));
         }
     }
 }

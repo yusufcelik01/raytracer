@@ -26,7 +26,7 @@ class Object
         //member functions
         Object();
         Object(const Object& rhs);
-        ~Object();
+        virtual ~Object();
 
         //virtual bool intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData) = 0;
         virtual bool intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData) = 0;
@@ -34,7 +34,7 @@ class Object
         virtual BoundingBox* getBoundingBox(const std::vector<vec3f>& VAO) = 0;
         virtual BoundingBox* getBoundingBox() const = 0;
         virtual int getMaterialId() = 0;
-        void processTextures(IntersectionData& hitData);
+        void processTextures(const VertexBuffers& buffers, IntersectionData& hitData);
 };
 
 #endif

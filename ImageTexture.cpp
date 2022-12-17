@@ -46,17 +46,19 @@ vec3f ImageTexture::sample(float x, float y)
     y = y < 0.0f ? 0.0f : y;
 
     //return sampleNearest(x, y);
+    vec3f sampleColor; 
     if(interpolationType == INTERPOLATE_NEAREST) 
     {
-        return sampleNearest(x, y);
+        sampleColor = sampleNearest(x, y);
     }
     else if(interpolationType == INTERPOLATE_BI_LINEAR)
     {
-        return sampleBilinear(x, y);
+        sampleColor = sampleBilinear(x, y);
     }
     else { 
-        return vec3f(160, 30, 190);
+        sampleColor = vec3f(160, 30, 190);
     }
+    return sampleColor;
 }
 
 
