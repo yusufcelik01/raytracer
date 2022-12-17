@@ -306,6 +306,22 @@ bool vec3f::operator==(const vec3f& rhs)
     }
 }
 
+float vec3f::operator[](int index) const
+{
+    if(index == 0){
+        return x;
+    }
+    else if(index == 1){
+        return y;
+    }
+    else if(index == 2){
+        return z;
+    }
+    else{
+        return 1/0.f;
+    }
+}
+
 
 vec3f exp(vec3f v)
 {
@@ -356,3 +372,5 @@ std::ostream& operator<<(std::ostream& os, const vec3f& v)
     os << "(" << v.x << ", " << v.y << ", " << v.z << ")";
     return os;
 }
+
+
