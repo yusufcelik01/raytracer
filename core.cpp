@@ -14,30 +14,6 @@
 
 //#define NUMBER_OF_THREADS 8
 
-vec3f Scene::getObjNorm(const IntersectionData& data)
-{
-    vec3f n;
-    vec3f a,b,c;
-    switch(data.hitType)
-    {
-        case SPHERE:
-            n = norm(data.intersectionPoint - VAO.vertexCoords[data.sphereCenterId]);
-            break;
-        case TRIANGLE://fall through mesh
-        case MESH:
-            a = VAO.vertexCoords[data.v0_id]; 
-            b = VAO.vertexCoords[data.v1_id]; 
-            c = VAO.vertexCoords[data.v2_id]; 
-            
-            n = norm(cross(b-a, c-b));
-
-            break;
-        //default:
-        //    n = vec3f(0.f);
-    }
-
-    return n;
-}
 
 
 vec3f deviateRay(vec3f originalRay, float roughness)
