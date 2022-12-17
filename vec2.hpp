@@ -9,6 +9,7 @@ class vec2f
         struct{float x, y;};
         struct{float r, g;};
         struct{float s, t;};
+        struct{float u, v;};
     };
 
     vec2f();
