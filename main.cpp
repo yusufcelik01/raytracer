@@ -47,7 +47,7 @@ int main(int argc, char* argv[])
         scene.render(camera);
     }
 
-    delete scene.AccStrBVH;
+    //delete scene.AccStrBVH;
         
     return 0;
 }

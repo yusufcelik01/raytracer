@@ -152,7 +152,7 @@ float getBBcenter(const Face& obj, AXIS_TYPE axis)
 {
     BoundingBox* box = obj.getBoundingBox();
 
-    float mid; 
+    float mid = 0.f; 
     switch(axis)
     {
         case X_AXIS:

@@ -120,7 +120,7 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
     closestObjData.material_id = -1;
     closestObjData.t = std::numeric_limits<float>::infinity(); 
 
-    vec3f color = vec3f(0.f);
+    //vec3f color = vec3f(0.f);
 
     bool hit = false;
     for(Object* object: objects)
@@ -149,7 +149,7 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
     closestObjData.material_id = -1;
     closestObjData.t = std::numeric_limits<float>::infinity(); 
 
-    vec3f color = vec3f(0.f);
+    //vec3f color = vec3f(0.f);
 
     bool hit = false;
     for(Object* object: objects)
@@ -461,7 +461,7 @@ void Scene::render(Camera camera)
     float b = camera.near_plane.z;
     float t = camera.near_plane.w;
 
-    int x,y;
+    //int x,y;
     unsigned char* img = new unsigned char[camera.image_width* camera.image_height * 3];
 
     vec3f m = e - w * camera.near_distance;
@@ -500,14 +500,14 @@ void Scene::render(Camera camera)
     unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
     std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
     std::thread threads[NUMBER_OF_THREADS];
-    for(int i = 0; i < NUMBER_OF_THREADS; i++)
+    for(unsigned int i = 0; i < NUMBER_OF_THREADS; i++)
     {
         //threads[i] = std::thread(&Scene::renderRow, this, &threadArg);
         threads[i] = std::thread(&Scene::renderRowMultiSampled, this, &threadArg);
     }
 
 
-    for(int i = 0; i < NUMBER_OF_THREADS; i++)
+    for(unsigned int i = 0; i < NUMBER_OF_THREADS; i++)
     {
         threads[i].join();
     }
@@ -623,9 +623,9 @@ void generateJitteredSamples(UniformRandomGenerator& rng, std::vector<vec2f>& sa
     y = int(float(numberOfSamples) / x);
     float width = 1.f/ x;
     float height = 1.f/ y;
-    for(size_t i = 0; i < x; ++i)
+    for(int i = 0; i < x; ++i)
     {
-        for(size_t j = 0; j < y; ++j)
+        for(int j = 0; j < y; ++j)
         {
             vec2f sample;
             sample.x = rng.getUniformRandNumber(i*width, (i+1)*width);

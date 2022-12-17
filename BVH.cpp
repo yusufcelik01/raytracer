@@ -18,16 +18,13 @@ BVH::~BVH()
     if(right){
         delete right;
     }
-    if(bbox){
-        delete bbox;
-    }
 }
 
 
 //bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
 bool BVH::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData)
 {
-    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
+    //const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     if(bbox->hitRay(ray) == false)
     {
         return false;

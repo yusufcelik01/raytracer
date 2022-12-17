@@ -13,7 +13,7 @@
 
 char* navigateDirs(const char* curr_pwd, const char* action)
 {
-    char* newPath;
+    char* newPath = NULL;
     if(action[0] == '~' || action[0] == '/')
     {
         strcpy(newPath, action);
@@ -43,6 +43,7 @@ void Scene::loadFromXml(const std::string &filepath)
     tinyxml2::XMLDocument file;
     std::stringstream stream;
 
+    objects = {};
     auto res = file.LoadFile(filepath.c_str());
     if (res)
     {
@@ -78,6 +79,7 @@ void Scene::loadFromXml(const std::string &filepath)
         stream << "0.001" << std::endl;
     }
     stream >> shadow_ray_epsilon;
+    VAO.epsilon = shadow_ray_epsilon;
 
     //Get MaxRecursionDepth
     element = root->FirstChildElement("MaxRecursionDepth");
@@ -496,17 +498,17 @@ void Scene::loadFromXml(const std::string &filepath)
         else// a regular non-ply mesh
         {
             const char* vertexOffsetStr = child->Attribute("vertexOffset");
-            const char* textureOffsetStr = child->Attribute("textureOffset");
+            //const char* textureOffsetStr = child->Attribute("textureOffset");
             int vertexOffset = 0;
-            int textureOffset = 0;
+            //int textureOffset = 0;
             if(vertexOffsetStr != NULL)
             {
                 vertexOffset = std::stoi(vertexOffsetStr); 
             }
-            if(textureOffsetStr != NULL)
-            {
-                textureOffset = std::stoi(textureOffsetStr); 
-            }
+            //if(textureOffsetStr != NULL)
+            //{
+            //    textureOffset = std::stoi(textureOffsetStr); 
+            //}
 
             stream << child->GetText() << std::endl;
             Face* face;
@@ -528,7 +530,7 @@ void Scene::loadFromXml(const std::string &filepath)
 
 
         //meshes.push_back(mesh);
-        objects.push_back(mesh);//runtime polymorph
+        objects.push_back((Object*) mesh);//runtime polymorph
         meshes.push_back(mesh);
         mesh = new Mesh();
         element = element->NextSiblingElement("Mesh");
@@ -706,10 +708,10 @@ http://paulbourke.net/dataformats/ply/
     PLY_Vertex **vlist;
     PLY_Face **flist;
     char *elem_name;
-    int num_comments;
-    char **comments;
-    int num_obj_info;
-    char **obj_info;
+    //int num_comments;
+    //char **comments;
+    //int num_obj_info;
+    //char **obj_info;
 
     PlyProperty vert_props[] = { /* list of property information for a vertex */
         {strdup("x"), PLY_FLOAT, PLY_FLOAT, offsetof(PLY_Vertex,x), 0, 0, 0, 0},
@@ -981,6 +983,10 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         {
             tex->decalMode = TEX_MODE_REPLACE_NORMAL;
         }
+        else if(decalMode == "bump_normal")
+        {
+            tex->decalMode = TEX_MODE_BUMP_NORMAL;
+        }
         else if(decalMode == "replace_background")
         {
             tex->decalMode = TEX_MODE_REPLACE_BACKGROUND;
@@ -1006,7 +1012,7 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
 
 
     
-    tinyxml2::XMLNode* imgNode;
+    //tinyxml2::XMLNode* imgNode;
 }
 
 void Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)

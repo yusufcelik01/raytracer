@@ -4,7 +4,6 @@
 Triangle::Triangle()
 {
     indices = Face();
-    material_id = -1;
 }
 
 Triangle::Triangle(const Triangle& rhs) : Object(rhs)
@@ -34,13 +33,12 @@ Triangle::~Triangle()
     //{
     //    delete bbox;        
     //}
-    indices.~Face();
 }
 
 //bool Triangle::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData) 
 bool Triangle::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData) 
 {
-    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
+    //const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
 
@@ -72,6 +70,8 @@ bool Triangle::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, 
         intData.material_id = this->material_id;
         intData.material = this->material;
 
+        this->processTextures(vertexBuffers, intData);
+
         //intData.intersectionPoint = ray.o + (ray.d * intData.t);
         tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
         intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
@@ -79,7 +79,6 @@ bool Triangle::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, 
         tmp = transpose(invM) * vec4f(intData.normal, 0.f);
         intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
 
-        this->processTextures(intData);
     }
 
     return hit;
@@ -107,7 +106,7 @@ BoundingBox* Triangle::getBoundingBox(const std::vector<vec3f>& VAO)
     {
         return bbox;
     }
-    bbox = indices.getBoundingBox(VAO);     
+    bbox = new BoundingBox(*(indices.getBoundingBox(VAO)));
 
     if(transformation)
     {

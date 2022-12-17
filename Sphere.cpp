@@ -128,7 +128,7 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
                                     
     
     //TODO assign intData.TNB
-    this->processTextures(intData);
+    this->processTextures(vertexBuffers, intData);
 
     //transfrom them back to world space
     tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);

@@ -10,6 +10,7 @@ class VertexBuffers
     public:
     std::vector<vec3f> vertexCoords;
     std::vector<vec2f> textureCoords;
+    float epsilon;
 };
 
 #endif

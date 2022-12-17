@@ -72,9 +72,9 @@ Mesh::~Mesh()
 //bool Mesh::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intData)
 bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData)
 {
-    const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
+    //const std::vector<vec3f>& VAO = vertexBuffers.vertexCoords;
     //float timeSample = rng.getUniformRandNumber(0,1);
-    float timeSample = ray.time;
+    //float timeSample = ray.time;
     mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
 
@@ -152,7 +152,7 @@ bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, Inte
         intData.material = this->material;
 
 
-        this->processTextures(intData);
+        this->processTextures(vertexBuffers, intData);
         //intData.intersectionPoint = ray.o + (ray.d * intData.t);
         tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
         intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
@@ -324,7 +324,7 @@ bool Mesh::intersectRayResetTransform(const VertexBuffers& vertexBuffers, const 
 bool Mesh::intersectRayResetMotion(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intData)
 {
     //float timeSample = rng.getUniformRandNumber(0,1);
-    float timeSample = ray.time;
+    //float timeSample = ray.time;
     mat4x4 compositeTransformation(1.f), invM(1.f);
     Ray r = ray;
 
