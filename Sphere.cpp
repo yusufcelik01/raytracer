@@ -101,6 +101,20 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
     intData.intersectionPoint = r.o + (r.d * intData.t);
     intData.normal = norm(intData.intersectionPoint - c);
 
+    //calculate the texture coordinates 
+    //before transforming them back to world coords
+    vec3f surfacePoint = norm(intData.intersectionPoint - c);
+    //float theta = acos(surfacePoint.y/radius);
+    float theta = acos(surfacePoint.y/1.f);
+    float phi = atan2(surfacePoint.z, surfacePoint.x);
+
+    vec2f texCoord;
+    texCoord.s = (-phi + M_PI)/(2*M_PI);
+    texCoord.t = theta/M_PI;
+    intData.texCoord = texCoord;
+    //std::cout << "sphere tex coords: " << texCoord.x << ", "<< texCoord.y <<std::endl;
+                                    
+    
     //transfrom them back to world space
     tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
     intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
@@ -108,7 +122,7 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
     tmp = transpose(invM) * vec4f(intData.normal, 0.f);
     intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
 
-    //this->processTextures(intData);
+    this->processTextures(intData);
 
     return true;
 
