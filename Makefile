@@ -9,8 +9,8 @@ PARSER_FILES= plyfile.o parser.o
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o
-MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp
-MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o
+MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
+MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
 OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES)
 
@@ -24,11 +24,12 @@ ply_test:
 	gcc plytest.c plyfile.c -o plytest -g
 
 
-vec2.o: vec2.hpp
-vec3.o: vec3.hpp
-vec4.o: vec4.hpp
-mat4x4.o: mat4x4.hpp
-rtmath.o: rtmath.hpp
+vec2.o: vec2.hpp vec2.cpp
+vec3.o: vec3.hpp vec3.cpp
+vec4.o: vec4.hpp vec4.cpp
+mat4x4.o: mat4x4.hpp mat4x4.cpp
+Matrix.o: Matrix.hpp Matrix.cpp
+rtmath.o: rtmath.hpp rtmath.cpp
 
 AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
@@ -97,10 +98,10 @@ test: raytracer
 test2: raytracer
 	./raytracer hw2/inputs/simple_transform.xml
 	./raytracer hw2/inputs/spheres.xml
-	(time ./raytracer hw2/inputs/marching_dragons.xml) 2> time_marching_dragons.txt
-	(time ./raytracer hw2/inputs/dragon_metal.xml) 2> time_dragon_metal.txt
 	(time ./raytracer hw2/inputs/ellipsoids.xml) 2> time_ellipsoids.txt
 	(time ./raytracer hw2/inputs/metal_glass_plates.xml) 2> time_metal_glass_plates.txt
+	(time ./raytracer hw2/inputs/marching_dragons.xml) 2> time_marching_dragons.txt
+	(time ./raytracer hw2/inputs/dragon_metal.xml) 2> time_dragon_metal.txt
 	#(time ./raytracer hw2/inputs/grass/grass_desert.xml) 2> time_grass.txt
 	
 
@@ -114,7 +115,6 @@ test3:
 test4:
 	./raytracer hw4/inputs/cube_wall.xml 
 	./raytracer hw4/inputs/cube_perlin.xml 
-	./raytracer hw4/inputs/cube_cushion.xml 
 	./raytracer hw4/inputs/cube_cushion.xml 
 	./raytracer hw4/inputs/galactica_static.xml 
 	./raytracer hw4/inputs/brickwall_with_normalmap.xml 
