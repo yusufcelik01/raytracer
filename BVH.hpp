@@ -23,6 +23,7 @@ class BVH : public Object
 
         //constructors
         BVH();
+        ~BVH();
         //template<typename Iterator>
         //BVH(const std::vector<vec3f>& VAO, Iterator begin, Iterator end, AXIS_TYPE axis);
 

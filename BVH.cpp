@@ -10,6 +10,19 @@ BVH::BVH()
     bbox = NULL;
 }
 
+BVH::~BVH()
+{
+    if(left){
+        delete left;
+    }
+    if(right){
+        delete right;
+    }
+    if(bbox){
+        delete bbox;
+    }
+}
+
 
 //bool BVH::intersectRay(const std::vector<vec3f>& VAO, const Ray& ray, IntersectionData& intersectionData)
 bool BVH::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, IntersectionData& intersectionData)
