@@ -23,10 +23,17 @@ int main(int argc, char* argv[])
         for(auto it = mesh->faces.begin(); it < mesh->faces.end(); ++it)
         {
             (*it)->getBoundingBox(scene.VAO.vertexCoords);
+            (*it)->cacheData(scene.VAO);
         }
         mesh->AccBVH = constructMeshBVH(scene.VAO.vertexCoords, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
         //mesh->bbox = mesh->AccBVH->getBoundingBox();
     }
+
+    for(Triangle* triangle : scene.triangles)
+    {
+        triangle->indices.cacheData(scene.VAO);
+    }
+
     //std::cout << "Mesh BVHs are completed" << std::endl;
     for(auto it = scene.objects.begin(); it < scene.objects.end(); ++it)
     {
@@ -39,5 +46,9 @@ int main(int argc, char* argv[])
     {
         scene.render(camera);
     }
+
+    delete scene.AccStrBVH;
+        
+    return 0;
 }
 
