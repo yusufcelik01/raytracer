@@ -82,5 +82,11 @@ void Object::processTextures(IntersectionData& intData)
             intData.material.diffuse  = texSample; 
             intData.material.specular = texSample; 
         }
+        else if(texture->decalMode == TEX_MODE_REPLACE_NORMAL)
+        {
+            //undo the normalization
+            vec3f normalSample = norm(texture->sample(u,v)*2.f - vec3f(1.f));
+            intData.normal = norm(intData.TBN * normalSample); 
+        }
     }
 }
