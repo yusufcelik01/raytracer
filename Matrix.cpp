@@ -8,7 +8,7 @@ Matrix::Matrix()
     columns = 4;
 
     data = new float*[rows];
-    for(int i = 0; i < rows; ++i)
+    for(size_t i = 0; i < rows; ++i)
     {
         data[i] = new float[columns];
     }
@@ -16,7 +16,7 @@ Matrix::Matrix()
 
 Matrix::~Matrix()
 {
-    for(int i = 0; i < rows; ++i)
+    for(size_t i = 0; i < rows; ++i)
     {
         delete[] data[i];
     }
@@ -29,7 +29,7 @@ Matrix::Matrix(size_t r, size_t c)
     columns = c;
 
     data = new float*[rows];
-    for(int i = 0; i < rows; ++i)
+    for(size_t i = 0; i < rows; ++i)
     {
         data[i] = new float[columns];
         for(size_t j = 0; j < columns; j++)
@@ -45,7 +45,7 @@ Matrix::Matrix(const Matrix& rhs)
     columns = rhs.columns;
 
     data = new float*[rows];
-    for(int i = 0; i < rows; ++i)
+    for(size_t i = 0; i < rows; ++i)
     {
         data[i] = new float[columns];
         for(size_t j = 0; j < columns; j++)
@@ -68,10 +68,10 @@ Matrix Matrix::operator*(const Matrix& rhs) const
         exit(-1);
     }
     Matrix result(rows, rhs.columns);
-    for(int i = 0; i < this->rows; i++) {
-        for(int j = 0; j < rhs.columns; j++) {
+    for(size_t i = 0; i < this->rows; i++) {
+        for(size_t j = 0; j < rhs.columns; j++) {
             float sum = 0.f;
-            for(int k = 0; k < this->columns; k++) {
+            for(size_t k = 0; k < this->columns; k++) {
                 sum += data[i][k] * rhs.data[k][j];
             }
             result.data[i][j] = sum;
@@ -88,7 +88,7 @@ Matrix& Matrix::operator=(const Matrix& rhs)
     columns = rhs.columns;
 
     data = new float*[rows];
-    for(int i = 0; i < rows; ++i)
+    for(size_t i = 0; i < rows; ++i)
     {
         data[i] = new float[columns];
         for(size_t j = 0; j < columns; j++)
