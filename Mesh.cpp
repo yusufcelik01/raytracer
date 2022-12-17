@@ -152,6 +152,7 @@ bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, Inte
         intData.material = this->material;
 
 
+        this->processTextures(intData);
         //intData.intersectionPoint = ray.o + (ray.d * intData.t);
         tmp = compositeTransformation * vec4f(intData.intersectionPoint, 1.f);
         intData.intersectionPoint = vec3f(tmp.x, tmp.y, tmp.z);
@@ -161,7 +162,6 @@ bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, Inte
         intData.normal = norm(vec3f(tmp.x, tmp.y, tmp.z));
         //Calculate textures values
         //std::cout << "hit mesh" << std::endl;
-        this->processTextures(intData);
     }
     return hit;
 }
