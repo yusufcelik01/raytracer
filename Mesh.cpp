@@ -171,9 +171,9 @@ bool Mesh::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, Inte
 //
 //    //return intersectionPoint.face.getSurfNormal(VAO, intersectionPoint);
 //    //return this->faces[intersectionPoint.faceId -1].getSurfNormal(VAO, intersectionPoint);
-//    vec3f a = VAO[intersectionPoint.v0_id];
-//    vec3f b = VAO[intersectionPoint.v1_id];
-//    vec3f c = VAO[intersectionPoint.v2_id];
+//    vec3f a = VAO[intersectionPoint.v[0]];
+//    vec3f b = VAO[intersectionPoint.v[1]];
+//    vec3f c = VAO[intersectionPoint.v[2]];
 //
 //    return norm(cross(b-a, c-b));
 //}
