@@ -93,7 +93,6 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
         }
     }
     intData.hitType = SPHERE;
-    intData.sphereCenterId = center_vertex_id;
     intData.material_id = this->material_id;
     intData.material = this->material;
 
