@@ -46,8 +46,8 @@ struct Scene
     //std::vector<vec3f> vertex_data;
     //std::vector<vec2f> textureCoords;
     VertexBuffers VAO;
-    //std::vector<Sphere*> spheres;
-    //std::vector<Triangle*> triangles;
+    std::vector<Sphere*> spheres;
+    std::vector<Triangle*> triangles;
     std::vector<Mesh*> meshes;
     std::vector<Object*> objects;
     Object* AccStrBVH;

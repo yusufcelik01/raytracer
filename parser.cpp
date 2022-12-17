@@ -486,9 +486,9 @@ void Scene::loadFromXml(const std::string &filepath)
             size_t numOfPlyFaces = obj.triangles.size();
             for(size_t k=0; k < numOfPlyFaces; k++)
             {
-                Face* face = new Face(numOfTotalVertices + obj.triangles[k].v0_id,
-                                      numOfTotalVertices + obj.triangles[k].v1_id,
-                                      numOfTotalVertices + obj.triangles[k].v2_id );
+                Face* face = new Face(numOfTotalVertices + obj.triangles[k].vertexId[0],
+                                      numOfTotalVertices + obj.triangles[k].vertexId[1],
+                                      numOfTotalVertices + obj.triangles[k].vertexId[2] );
                 
                 mesh->faces.push_back(face);
             }
@@ -511,16 +511,17 @@ void Scene::loadFromXml(const std::string &filepath)
             stream << child->GetText() << std::endl;
             Face* face;
             face = new Face();
-            while (!(stream >> face->v0_id).eof())
+            while (!(stream >> face->vertexId[0]).eof())
             {
-                stream >> face->v1_id >> face->v2_id;
-                face->v0_id += vertexOffset;
-                face->v1_id += vertexOffset;
-                face->v2_id += vertexOffset;
+                stream >> face->vertexId[1] >> face->vertexId[2];
+                face->vertexId[0] += vertexOffset;
+                face->vertexId[1] += vertexOffset;
+                face->vertexId[2] += vertexOffset;
 
                 mesh->faces.push_back(face);
                 face = new Face();
             }
+            delete face;
             stream.clear();
         }
         
@@ -543,14 +544,16 @@ void Scene::loadFromXml(const std::string &filepath)
     {
         child = element->FirstChildElement("Indices");
         stream << child->GetText() << std::endl;
-        stream >> triangle.indices.v0_id >> triangle.indices.v1_id >> triangle.indices.v2_id;
+        stream >> triangle.indices.vertexId[0] >> triangle.indices.vertexId[1] >> triangle.indices.vertexId[2];
 
         stream.clear();
 
         getObjAttributes(element, &triangle);
 
         //triangles.push_back(triangle);
-        objects.push_back(new Triangle(triangle));//runtime polymorph
+        Triangle* t = new Triangle(triangle);
+        objects.push_back(t);//runtime polymorph
+        triangles.push_back(t);
         element = element->NextSiblingElement("Triangle");
         triangle = Triangle();
     }
@@ -575,7 +578,9 @@ void Scene::loadFromXml(const std::string &filepath)
         
 
         //spheres.push_back(sphere);
-        objects.push_back(new Sphere(sphere));//runtime polymorph
+        Sphere* spherePtr = new Sphere(sphere); 
+        objects.push_back(spherePtr);//runtime polymorph
+        spheres.push_back(spherePtr);
         sphere = Sphere();
         element = element->NextSiblingElement("Sphere");
     }
@@ -785,7 +790,7 @@ http://paulbourke.net/dataformats/ply/
                                                      flist[j]->verts[k-1], 
                                                      flist[j]->verts[k  ])); 
                     Face f = plyMesh.triangles[ plyMesh.triangles.size()-1] ;
-                    //std::cout << "ply face : " << f.v0_id << ", " <<  f.v1_id << ", " << f.v2_id << std::endl;
+                    //std::cout << "ply face : " << f.v[0] << ", " <<  f.v[1] << ", " << f.v[2] << std::endl;
                     //std::cout << "END POLYGON" << std::endl;
                     //printf ("%d ", flist[j]->verts[k]);
                 }
@@ -971,6 +976,10 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         else if(decalMode == "blend_kd")
         {
             tex->decalMode = TEX_MODE_BLEND_KD;
+        }
+        else if(decalMode == "replace_normal")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_NORMAL;
         }
         else if(decalMode == "replace_background")
         {
