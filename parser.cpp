@@ -843,13 +843,27 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             float noiseScale;
             std::string noiseConversion;
             child = element->FirstChildElement("NoiseScale");
-            stream << child->GetText() << std::endl;
-            stream >> noiseScale;
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+                stream >> noiseScale;
+            }
+            else
+            {
+                noiseScale = 1.f;
+            }
            
             //stream >> noise->noiseScale;
             child = element->FirstChildElement("NoiseConversion");
-            stream << child->GetText() << std::endl;
-            stream >> noiseConversion;
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+                stream >> noiseConversion;
+            }
+            else
+            {
+                noiseConversion = "linear";
+            }
 
             PerlinNoise* noise = new PerlinNoise(noiseScale, noiseConversion);
             tex = noise;
@@ -886,6 +900,17 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             stream >> imgId;
             imgTex->img = images[imgId-1];
 
+            child = element->FirstChildElement("Normalizer");
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+                stream >> imgTex->normalizer;
+                std::cout << "normalizer: " << imgTex->normalizer << std::endl;
+            }
+            else
+            {
+                imgTex->normalizer = 255.f;
+            }
 
             //TODO perlin noise do not have interpolation attribute
             child = element->FirstChildElement("Interpolation");
@@ -938,6 +963,10 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         else if(decalMode == "replace_ks")
         {
             tex->decalMode = TEX_MODE_REPLACE_KS;
+        }
+        else if(decalMode == "replace_all")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_ALL;
         }
         else if(decalMode == "blend_kd")
         {
