@@ -123,7 +123,7 @@ vec3f Matrix::operator*(const vec3f& rhs) const
 
     for(size_t i = 0; i < 3; i++)
     {
-        result[0] = data[i][0] * rhs.x
+        result[i] = data[i][0] * rhs.x
                    + data[i][1] * rhs.y
                    + data[i][2] * rhs.z;        
     }
