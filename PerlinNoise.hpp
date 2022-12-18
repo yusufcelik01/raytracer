@@ -26,6 +26,7 @@ class PerlinNoise: public Texture
         vec3f sampleDv(float x, float y);
         vec3f sample(float x, float y, float z);
         vec3f sample(vec3f texCoords);
+        float sampleScalar(vec3f texCoords);
 };
 
 

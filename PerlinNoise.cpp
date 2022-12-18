@@ -70,10 +70,13 @@ vec3f grad(int i, int j, int k)
 vec3f PerlinNoise::sample(float x, float y)
 {
     //return sample(vec3f(x, y, (x+y)/2));
-    return sample(vec3f(x, y, 0.f));
+    float r = sampleScalar(vec3f(x, y, 0.f));
+    float g = sampleScalar(vec3f(0.f, x, y));
+    float b = sampleScalar(vec3f(x, 0.f, y));
+    return vec3f(r, g, b);
 }
 
-vec3f PerlinNoise::sample(vec3f texCoords)
+float PerlinNoise::sampleScalar(vec3f texCoords)
 {
     //using glm::mix, glm::dot, glm::floor;
     texCoords = texCoords * noiseScale;
@@ -132,10 +135,10 @@ vec3f PerlinNoise::sample(vec3f texCoords)
 
 vec3f PerlinNoise::sampleDu(float x, float y)
 { 
-    return sample(x+ TEX_SAMPLING_EPSILON,y);
+    return sample(x+ TEX_SAMPLING_EPSILON*100.f,y);
 }
 
 vec3f PerlinNoise::sampleDv(float x, float y)
 {
-    return sample(x,y + TEX_SAMPLING_EPSILON);
+    return sample(x,y + TEX_SAMPLING_EPSILON*100.f);
 }
