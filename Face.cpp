@@ -248,8 +248,10 @@ bool Face::intersectRay(const VertexBuffers& vertexBuffers, const Ray& r, Inters
                                 (*TBN).data[1][1],
                                 (*TBN).data[2][1]);
 
-                intData.dp_du = intData.intersectionPoint + vertexBuffers.epsilon * T;
-                intData.dp_dv = intData.intersectionPoint + vertexBuffers.epsilon * B;
+                //intData.dp_du = intData.intersectionPoint + vertexBuffers.epsilon * T;
+                //intData.dp_dv = intData.intersectionPoint + vertexBuffers.epsilon * B;
+                intData.dp_du = vertexBuffers.epsilon * T;
+                intData.dp_dv = vertexBuffers.epsilon * B;
                 /////////////////////////////////////////
             }
 

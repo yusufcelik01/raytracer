@@ -206,8 +206,13 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         //if not we are inside an dielectric
         //object and light can not directly contribute
         {
+            if(closestObjData.disableShading){
+                color = closestObjData.material.diffuse;
+            }
+            else {
             color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
             color += objMaterial.ambient * ambient_light;
+            }
         }
         if(dot(n, ray.d) > 0)//if we are inside an object
         {

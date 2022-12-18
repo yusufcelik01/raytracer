@@ -36,3 +36,13 @@ vec3f CheckerBoard::sample(vec3f pos)
         return white;
     }
 }
+
+vec3f CheckerBoard::sampleDu(float x, float y)
+{ 
+    return sample(x+ TEX_SAMPLING_EPSILON,y);
+}
+
+vec3f CheckerBoard::sampleDv(float x, float y)
+{
+    return sample(x,y + TEX_SAMPLING_EPSILON);
+}

@@ -22,6 +22,8 @@ class ImageTexture: public Texture
         float normalizer;
         ImageTexture();
         vec3f sample(float x, float y);
+        vec3f sampleDu(float x, float y);
+        vec3f sampleDv(float x, float y);
 };
 
 

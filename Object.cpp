@@ -81,6 +81,7 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
             intData.material.ambient  = texSample;
             intData.material.diffuse  = texSample; 
             intData.material.specular = texSample; 
+            intData.disableShading = true;
         }
         else if(texture->decalMode == TEX_MODE_REPLACE_NORMAL)
         {
@@ -90,12 +91,24 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
         }
         else if(texture->decalMode == TEX_MODE_BUMP_NORMAL)
         {
-            vec3f normal = intData.normal * buffers.epsilon * texture->bumpFactor;
-            vec3f p = intData.intersectionPoint + normal * texture->sample(u,v);
-            vec3f pt = intData.dp_du + normal * texture->sample(u + buffers.epsilon, v);
-            vec3f pb = intData.dp_du + normal * texture->sample(u,v + buffers.epsilon);
+            float epsilon = buffers.epsilon*0.5f;
+            vec3f normal = intData.normal * texture->bumpFactor;
+            //vec3f q = intData.intersectionPoint + normal * texture->sample(u,v).b;
+            //vec3f qt = intData.dp_du + normal * texture->sample(u + 1.f/500.f, v).r;
+            //vec3f qb = intData.dp_dv + normal * texture->sample(u,v + 1.f/500.f).r;
+            //vec3f q_du = intData.dp_du + normal * texture->sample(u + epsilon, v).r;
+            //vec3f q_dv = intData.dp_dv + normal * texture->sample(u,v + epsilon).r;
 
-            intData.normal = norm(cross(pt-pb, p-pt));
+            float dh_du = texture->sample(u + epsilon, v).g - texture->sample(u, v).g; 
+            float dh_dv = texture->sample(u, v + epsilon).g - texture->sample(u, v).g; 
+            //float dh_du = texture->sampleDu(u, v).b - texture->sample(u, v).b; 
+            //float dh_dv = texture->sampleDv(u, v).b - texture->sample(u, v).b; 
+            vec3f dq_du = intData.dp_du + normal * dh_du;
+            vec3f dq_dv = intData.dp_dv + normal * dh_dv;
+
+            intData.normal = norm(cross(dq_dv, dq_du));
+            //intData.normal = norm(cross(q_dv, q_du));
+            //intData.normal = norm(cross(qt-qb, q-qt));
         }
     }
 }

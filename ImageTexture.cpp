@@ -62,6 +62,15 @@ vec3f ImageTexture::sample(float x, float y)
 }
 
 
+vec3f ImageTexture::sampleDu(float x, float y)
+{
+    return sample(x + 1.f/img.width, y);
+}
+
+vec3f ImageTexture::sampleDv(float x, float y)
+{
+    return sample(x, y + 1.f/img.height);
+}
 
 
 

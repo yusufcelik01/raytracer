@@ -128,3 +128,14 @@ vec3f PerlinNoise::sample(vec3f texCoords)
         return (c <= 0)? -c : c;
     }
 }
+
+
+vec3f PerlinNoise::sampleDu(float x, float y)
+{ 
+    return sample(x+ TEX_SAMPLING_EPSILON,y);
+}
+
+vec3f PerlinNoise::sampleDv(float x, float y)
+{
+    return sample(x,y + TEX_SAMPLING_EPSILON);
+}

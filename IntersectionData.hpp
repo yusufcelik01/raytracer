@@ -25,6 +25,7 @@ class IntersectionData //this is where i break oop and go back to C
     vec2f texCoord; 
     Matrix TBN;
     vec3f dp_du, dp_dv;// surface points along u and v 
+    bool disableShading = false;
 };
 
 #endif

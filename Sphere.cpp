@@ -126,6 +126,8 @@ bool Sphere::intersectRay(const VertexBuffers& vertexBuffers, const Ray& ray, In
         intData.TBN.data[m][2] = intData.normal[m];
     }
                                     
+    intData.dp_du = vertexBuffers.epsilon * T;
+    intData.dp_dv = vertexBuffers.epsilon * B;
     
     //TODO assign intData.TNB
     this->processTextures(vertexBuffers, intData);
