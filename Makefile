@@ -51,9 +51,9 @@ BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
 BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
 
-ImageTexture.o: ImageTexture.hpp ImageTexture.cpp rtmath.hpp
-PerlinNoise.o: PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
-CheckerBoard.o: CheckerBoard.hpp CheckerBoard.cpp
+ImageTexture.o: Texture.hpp ImageTexture.hpp ImageTexture.cpp rtmath.hpp
+PerlinNoise.o: Texture.hpp PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
+CheckerBoard.o: Texture.hpp CheckerBoard.hpp CheckerBoard.cpp
 
 core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 

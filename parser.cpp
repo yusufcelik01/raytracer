@@ -873,6 +873,21 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             }
 
             PerlinNoise* noise = new PerlinNoise(noiseScale, noiseConversion);
+
+            child = element->FirstChildElement("ColorMap");
+            if(child)
+            {
+                std::cout << "COLOR MAP " << std::endl;
+                noise->samplerType = TEX_SAMPLER_3D;
+                stream << child->GetText() << std::endl;
+                vec3f color(0.f);
+                while(!(stream >> color.x).eof())
+                {
+                    stream >> color.y >> color.z;
+                    noise->colorMap.push_back(color);
+                }
+            }
+
             tex = noise;
         }
         else if(texMapType != NULL && strcmp(texMapType, "checkerboard") == 0)

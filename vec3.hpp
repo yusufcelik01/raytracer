@@ -68,6 +68,7 @@ vec3f refract(vec3f n, vec3f incoming, float eta);
 float dielectricReflectionRatio(float n1, float n2, float cosTheta, float cosPhi);
 float conductorReflectionRatio(float n2, float k2, float cosTheta);
 vec3f exp(vec3f v);
+float makeGrayScale(vec3f rgb);
 
 
 vec3f operator*(const float& c, const vec3f& v);

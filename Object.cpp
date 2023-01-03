@@ -1,4 +1,5 @@
 #include "Object.hpp"
+#include <iostream>
 
 Object::Object()
 {
@@ -62,9 +63,16 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
     float v = intData.texCoord.y;
     for(Texture* texture: textures)
     {
+        //std::cout << "one texture present" << std::endl;
         if(texture->decalMode == TEX_MODE_REPLACE_KD)
         {
-            intData.material.diffuse = texture->sample(u, v);
+            //std::cout << "texture sampling point" << std::endl;
+                //intData.material.diffuse = texture->sample(intData.intersectionPoint);
+            //if(texture->samplerType == TEX_SAMPLER_3D){
+            //}
+            //else {
+                intData.material.diffuse = texture->sample(u, v);
+            //}
         }
         else if(texture->decalMode == TEX_MODE_BLEND_KD)
         {
@@ -91,7 +99,8 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
         }
         else if(texture->decalMode == TEX_MODE_BUMP_NORMAL)
         {
-            float epsilon = buffers.epsilon*0.5f;
+            //float epsilon = buffers.epsilon*0.005f;//transformed bump
+            //float epsilon = buffers.epsilon*0.5f;//perlin bump
             vec3f normal = intData.normal * texture->bumpFactor;
             //vec3f q = intData.intersectionPoint + normal * texture->sample(u,v).b;
             //vec3f qt = intData.dp_du + normal * texture->sample(u + 1.f/500.f, v).r;
@@ -99,10 +108,10 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
             //vec3f q_du = intData.dp_du + normal * texture->sample(u + epsilon, v).r;
             //vec3f q_dv = intData.dp_dv + normal * texture->sample(u,v + epsilon).r;
 
-            float dh_du = texture->sample(u + epsilon, v).g - texture->sample(u, v).g; 
-            float dh_dv = texture->sample(u, v + epsilon).g - texture->sample(u, v).g; 
-            //float dh_du = texture->sampleDu(u, v).b - texture->sample(u, v).b; 
-            //float dh_dv = texture->sampleDv(u, v).b - texture->sample(u, v).b; 
+            float dh_du = makeGrayScale(texture->sample(u + epsilon, v)) - makeGrayScale(texture->sample(u, v)); 
+            float dh_dv = makeGrayScale(texture->sample(u, v + epsilon))- makeGrayScale(texture->sample(u, v)); 
+            //float dh_du = makeGrayScale(texture->sampleDu(u, v)) - makeGrayScale(texture->sample(u, v)); 
+            //float dh_dv = makeGrayScale(texture->sampleDv(u, v)) - makeGrayScale(texture->sample(u, v)); 
             vec3f dq_du = intData.dp_du + normal * dh_du;
             vec3f dq_dv = intData.dp_dv + normal * dh_dv;
 

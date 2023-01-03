@@ -373,4 +373,12 @@ std::ostream& operator<<(std::ostream& os, const vec3f& v)
     return os;
 }
 
-
+float makeGrayScale(vec3f rgb)
+{
+    float sum = 0;
+    sum += rgb.r;
+    sum += rgb.g;
+    sum += rgb.b;
+        
+    return sum/3.f;
+}

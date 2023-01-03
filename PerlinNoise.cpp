@@ -1,6 +1,7 @@
 #include "PerlinNoise.hpp"
 #include "rtmath.hpp"
 #include <cmath>
+#include <iostream>
 
 PerlinNoise::PerlinNoise()
 {
@@ -66,6 +67,25 @@ vec3f grad(int i, int j, int k)
     return gradients[ind];
 }
 //float perlinNoise(vec3f texCoords)
+
+vec3f PerlinNoise::sample(vec3f texCoord)
+{
+    //std::cout << "perlin noise sample function" << std::endl;
+    if(colorMap.size() < 1)
+    {
+        float x, y;
+        x = texCoord.x;
+        y = texCoord.y;
+        float r = sampleScalar(vec3f(x, y, 0.f));
+        float g = sampleScalar(vec3f(0.f, x, y));
+        float b = sampleScalar(vec3f(x, 0.f, y));
+        return vec3f(r, g, b);
+    }
+    float s = sampleScalar(texCoord);
+    int index = int(s * (colorMap.size() -1));
+    //std::cout << "perlin noise color map index: " << index << std::endl;
+    return colorMap[index];
+}
 
 vec3f PerlinNoise::sample(float x, float y)
 {
