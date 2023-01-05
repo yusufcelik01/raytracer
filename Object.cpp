@@ -100,7 +100,8 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
         else if(texture->decalMode == TEX_MODE_BUMP_NORMAL)
         {
             //float epsilon = buffers.epsilon*0.005f;//transformed bump
-            //float epsilon = buffers.epsilon*0.5f;//perlin bump
+            //float epsilon = buffers.epsilon*0.5f;//perlin bump cubes
+            float epsilon = buffers.epsilon*0.04f;//perlin bump cubes
             vec3f normal = intData.normal * texture->bumpFactor;
             //vec3f q = intData.intersectionPoint + normal * texture->sample(u,v).b;
             //vec3f qt = intData.dp_du + normal * texture->sample(u + 1.f/500.f, v).r;

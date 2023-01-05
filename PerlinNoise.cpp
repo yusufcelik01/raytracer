@@ -89,11 +89,11 @@ vec3f PerlinNoise::sample(vec3f texCoord)
 
 vec3f PerlinNoise::sample(float x, float y)
 {
-    //return sample(vec3f(x, y, (x+y)/2));
+    return sampleScalar(vec3f(x, y, (x+y)/2));
     float r = sampleScalar(vec3f(x, y, 0.f));
     float g = sampleScalar(vec3f(0.f, x, y));
     float b = sampleScalar(vec3f(x, 0.f, y));
-    return vec3f(r, g, b);
+    //return vec3f(r, g, b);
 }
 
 float PerlinNoise::sampleScalar(vec3f texCoords)
