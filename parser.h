@@ -13,6 +13,8 @@
 #include "Sphere.hpp"
 #include "PointLight.hpp"
 #include "AreaLight.hpp"
+#include "SpotLight.hpp"
+#include "DirectionalLight.hpp"
 #include "tinyxml2.h"
 #include "Texture.hpp"
 #include "ImageTexture.hpp"
@@ -31,9 +33,12 @@ struct Scene
     std::vector<Image> images;
     std::vector<Texture*> textures;
 
+    //lights
     vec3f ambient_light;
     std::vector<PointLight> point_lights;
     std::vector<AreaLight> area_lights;
+    std::vector<DirectionalLight> directional_lights;
+    std::vector<SpotLight> spot_lights;
 
     std::vector<Material> materials;
     std::vector<mat4x4> rotations;

@@ -111,6 +111,60 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
     }
 
+    for(DirectionalLight light : directional_lights)
+    {
+        vec3f w_light = norm(-light.direction);
+        Ray shadowRay; 
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = w_light;
+        shadowRay.time = eyeRay.time;
+        if(rayQuery(shadowRay, dummy, true, FLOAT_MAX))
+        {
+            continue;
+        }
+
+        color += computeBlinnPhong(light.radiance, surfNorm, w_light, w_eye, material);
+    }
+
+    for(SpotLight light : spot_lights)
+    {
+        vec3f w_light = (light.position -p); 
+        Ray shadowRay;
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = norm(light.position - shadowRay.o);
+        shadowRay.time = eyeRay.time;
+        float distance = length(w_light); 
+        if(rayQuery(shadowRay, dummy, true, distance))//if shadow
+        {
+            continue;
+        }
+        w_light = norm(w_light);
+        float d_sqr = distance * distance;
+        vec3f irradiance = light.intensity / d_sqr;
+
+        float cosAlpha = dot(light.direction, -w_light); 
+        float alpha = acos(cosAlpha);
+        if (alpha > light.covarageAngle)
+        {
+            continue; 
+        }
+        else if( alpha > light.fallOffAngle)
+        {
+            float cosFallOf = cos(light.fallOffAngle);
+            float cosCoverage = cos(light.covarageAngle);
+            float s = (cosAlpha - cosCoverage) 
+                      / (cosFallOf - cosCoverage);
+            s = s*s;
+            s = s*s;//s^4
+            irradiance = irradiance * s;
+            //irradiance.r = irradiance.g = 0;
+            //irradiance /= 4.f;
+        }
+        //else in no-fall of area
+
+        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
+    }
+
     return color;
 }
 

@@ -247,9 +247,65 @@ void Scene::loadFromXml(const std::string &filepath)
         stream >> areaLight.extent;
 
         area_lights.push_back(areaLight);
-        element = element->FirstChildElement("AreaLight");
+        element = element->NextSiblingElement("AreaLight");
     }
 
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("DirectionalLight");
+    DirectionalLight directionalLight;
+    while(element)
+    {
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+        stream >> directionalLight.radiance.r >> directionalLight.radiance.g >> directionalLight.radiance.b;
+
+        child = element->FirstChildElement("Direction");
+        stream << child->GetText() << std::endl;
+        stream >> directionalLight.direction.x >> directionalLight.direction.y >> directionalLight.direction.z;
+
+        directional_lights.push_back(directionalLight);
+        element = element->NextSiblingElement("DirectionalLight");
+    }
+
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("SpotLight");
+    SpotLight spot_light;
+    while (element)
+    {
+        child = element->FirstChildElement("Position");
+        stream << child->GetText() << std::endl;
+        stream >> spot_light.position.x >> spot_light.position.y >> spot_light.position.z;
+
+        child = element->FirstChildElement("Intensity");
+        stream << child->GetText() << std::endl;
+        stream >> spot_light.intensity.x >> spot_light.intensity.y >> spot_light.intensity.z;
+
+        child = element->FirstChildElement("Direction");
+        stream << child->GetText() << std::endl;
+        stream >> spot_light.direction.x >> spot_light.direction.y >> spot_light.direction.z;
+
+        child = element->FirstChildElement("CoverageAngle");
+        stream << child->GetText() << std::endl;
+        stream >> spot_light.covarageAngle;
+
+        child = element->FirstChildElement("FalloffAngle");
+        stream << child->GetText() << std::endl;
+        stream >> spot_light.fallOffAngle;
+
+        //normalize direction
+        spot_light.direction = norm(spot_light.direction);
+
+        //convert to radians and divide by two
+        spot_light.covarageAngle = spot_light.covarageAngle * M_PI / 360.f;
+        spot_light.fallOffAngle = spot_light.fallOffAngle * M_PI / 360.f;
+        if(spot_light.fallOffAngle > spot_light.covarageAngle)
+        {
+            spot_light.covarageAngle = spot_light.fallOffAngle;
+        }
+
+        spot_lights.push_back(spot_light);
+        element = element->NextSiblingElement("SpotLight");
+    }
 
 
     //Get Materials
