@@ -3,6 +3,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+//#define TINYEXR_USE_STB_ZLIB 1
+#define TINYEXR_IMPLEMENTATION
+#include "tinyexr.h"
+
 int write_png(char const *filename, int w, int h, const void *data)
 {
     const int comp = 3;

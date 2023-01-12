@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g -msse2 -Ofast
+CFLAGS = -g -O0 -msse2 
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
@@ -12,7 +12,7 @@ TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES)
+OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) miniz.o tonemap.o
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)

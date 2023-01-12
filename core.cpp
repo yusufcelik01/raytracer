@@ -1,6 +1,7 @@
 #include "parser.h"
 #include "img.hpp"
 #include "Ray.hpp"
+#include "tonemap.hpp"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -13,7 +14,6 @@
 #include <cassert>
 
 //#define NUMBER_OF_THREADS 8
-
 
 
 vec3f deviateRay(vec3f originalRay, float roughness)
@@ -501,7 +501,8 @@ struct RowRendererArg
     UniformRandomGenerator pixelSampler, apertureSampler;
 
     ImageRows* rows;
-    unsigned char* img;//output image data
+    //unsigned char* img;//output image data
+    float* img;
 };
 
 void Scene::render(Camera camera)
@@ -521,7 +522,7 @@ void Scene::render(Camera camera)
     float t = camera.near_plane.w;
 
     //int x,y;
-    unsigned char* img = new unsigned char[camera.image_width* camera.image_height * 3];
+    float* img = new float[camera.image_width* camera.image_height * 3];
 
     vec3f m = e - w * camera.near_distance;
     vec3f q = m + l * u + t * v;
@@ -571,33 +572,36 @@ void Scene::render(Camera camera)
         threads[i].join();
     }
 
-    //for(y = 511; y < camera.image_height; ++y)
-    //for(y = 0; y < camera.image_height; ++y)
-    //{
-    //    //for(x = 430; x < 450 /*camera.image_width*/; ++x)
-    //    for(x = 0; x < camera.image_width; ++x)
-    //    {
-    //        float s_u = (x + 0.5) * (r-l)/float(nx);
-    //        float s_v = (y + 0.5) * (t-b)/float(ny);
+    if(camera.image_name.substr(camera.image_name.size() -3) == std::string("exr"))//hdr tone map check
+    {
+        const char* err = NULL;
+        SaveEXR(img, camera.image_width, camera.image_height, 3, 0, camera.image_name.c_str(), &err);
+        std::cout << "writing to file: " << camera.image_name << std::endl;
 
-    //        vec3f s = q + s_u * u - s_v * v;
-    //        Ray ray; 
-    //        ray.o = e;
-    //        ray.d = norm(s - e);
+        std::string ldrOutput = camera.image_name.substr(0, camera.image_name.size() - 3) + "png";
+        int pixelCount = camera.image_width* camera.image_height * 3;
+        unsigned char* ldrImg = NULL;
+        ldrImg = tonemap::photographicToneMap(img, nx, ny, 3, 
+                        camera.TMOArgs.keyValue, 
+                        camera.TMOArgs.burnPercent, 
+                        camera.TMOArgs.saturation, 
+                        camera.TMOArgs.gamma);
 
-    //        
-    //        vec3f color = getRayColor(ray, max_recursion_depth, true, airMedium);
-    //        vec3i c = clamp(vec3i(color), 0, 255);
-    //        
-    //        img[(camera.image_width*y + x)*3] = c.r;
-    //        img[(camera.image_width*y + x)*3 + 1] = c.g;
-    //        img[(camera.image_width*y + x)*3 + 2] = c.b;
-    //        //std::cout << "pixel DONE \n----------------"  << std::endl;
-    //    }
-    //    //break;
-    //    //std::cout << "row " << y << " completed" << std::endl; 
-    //}
-    write_png(camera.image_name.c_str() , nx, ny, img);
+        write_png(ldrOutput.c_str() , nx, ny, ldrImg);
+        std::cout << "writing to file: " << ldrOutput << std::endl;
+    }
+    else//no tonemapping and hdr
+    {
+        int pixelCount = camera.image_width* camera.image_height * 3;
+        unsigned char* ldrImg = new unsigned char[pixelCount]; 
+        for(int i = 0; i < pixelCount; i++)
+        {
+            //ldrImg[i] = img[i];
+            ldrImg[i] = int(clamp(img[i], 0.f, 255.f));
+        }
+        write_png(camera.image_name.c_str() , nx, ny, ldrImg);
+        std::cout << "writing to file: " << camera.image_name << std::endl;
+    }
 
     delete[] img;
     delete threadArg.rows;
@@ -629,7 +633,8 @@ void Scene::renderRow(void* void_arg)
 
 
             vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
-            vec3i c = clamp(vec3i(color), 0, 255);
+            //vec3i c = clamp(vec3i(color), 0, 255);
+            vec3f c = color;
 
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;
@@ -813,7 +818,10 @@ void Scene::renderRowMultiSampled(void* void_arg)
             //pixelColor = filterBox(sampleColors); 
             pixelColor = filterGauss(samples, sampleColors); 
             //end box filter
-            vec3i c = clamp(vec3i(pixelColor), 0, 255);
+            
+            //vec3i c = vec3i(pixelColor);
+            vec3f c = vec3f(pixelColor);
+            //vec3i c = clamp(vec3i(pixelColor), 0, 255);
 
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;

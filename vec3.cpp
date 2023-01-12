@@ -382,3 +382,14 @@ float makeGrayScale(vec3f rgb)
         
     return sum/3.f;
 }
+
+vec3f elemWiseExp(vec3f v, float s)
+{
+    vec3f ret(0.f);
+
+    ret.r = pow(v.r, s);
+    ret.g = pow(v.g, s);
+    ret.b = pow(v.b, s);
+
+    return ret;
+}

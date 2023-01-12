@@ -3,6 +3,20 @@
 
 #include "rtmath.hpp"
 
+enum ToneMappingOperatorType
+{
+    TMO_PHOTOGRAPHIC_GLOBAL
+};
+
+struct ToneMapParamType
+{
+    enum ToneMappingOperatorType TMO;
+    float keyValue;
+    float burnPercent;
+    float saturation;
+    float gamma;
+};
+
 struct Camera
 {
     vec3f position;
@@ -16,6 +30,7 @@ struct Camera
     int numSamples;
     float focusDistance;
     float apertureSize;
+    struct ToneMapParamType TMOArgs;
 };
 
 #endif

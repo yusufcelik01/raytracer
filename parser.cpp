@@ -9,6 +9,7 @@
 #include <cstring>
 #include <limits>
 #include "stb_image.h"
+#include "tinyexr.h"
 
 
 char* navigateDirs(const char* curr_pwd, const char* action)
@@ -190,6 +191,28 @@ void Scene::loadFromXml(const std::string &filepath)
 
         }
 
+        stream.clear();
+
+        camera.TMOArgs.gamma = 1.f;
+        child = element->FirstChildElement("Tonemap");
+        if(child)//hdr scene
+        {
+            auto grandChild = child->FirstChildElement("TMO"); 
+            //stream << grandChild->GetText() << std::endl;
+            camera.TMOArgs.TMO = TMO_PHOTOGRAPHIC_GLOBAL;
+
+            grandChild = child->FirstChildElement("TMOOptions"); 
+            stream << grandChild->GetText() << std::endl;
+            stream >> camera.TMOArgs.keyValue >> camera.TMOArgs.burnPercent;
+            
+            grandChild = child->FirstChildElement("Saturation"); 
+            stream << grandChild->GetText() << std::endl;
+            stream >> camera.TMOArgs.saturation; 
+            
+            grandChild = child->FirstChildElement("Gamma"); 
+            stream << grandChild->GetText() << std::endl;
+            stream >> camera.TMOArgs.gamma;
+        }
 
         cameras.push_back(camera);
         element = element->NextSiblingElement("Camera");
@@ -389,6 +412,15 @@ void Scene::loadFromXml(const std::string &filepath)
         }
 
 
+        if(element->Attribute("degamma", "true") != NULL)
+        {
+            float gamma = 2.2;
+            material.diffuse = elemWiseExp(material.diffuse, gamma);
+            material.ambient = elemWiseExp(material.ambient, gamma);
+            material.specular = elemWiseExp(material.specular, gamma);
+
+        }
+
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
@@ -396,6 +428,16 @@ void Scene::loadFromXml(const std::string &filepath)
 
 
     parseTextures(root, filepath.c_str());
+
+    //element = root->FirstChildElement("Lights");
+    //element = element->FirstChildElement("SphericalDirectionalLight");
+    //if(element)
+    //{
+    //    int imgId;
+    //    child = element->FirstChildElement("ImageId"); 
+    //    stream << child->GetText() << std::endl;
+    //    stream
+    //}
 
     //get scaling transformations
     element = root->FirstChildElement("Transformations");
@@ -882,7 +924,31 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             //std::cout << element->GetText() << std::endl;
             char* imgPath = navigateDirs(inputFileDir, element->GetText());
             //printf("Tex image path : %s\n", imgPath);
-            image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 0);
+            int strSize = strlen(imgPath);
+            if(strcmp(imgPath + strSize - 4, ".exr") == 0)
+            {
+                image.dataType = FLOAT;
+                float* inEXR; // width * height * RGBA
+                const char* err = NULL;
+
+                int ret = LoadEXR(&(image.floatData), &(image.width), &(image.height), imgPath, &err);
+                image.numOfChannels = 4;
+
+                if (ret != TINYEXR_SUCCESS) {
+                    if (err) {
+                        fprintf(stderr, "ERR : %s\n", err);
+                        exit(-1);
+                        FreeEXRErrorMessage(err); // release memory of error message.
+                    }
+                }
+
+                //TODO load exr
+            }
+            else
+            {
+                image.dataType = UNSIGNED_CHAR;
+                image.data = stbi_load(imgPath, &(image.width), &(image.height), &(image.numOfChannels), 0);
+            }
             //TODO write image and texmap classes and replace this line
 
             images.push_back(image);
