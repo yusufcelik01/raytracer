@@ -1,6 +1,6 @@
 CC= gcc
 CXX= g++
-CFLAGS = -g -O0 -msse2 
+CFLAGS = -g -O3 -msse2 
 CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
@@ -8,7 +8,7 @@ LDFLAGS = -pthread
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
-TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o
+TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 

@@ -220,7 +220,6 @@ void Scene::loadFromXml(const std::string &filepath)
 
     //Get Lights
     element = root->FirstChildElement("Lights");
-
     auto child = element->FirstChildElement("AmbientLight");
     if(child) {
         stream << child->GetText() << std::endl;
@@ -428,6 +427,24 @@ void Scene::loadFromXml(const std::string &filepath)
 
 
     parseTextures(root, filepath.c_str());
+    element = root->FirstChildElement("Lights");
+    element = element->FirstChildElement("SphericalDirectionalLight");
+    SphericalEnvLight envLight;
+    if(element)
+    {
+        env_light = new SphericalEnvLight;
+        
+        child = element->FirstChildElement("ImageId");
+        stream << child->GetText() << std::endl;
+        int imgId;
+        stream >> imgId;
+        env_light->tex.img =  images[imgId-1];
+        env_light->tex.decalMode = TEX_MODE_ENV_LIGHT;
+        env_light->tex.normalizer = 1.f;
+        env_light->tex.interpolationType = INTERPOLATE_BI_LINEAR;
+    }
+    stream.clear();
+
 
     //element = root->FirstChildElement("Lights");
     //element = element->FirstChildElement("SphericalDirectionalLight");

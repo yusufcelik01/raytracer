@@ -165,6 +165,43 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
     }
 
+    //TODO env light
+    if(env_light != NULL)
+    {
+        UniformRandomGenerator rng;    
+        vec3f dir;
+        while(true)
+        {
+            dir = vec3f(rng.getUniformRandNumber(-1.f, 1.f),
+                        rng.getUniformRandNumber(-1.f, 1.f),
+                        rng.getUniformRandNumber(-1.f, 1.f));
+            if(length(dir) <= 1.f)
+            {
+                dir = norm(dir); 
+                break;
+            }
+        }
+
+        dir.y = (dir.y < 0.f) ? -dir.y : dir.y;//select the upper hemisphere
+
+        ONB tbn = ONB(vec3f(0.f, 1.f, 0.f));
+        Matrix onbTransform(3,3);
+        
+        for(int i = 0; i < 3; ++i)
+        {
+            //TBN->data[i][0] = tangentMat.data[0][i];//T
+            //TBN->data[i][1] = tangentMat.data[1][i];//B
+            onbTransform.data[i][0] = tbn.v[i];
+            onbTransform.data[i][1] = tbn.n[i];
+            onbTransform.data[i][2] = tbn.u[i]; 
+        }
+        vec3f lightDir = onbTransform * dir;
+
+        vec3f radiance = env_light->sample(lightDir) * 2.f * M_PI;
+        color += computeBlinnPhong(radiance, surfNorm, lightDir, w_eye, material);
+    }
+    
+
     return color;
 }
 
@@ -380,13 +417,23 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         return color;
     }
     else {
-        if(isPrimaryRay) {
-            if(background_texture == NULL) {
-                return this->background_color;
-            }
-            else {
+        if(env_light != NULL)
+        {
+            return env_light->sample(norm(ray.d));
+        }
+        else if(isPrimaryRay) {
+            if(background_texture != NULL) {
                 return background_texture->sample(ray.texCoord.s, ray.texCoord.t)*255.f;
             }
+            else {
+                return this->background_color;
+            }
+            //if(background_texture == NULL) {
+            //    return this->background_color;
+            //}
+            //else {
+            //    return background_texture->sample(ray.texCoord.s, ray.texCoord.t)*255.f;
+            //}
         }
         else {
             return vec3f(0, 0, 0);

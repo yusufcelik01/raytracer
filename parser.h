@@ -15,6 +15,7 @@
 #include "AreaLight.hpp"
 #include "SpotLight.hpp"
 #include "DirectionalLight.hpp"
+#include "SphericalEnvLight.hpp"
 #include "tinyxml2.h"
 #include "Texture.hpp"
 #include "ImageTexture.hpp"
@@ -27,6 +28,8 @@ struct Scene
     //Data
     vec3i background_color;
     Texture* background_texture = NULL; 
+    SphericalEnvLight* env_light = NULL;
+
     float shadow_ray_epsilon;
     int max_recursion_depth;
     std::vector<Camera> cameras;
