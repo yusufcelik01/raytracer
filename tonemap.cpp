@@ -7,7 +7,7 @@
 
 namespace tonemap
 {
-    const double delta = 0.00001;    
+    const double delta = 0.0001;    
 unsigned char* photographicToneMap(float* hdrData, int w, int h,int comp ,float keyValue, float burnPercent, float saturation, float gamma)
 {
     assert(comp == 3 || comp == 4);//only accept RGB or RGBA
