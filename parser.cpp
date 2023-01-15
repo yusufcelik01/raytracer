@@ -329,6 +329,7 @@ void Scene::loadFromXml(const std::string &filepath)
         element = element->NextSiblingElement("SpotLight");
     }
 
+    stream.clear();
 
     //Get Materials
     element = root->FirstChildElement("Materials");
@@ -1106,6 +1107,26 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
             continue;
         }
 
+        child = element->FirstChildElement("TexDimension");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+        }
+        else
+        {
+            stream << "2D";//deafult value 
+        }
+        std::string samplerTypeStr;
+        stream >> samplerTypeStr;
+        if(samplerTypeStr == "3D")
+        {
+            tex->samplerType = TEX_SAMPLER_3D;
+        }
+        else
+        {
+            tex->samplerType = TEX_SAMPLER_2D;
+        }
+        stream.clear();
         child = element->FirstChildElement("DecalMode");
         if(child)
         {
@@ -1128,6 +1149,10 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         else if(decalMode == "replace_all")
         {
             tex->decalMode = TEX_MODE_REPLACE_ALL;
+        }
+        else if(decalMode == "replace_mirror")
+        {
+            tex->decalMode = TEX_MODE_REPLACE_MIRROR;
         }
         else if(decalMode == "blend_kd")
         {
