@@ -17,6 +17,8 @@ OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHC
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
 
+	
+
 all:
 	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
 
@@ -40,12 +42,12 @@ parser.o: parser.cpp $(PARSER_HEADERS)
 plyfile.o: plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c plyfile.c
 
-Object.o: Object.cpp Object.hpp
-Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP)
-Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP)
+Object.o: Object.cpp Object.hpp $(MATH_DEP)
+Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
+Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
-Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
-InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP)
+Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP $(MATH_DEP))
+InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP $(MATH_DEP))
 
 BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
 BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
@@ -130,6 +132,13 @@ test4:
 	./raytracer hw4/inputs/sphere_nobump_justbump.xml 
 	./raytracer hw4/inputs/sphere_perlin.xml 
 	./raytracer hw4/inputs/sphere_perlin_bump.xml 
+
+test5:
+	(time ./raytracer hw5/inputs/glass_sphere_env.xml) 2> time_glass_sphere_env.txt
+	(time ./raytracer hw5/inputs/mirror_sphere_env.xml) 2> time_mirror_sphere_env.txt
+	(time ./raytracer hw5/inputs/cube_directional.xml) 2> time_cube_directional.txt
+	(time ./raytracer hw5/inputs/cube_point.xml) 2> time_cube_point.txt
+	(time ./raytracer hw5/inputs/cube_point_hdr.xml) 2> time_cube_point_hdr.txt
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
