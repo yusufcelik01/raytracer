@@ -502,16 +502,56 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
 //}
 
 
+class ProgressBar
+{
+    //TODO make thread safe
+    private: 
+        int current, total;
+        int lastNumSize;
+        
+    public:
+        ProgressBar() : current(0), total(100), lastNumSize(2) {
+            printf("progress: 0%%");
+            fflush(stdout);
+
+        }
+        ProgressBar(int t) : current(0), total(t), lastNumSize(2) {
+
+            printf("progress bar init %d\nprogress: 0%%", total);
+            fflush(stdout);
+        }
+        //ProgressBar(int c, int t) : current(c), total(t), lastNumSize(2) {
+        //    printf("progress: 0%");
+        //    fflush(stdout);
+        //}
+
+        void incrProgress()
+        {
+            //TODO display progress bar
+            current++;
+            while(lastNumSize--)
+            {
+                printf("\b \b");
+            }
+            fflush(stdout);
+            lastNumSize = printf("%f%%", getPercent());
+            fflush(stdout);
+        }
+        float getPercent(){ return float(current)/total*100.f; }
+        int getTotal() { return total; }
+};
+
 class ImageRows
 {
     private:
         int numOfRows = 0;
         int nextAvaliableRow = 0;;
+        ProgressBar progress;
         std::mutex lock;
 
     public:
         ImageRows() : numOfRows(0), nextAvaliableRow(0) {}
-        ImageRows(int rowCount) : numOfRows(rowCount) {}
+        ImageRows(int rowCount) : numOfRows(rowCount), nextAvaliableRow(0), progress(rowCount) {}
 
         int getNextAvaliableRow()
         {
@@ -520,7 +560,7 @@ class ImageRows
             {
                 int temp = nextAvaliableRow;
                 nextAvaliableRow++;
-
+                progress.incrProgress();
                 lock.unlock();
                 return temp;
             }
