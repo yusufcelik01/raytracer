@@ -306,7 +306,7 @@ bool vec3f::operator==(const vec3f& rhs)
     }
 }
 
-float vec3f::operator[](int index) const
+float& vec3f::operator[](int index)
 {
     if(index == 0){
         return x;
@@ -318,7 +318,7 @@ float vec3f::operator[](int index) const
         return z;
     }
     else{
-        return 1/0.f;
+        return x;
     }
 }
 
