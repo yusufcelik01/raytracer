@@ -71,20 +71,26 @@ vec3f grad(int i, int j, int k)
 vec3f PerlinNoise::sample(vec3f texCoord)
 {
     //std::cout << "perlin noise sample function" << std::endl;
-    if(colorMap.size() < 1)
+    if(colorMap.size() > 1)
     {
-        float x, y;
-        x = texCoord.x;
-        y = texCoord.y;
-        float r = sampleScalar(vec3f(x, y, 0.f));
-        float g = sampleScalar(vec3f(0.f, x, y));
-        float b = sampleScalar(vec3f(x, 0.f, y));
-        return vec3f(r, g, b);
+        float s = sampleScalar(texCoord);
+        int index = int(s * (colorMap.size() -1));
+        //std::cout << "perlin noise color map index: " << index << std::endl;
+        return colorMap[index];
     }
-    float s = sampleScalar(texCoord);
-    int index = int(s * (colorMap.size() -1));
-    //std::cout << "perlin noise color map index: " << index << std::endl;
-    return colorMap[index];
+    else if(samplerType == TEX_SAMPLER_3D)
+    {
+        //std::cout <<"3D perlin noise sampling" << std::endl;
+        float s =sampleScalar(texCoord); 
+        return vec3f(s);
+    }
+    float x, y;
+    x = texCoord.x;
+    y = texCoord.y;
+    float r = sampleScalar(vec3f(x, y, 0.f));
+    float g = sampleScalar(vec3f(0.f, x, y));
+    float b = sampleScalar(vec3f(x, 0.f, y));
+    return vec3f(r, g, b);
 }
 
 vec3f PerlinNoise::sample(float x, float y)
