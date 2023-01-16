@@ -90,7 +90,7 @@ void Scene::loadFromXml(const std::string &filepath)
     }
     else
     {
-        stream << "0" << std::endl;
+        stream << "4" << std::endl;
     }
     stream >> max_recursion_depth;
 
