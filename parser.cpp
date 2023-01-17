@@ -1154,6 +1154,10 @@ void Scene::parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir
         {
             tex->decalMode = TEX_MODE_REPLACE_MIRROR;
         }
+        else if(decalMode == "scale_mirror")
+        {
+            tex->decalMode = TEX_MODE_SCALE_MIRROR;
+        }
         else if(decalMode == "blend_kd")
         {
             tex->decalMode = TEX_MODE_BLEND_KD;

@@ -95,6 +95,16 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
                 intData.material.mirror = texture->sample(u, v);
             }
         }
+        else if(texture->decalMode == TEX_MODE_SCALE_MIRROR)
+        {
+            if(texture->samplerType == TEX_SAMPLER_3D){
+                //std::cout <<" REPLACE MIRROR" << std::endl;
+                intData.material.mirror = intData.material.mirror * makeGrayScale(texture->sample(intData.intersectionPoint));
+            }
+            else {
+                intData.material.mirror = intData.material.mirror * texture->sample(u, v);
+            }
+        }
         else if(texture->decalMode == TEX_MODE_REPLACE_ALL)
         {
             vec3f texSample = texture->sample(u, v);
