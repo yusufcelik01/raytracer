@@ -29,25 +29,6 @@ vec3f deviateRay(vec3f originalRay, float roughness)
     return norm(originalRay + (psi1 * onb.v) + (psi2 * onb.u) );
 }
 
-vec3f computeBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye, Material material)
-{
-    vec3f color = vec3f(0.f);
-
-    
-    float cosTheta = dot(surfNorm, w_light);
-    cosTheta = std::max(cosTheta, 0.0f);
-    color += material.diffuse * cosTheta * irradiance;
-
-    //specular shading 
-    vec3f half = norm(w_light + w_eye);
-    float cosAlpha = dot(half, surfNorm);
-    cosAlpha = std::max(pow(cosAlpha, material.phong_exponent), 0.0);
-
-    //cosAlpha = material.phong_exponent
-    color += material.specular * cosAlpha * irradiance;
-
-    return color;
-}
 
 vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
 {
@@ -73,7 +54,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         float d_sqr = distance * distance;
 
         vec3f irradiance = light.intensity / d_sqr;
-        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
+        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
     }
 
     for(AreaLight light : area_lights)
@@ -108,7 +89,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         if( cosTheta < 0.f) {cosTheta = -cosTheta;}//bi-idirectional area light
         vec3f irradiance = light.radiance * (area * cosTheta / d_sqr);
 
-        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
+        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
     }
 
     for(DirectionalLight light : directional_lights)
@@ -123,7 +104,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
             continue;
         }
 
-        color += computeBlinnPhong(light.radiance, surfNorm, w_light, w_eye, material);
+        color += material.computeBRDF(light.radiance, surfNorm, w_light, w_eye);
     }
 
     for(SpotLight light : spot_lights)
@@ -162,7 +143,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         }
         //else in no-fall of area
 
-        color += computeBlinnPhong(irradiance, surfNorm, w_light, w_eye, material);
+        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
     }
 
     //TODO env light
@@ -198,7 +179,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         vec3f lightDir = onbTransform * dir;
 
         vec3f radiance = env_light->sample(lightDir) * 2.f * M_PI;
-        color += computeBlinnPhong(radiance, surfNorm, lightDir, w_eye, material);
+        color += material.computeBRDF(radiance, surfNorm, lightDir, w_eye);
     }
     
 
