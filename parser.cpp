@@ -338,17 +338,17 @@ void Scene::loadFromXml(const std::string &filepath)
     while (element)
     {
         //material.is_mirror = (element->Attribute("type", "mirror") != NULL);
-        material.type = REGULAR;
+        material.type = MATERIAL_REGULAR;
         if(element->Attribute("type", "mirror") != NULL)
         {
-            material.type = MIRROR;
+            material.type = MATERIAL_MIRROR;
             child = element->FirstChildElement("MirrorReflectance");
             stream << child->GetText() << std::endl;
             stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         }
         else if(element->Attribute("type", "conductor") != NULL) 
         {
-            material.type = CONDUCTOR;
+            material.type = MATERIAL_CONDUCTOR;
             child = element->FirstChildElement("MirrorReflectance");
             stream << child->GetText() << std::endl;
             stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
@@ -361,7 +361,7 @@ void Scene::loadFromXml(const std::string &filepath)
         }
         else if(element->Attribute("type", "dielectric") != NULL) 
         {
-            material.type = DIELECTRIC;
+            material.type = MATERIAL_DIELECTRIC;
             child = element->FirstChildElement("AbsorptionCoefficient");
             stream << child->GetText() << std::endl;
             stream >> material.absorption_coefficent.x >> material.absorption_coefficent.y >> material.absorption_coefficent.z;

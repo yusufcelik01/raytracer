@@ -5,16 +5,28 @@
 
 typedef enum MaterialType
 {
-    REGULAR,
-    MIRROR,
-    CONDUCTOR,
-    DIELECTRIC,
-    AIR,
+    MATERIAL_REGULAR,
+    MATERIAL_MIRROR,
+    MATERIAL_CONDUCTOR,
+    MATERIAL_DIELECTRIC,
+    MATERIAL_AIR
 }MaterialType;
 
-struct Material
+
+typedef enum BRDFType
+{
+    BRDF_ORIGINAL_BLINN_PHONG,
+    BRDF_ORIGINAL_PHONG,
+    BRDF_MODIFIED_BLINN_PHONG,
+    BRDF_MODIFIED_PHONG,
+    BRDF_TORRANCE_SPARROW
+}BRDFType;
+
+
+class Material
 {
     //bool is_mirror;
+    public:
     MaterialType type; 
     vec3f ambient;
     vec3f diffuse;
@@ -28,6 +40,10 @@ struct Material
     vec3f absorption_coefficent;
     float phong_exponent = 1.f;
     float roughness = -0.f;
+
+    //constructors
+    Material();
+    Material(const Material& rhs);
 };
 
 

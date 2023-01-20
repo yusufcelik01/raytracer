@@ -293,7 +293,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         vec3f n = closestObjData.normal;
 
         vec3f color = vec3f(0.f);
-        if(currentMedium.type == AIR)
+        if(currentMedium.type == MATERIAL_AIR)
         //if not we are inside an dielectric
         //object and light can not directly contribute
         {
@@ -311,7 +311,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         }
 
         //get refraction_index lightging
-        if(objMaterial.type == MIRROR)
+        if(objMaterial.type == MATERIAL_MIRROR)
         {
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
@@ -324,7 +324,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             }
             color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
         }
-        else if(objMaterial.type == DIELECTRIC)
+        else if(objMaterial.type == MATERIAL_DIELECTRIC)
         {
             Ray reflectingRay, refractingRay;
             reflectingRay.d = reflect(n, -ray.d);
@@ -335,7 +335,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             refractingRay.time = ray.time;
 
             float eta;
-            if (currentMedium.type == AIR){ eta = 1.f / objMaterial.refraction_index; }
+            if (currentMedium.type == MATERIAL_AIR){ eta = 1.f / objMaterial.refraction_index; }
             else { eta = currentMedium.refraction_index ;}
             refractingRay.d = refract(n, ray.d, eta);
 
@@ -356,7 +356,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
                 }
                 float reflectionRatio;
-                if(currentMedium.type == AIR)
+                if(currentMedium.type == MATERIAL_AIR)
                 {
                     reflectionRatio = dielectricReflectionRatio(currentMedium.refraction_index, objMaterial.refraction_index, dot(-ray.d, n), dot(n, -refractingRay.d) );
                 }
@@ -367,7 +367,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
 
                 //TODO enable reflections on dielectrics
                 color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentMedium);
-                if(currentMedium.type == AIR)
+                if(currentMedium.type == MATERIAL_AIR)
                 {
                     //if we are inside air now we will be entering a dielectric
                     color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial);
@@ -376,7 +376,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 {
                     //if we are inside of a dielectric refracting ray will be exiting this medium
                     Material air;
-                    air.type = AIR;
+                    air.type = MATERIAL_AIR;
                     air.refraction_index = 1.f;
                     air.absorption_index = 0.f;
                     air.absorption_coefficent = vec3f(0.f);
@@ -391,14 +391,14 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             //then call the next function with new refraction index
             //depending on whether we are exiting or not
             //refract(n, ray, objMaterial.refraction_index/)
-            if(currentMedium.type != AIR)
+            if(currentMedium.type != MATERIAL_AIR)
             {
                 float attunuationDistance = length(ray.o - closestObjData.intersectionPoint);
                 color = color * (exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
             }
 
         }
-        else if(objMaterial.type == CONDUCTOR)
+        else if(objMaterial.type == MATERIAL_CONDUCTOR)
         {
             Ray reflectingRay;
             reflectingRay.d = reflect(n, -ray.d);
@@ -614,7 +614,7 @@ void Scene::render(Camera camera)
     vec3f m = e - w * camera.near_distance;
     vec3f q = m + l * u + t * v;
     Material airMedium;
-    airMedium.type = AIR;
+    airMedium.type = MATERIAL_AIR;
     airMedium.absorption_index = 0.f;
     airMedium.refraction_index = 1.f;
     airMedium.absorption_coefficent = vec3f(0.f);
