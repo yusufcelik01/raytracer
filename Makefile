@@ -6,7 +6,7 @@ LDFLAGS = -pthread
 
 
 PARSER_FILES= plyfile.o parser.o 
-OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp rtmath.hpp Ray.hpp
+OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
@@ -38,7 +38,7 @@ POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
 
 PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
-parser.o: parser.cpp $(PARSER_HEADERS)
+parser.o: parser.cpp $(PARSER_HEADERS) Material.hpp
 plyfile.o: plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c plyfile.c
 
@@ -61,7 +61,7 @@ core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 
 main.o: main.cpp parser.h ppm.h
 
-%.o: %.cpp
+%.o: %.hpp %.cpp
 	$(CXX) $(CFLAGS) $(CXXFLAGS) -c $< 
 
 
