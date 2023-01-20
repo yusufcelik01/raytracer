@@ -1,7 +1,7 @@
 CC= gcc
 CXX= g++
 CFLAGS = -g -O3 -msse2 
-CXXFLAGS = -std=c++17
+CXXFLAGS = -std=c++17 $(CFLAGS)
 LDFLAGS = -pthread
 
 
@@ -61,7 +61,7 @@ core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 
 main.o: main.cpp parser.h ppm.h
 
-%.o: %.hpp %.cpp
+%.o: %.cpp %.hpp
 	$(CXX) $(CFLAGS) $(CXXFLAGS) -c $< 
 
 
