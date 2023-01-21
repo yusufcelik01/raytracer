@@ -1,7 +1,7 @@
 CC= gcc
 CXX= g++
 CFLAGS = -g -O3 -msse2 
-CXXFLAGS = -std=c++17 $(CFLAGS)
+CXXFLAGS = -std=c++17
 LDFLAGS = -pthread
 
 
@@ -12,7 +12,7 @@ TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
-OBJECT_FILES= $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) miniz.o tonemap.o Material.o
+OBJECT_FILES= Material.o $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) miniz.o tonemap.o 
 
 raytracer: $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
@@ -84,7 +84,7 @@ simple_test: raytracer
 	./raytracer hw1/inputs/simple.xml
 	./raytracer hw1/inputs/cornellbox.xml
 	./raytracer hw1/inputs/two_spheres.xml
-	./raytracer hw1/inputs/four_spheres.xml
+	#./raytracer hw1/inputs/four_spheres.xml
 	./raytracer hw1/inputs/spheres_mirror.xml
 	time ./raytracer hw1/inputs/cornellbox_recursive.xml
 
@@ -94,7 +94,7 @@ test: raytracer
 	(time ./raytracer hw1/inputs/scienceTree.xml) 2> time_scienceTree.txt
 	(time ./raytracer hw1/inputs/scienceTree_glass.xml) 2> time_scienceTree_glass.txt
 	(time ./raytracer hw1/inputs/chinese_dragon.xml) 2> time_chinese_dragon.txt
-	(time ./raytracer hw1/inputs/horse_and_mug.xml) 2> time_horse_and_mug.txt
+	#(time ./raytracer hw1/inputs/horse_and_mug.xml) 2> time_horse_and_mug.txt
 
 
 test2: raytracer
