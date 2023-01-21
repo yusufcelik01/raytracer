@@ -14,7 +14,6 @@ Material::Material()
     absorption_index = 1.f;
     //dielectric fields
     absorption_coefficent = 1.f;
-    brdf = BRDF_ORIGINAL_BLINN_PHONG;
 }
 
 Material::Material(const Material& rhs)
@@ -36,7 +35,7 @@ Material::Material(const Material& rhs)
 vec3f Material::computeBRDF(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     vec3f color(0.f);
-    switch(brdf)
+    switch(brdf.getType())
     {
         case BRDF_ORIGINAL_BLINN_PHONG:
             color = originalBlinnPhong(irradiance, surfNorm, w_light, w_eye);
@@ -73,4 +72,25 @@ vec3f Material::originalBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_lig
     color += specular * cosAlpha * irradiance;
 
     return color;
+}
+
+
+//BRDF member functions
+BRDF::BRDF()
+{
+    type = BRDF_ORIGINAL_BLINN_PHONG;
+    exp = 50.f;
+    isNormalized = true;
+}
+
+BRDF::BRDF(const BRDF& rhs)
+{
+    type = rhs.type;
+    exp = rhs.exp;
+    isNormalized = rhs.isNormalized;
+}
+
+BRDFType BRDF::getType()
+{
+    return type;
 }

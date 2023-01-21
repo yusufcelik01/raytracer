@@ -22,6 +22,17 @@ typedef enum BRDFType
     BRDF_TORRANCE_SPARROW
 }BRDFType;
 
+class BRDF
+{
+    public:
+    float exp;
+    bool isNormalized;
+    BRDFType type;
+
+    BRDFType getType();
+    BRDF();
+    BRDF(const BRDF& rhs);
+};
 
 class Material
 {
@@ -41,7 +52,7 @@ class Material
     float phong_exponent = 1.f;
     float roughness = -0.f;
     //brdf
-    BRDFType brdf; 
+    BRDF brdf;
 
     //constructors
     Material();
