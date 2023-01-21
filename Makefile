@@ -1,8 +1,13 @@
 SHELL= /bin/sh
+srcdir= ./src
+libdir= ./build
+VPATH= $(srcdir)
+
 CC= gcc
 CXX= g++
-CFLAGS = -g -O3 -msse2 
-CXXFLAGS = -std=c++17
+COMMON_FLAGS= -g -O3 -msse2 
+CFLAGS = $(COMMON_FLAGS)
+CXXFLAGS = $(COMMON_FLAGS) -std=c++17 
 LDFLAGS = -pthread
 
 
@@ -13,35 +18,44 @@ TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.
 MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
-OBJECT_FILES= Material.o $(PARSER_FILES) main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) miniz.o tonemap.o 
+OBJ=miniz.o $(PARSER_FILES) Material.o  main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) tonemap.o 
+OBJECT_FILES= $(addprefix $(libdir)/,$(OBJ) ) 
 
-raytracer: $(OBJECT_FILES)
+raytracer: build $(OBJECT_FILES)
 	$(CXX) -o raytracer $(CFLAGS) $(CXXFLAGS) $(LDFLAGS) $(OBJECT_FILES)
 
+build:
+	-mkdir build
+
+$(libdir)/main.o: $(srcdir)/main.cpp parser.h ppm.h
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
+$(libdir)/parser.o: $(srcdir)/parser.cpp $(PARSER_HEADERS) Material.hpp
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
+$(libdir)/tinyxml2.o: $(srcdir)/tinyxml2.cpp tinyxml2.h
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
+$(libdir)/core.o: $(srcdir)/core.cpp img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
 	
 
-all:
-	g++ *.cpp -o raytracer $(CFLAGS) $(CXXFLAGS)
-
-ply_test:
+ply_test: 
 	gcc plytest.c plyfile.c -o plytest -g
 
 
-vec2.o: vec2.hpp vec2.cpp
-vec3.o: vec3.hpp vec3.cpp
-vec4.o: vec4.hpp vec4.cpp
-mat4x4.o: mat4x4.hpp mat4x4.cpp
-Matrix.o: Matrix.hpp Matrix.cpp
-rtmath.o: rtmath.hpp rtmath.cpp
+$(libdir)/vec2.o: vec2.hpp $(srcdir)/vec2.cpp
+$(libdir)/vec3.o: vec3.hpp $(srcdir)/vec3.cpp
+$(libdir)/vec4.o: vec4.hpp $(srcdir)/vec4.cpp
+$(libdir)/mat4x4.o: mat4x4.hpp $(srcdir)/mat4x4.cpp
+$(libdir)/Matrix.o: Matrix.hpp $(srcdir)/Matrix.cpp
+$(libdir)/rtmath.o: rtmath.hpp $(srcdir)/rtmath.cpp
 
 AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
 
 PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
-parser.o: parser.cpp $(PARSER_HEADERS) Material.hpp
-plyfile.o: plyfile.c ply.h
-	$(CC) $(CFLAGS) -w -c plyfile.c
+$(libdir)/plyfile.o: $(srcdir)/plyfile.c ply.h
+	$(CC) $(CFLAGS) -w -c $< -o $@
+	
 
 Object.o: Object.cpp Object.hpp $(MATH_DEP)
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
@@ -58,24 +72,24 @@ ImageTexture.o: Texture.hpp ImageTexture.hpp ImageTexture.cpp rtmath.hpp
 PerlinNoise.o: Texture.hpp PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
 CheckerBoard.o: Texture.hpp CheckerBoard.hpp CheckerBoard.cpp
 
-core.o: img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
 
-main.o: main.cpp parser.h ppm.h
 
-%.o: %.cpp %.hpp
-	$(CXX) $(CFLAGS) $(CXXFLAGS) -c $< 
+$(libdir)/%.o: $(srcdir)/%.cpp %.hpp
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
 
+$(libdir)/%.o: $(srcdir)/%.c %.h
+	$(CC) $(CFLAGS) -c $<  -o $@
 
 
 
 .PHONY: del_images
 del_images:
-	-rm *.ppm
 	-rm *.png
 
 .PHONY: clean
 clean:
-	-rm *.o 
+	-rm $(libdir)/*.o 
+	-rmdir $(libdir)
 	-rm raytracer
 
 #test: raytracer
