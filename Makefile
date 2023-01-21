@@ -1,3 +1,4 @@
+SHELL= /bin/sh
 CC= gcc
 CXX= g++
 CFLAGS = -g -O3 -msse2 
