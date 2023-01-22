@@ -43,6 +43,7 @@ struct Scene
     std::vector<DirectionalLight> directional_lights;
     std::vector<SpotLight> spot_lights;
 
+    std::vector<BRDF> brdfs;
     std::vector<Material> materials;
     std::vector<mat4x4> rotations;
     std::vector<mat4x4> scalings;

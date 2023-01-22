@@ -331,6 +331,41 @@ void Scene::loadFromXml(const std::string &filepath)
 
     stream.clear();
 
+
+    brdfs = {};
+    element = root->FirstChildElement("BRDFs");
+    element = element->FirstChildElement("OriginalBlinnPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_ORIGINAL_BLINN_PHONG;
+        brdf.isNormalized = true;
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+        //std::cout << "BRDF " << brdf.exp << std::endl;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("OriginalBlinnPhong");
+    }
+    element = root->FirstChildElement("BRDFs");
+    element = element->FirstChildElement("OriginalPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_ORIGINAL_PHONG;
+        brdf.isNormalized = true;
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+        //std::cout << "BRDF " << brdf.exp << std::endl;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("OriginalPhong");
+    }
+
+    stream.clear();
+
     //Get Materials
     element = root->FirstChildElement("Materials");
     element = element->FirstChildElement("Material");
@@ -420,6 +455,25 @@ void Scene::loadFromXml(const std::string &filepath)
             material.specular = elemWiseExp(material.specular, gamma);
 
         }
+
+        int brdfId = element->IntAttribute("BRDF", -1);
+        std::cout << "BRDF ID " << brdfId << std::endl;
+        if(brdfId != -1)
+        {
+            brdfId--;//make them start from 0
+            material.brdf = brdfs[brdfId];
+            switch(material.brdf.type)
+            {
+                case BRDF_ORIGINAL_BLINN_PHONG:
+                case BRDF_ORIGINAL_PHONG:
+                    material.phong_exponent = material.brdf.exp;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        
 
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
