@@ -51,23 +51,15 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         }
 
         w_light = norm(w_light);
+        float cosTheta = dot(w_light, surfNorm);
         float d_sqr = distance * distance;
 
         vec3f irradiance = light.intensity / d_sqr;
-        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
+        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
     for(AreaLight light : area_lights)
     {
-        //ONB onb = light.getONB();
-        //float psi1, psi2;
-        //std::random_device rand;
-        //std::mt19937 rnGen(rand());
-        //std::uniform_real_distribution<> randNum(-0.5*light.extent, 0.5*light.extent);
-
-        //psi1 = randNum(rnGen);
-        //psi2 = randNum(rnGen);
-
         vec3f lightSample;
         lightSample = light.getLightSample();
         //lightSample = light.position + onb.u * psi1 + onb.v * psi2;
@@ -85,11 +77,12 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         float d_sqr = distance * distance;
 
         float area = light.extent * light.extent;
-        float cosTheta = dot(light.normal, -w_light);
-        if( cosTheta < 0.f) {cosTheta = -cosTheta;}//bi-idirectional area light
-        vec3f irradiance = light.radiance * (area * cosTheta / d_sqr);
+        float cosAlpha = dot(light.normal, -w_light);
+        if( cosAlpha < 0.f) {cosAlpha = -cosAlpha;}//bi-idirectional area light
+        vec3f irradiance = light.radiance * (area * cosAlpha / d_sqr);
 
-        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
+        float cosTheta = dot(w_light, surfNorm);
+        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
     for(DirectionalLight light : directional_lights)
@@ -104,7 +97,8 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
             continue;
         }
 
-        color += material.computeBRDF(light.radiance, surfNorm, w_light, w_eye);
+        float cosTheta = dot(w_light, surfNorm);
+        color += light.radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
     for(SpotLight light : spot_lights)
@@ -143,7 +137,8 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         }
         //else in no-fall of area
 
-        color += material.computeBRDF(irradiance, surfNorm, w_light, w_eye);
+        float cosTheta = dot(w_light, surfNorm);
+        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
     //TODO env light
@@ -151,7 +146,7 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
     {
         UniformRandomGenerator rng;    
         vec3f dir;
-        while(true)
+        while(true)//rejection sample hemisphere
         {
             dir = vec3f(rng.getUniformRandNumber(-1.f, 1.f),
                         rng.getUniformRandNumber(-1.f, 1.f),
@@ -179,7 +174,8 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         vec3f lightDir = onbTransform * dir;
 
         vec3f radiance = env_light->sample(lightDir) * 2.f * M_PI;
-        color += material.computeBRDF(radiance, surfNorm, lightDir, w_eye);
+        float cosTheta = dot(lightDir, surfNorm);
+        color += radiance * material.computeBRDF(surfNorm, lightDir, w_eye) * cosTheta;
     }
     
 
