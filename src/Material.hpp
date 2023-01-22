@@ -62,8 +62,8 @@ class Material
     private:
     vec3f originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
     vec3f originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    vec3f modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
     //vec3f modifiedBlinnPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye);
-    //vec3f modifiedPhong(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye);
     //vec3f torranceSparrow(vec3f irradiance, vec3f surfNorm, vec3f w_light, vec3f w_eye);
 };
 
