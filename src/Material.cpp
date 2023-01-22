@@ -104,8 +104,13 @@ vec3f Material::modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     {
         return diffuse + (specular * cosAlpha);
     }
+    else
+    {
+        return (diffuse + (specular * (phong_exponent + 2.f)/2.f * cosAlpha) ) / M_PI;
+    }
     return diffuse + (specular * cosAlpha);
 }
+
 
 //=========================BRDF=================
 //BRDF member functions
