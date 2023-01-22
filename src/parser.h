@@ -80,6 +80,7 @@ struct Scene
     void getObjAttributes(tinyxml2::XMLNode* element, Object* obj);
     //void parseTextures(tinyxml2::XMLNode* sceneNode);
     void parseTextures(tinyxml2::XMLNode* sceneNode, const char* inputFileDir);
+    void parseBRDFs(tinyxml2::XMLNode* root);
 };
 
 struct plyData

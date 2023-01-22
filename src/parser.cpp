@@ -332,39 +332,7 @@ void Scene::loadFromXml(const std::string &filepath)
     stream.clear();
 
 
-    brdfs = {};
-    element = root->FirstChildElement("BRDFs");
-    element = element->FirstChildElement("OriginalBlinnPhong");
-    while(element)
-    {
-        BRDF brdf;
-        brdf.type = BRDF_ORIGINAL_BLINN_PHONG;
-        brdf.isNormalized = true;
-        child = element->FirstChildElement("Exponent");
-        stream << child->GetText() << std::endl;
-        stream >> brdf.exp;
-        //std::cout << "BRDF " << brdf.exp << std::endl;
-
-        brdfs.push_back(brdf);
-        element = element->NextSiblingElement("OriginalBlinnPhong");
-    }
-    element = root->FirstChildElement("BRDFs");
-    element = element->FirstChildElement("OriginalPhong");
-    while(element)
-    {
-        BRDF brdf;
-        brdf.type = BRDF_ORIGINAL_PHONG;
-        brdf.isNormalized = true;
-        child = element->FirstChildElement("Exponent");
-        stream << child->GetText() << std::endl;
-        stream >> brdf.exp;
-        //std::cout << "BRDF " << brdf.exp << std::endl;
-
-        brdfs.push_back(brdf);
-        element = element->NextSiblingElement("OriginalPhong");
-    }
-
-    stream.clear();
+    parseBRDFs(root);//parse BRDFs
 
     //Get Materials
     element = root->FirstChildElement("Materials");
@@ -457,7 +425,7 @@ void Scene::loadFromXml(const std::string &filepath)
         }
 
         int brdfId = element->IntAttribute("BRDF", -1);
-        std::cout << "BRDF ID " << brdfId << std::endl;
+        //std::cout << "BRDF ID " << brdfId << std::endl;
         if(brdfId != -1)
         {
             brdfId--;//make them start from 0
@@ -466,6 +434,7 @@ void Scene::loadFromXml(const std::string &filepath)
             {
                 case BRDF_ORIGINAL_BLINN_PHONG:
                 case BRDF_ORIGINAL_PHONG:
+                case BRDF_MODIFIED_PHONG:
                     material.phong_exponent = material.brdf.exp;
                     break;
                 default:
@@ -1329,4 +1298,64 @@ void Scene::getObjAttributes(tinyxml2::XMLNode* element, Object* obj)
     stream.clear();
 }
 
+void Scene::parseBRDFs(tinyxml2::XMLNode* root)
+{
+    std::stringstream stream;
+    brdfs = {};
+    tinyxml2::XMLElement* brdfRoot;
+    tinyxml2::XMLElement* element, *child;
 
+    brdfRoot = root->FirstChildElement("BRDFs");
+    if(brdfRoot == NULL)
+    {
+        return;//no BRDFs
+    }
+
+    element = brdfRoot->FirstChildElement("OriginalBlinnPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_ORIGINAL_BLINN_PHONG;
+        brdf.isNormalized = true;
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+        //std::cout << "BRDF " << brdf.exp << std::endl;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("OriginalBlinnPhong");
+    }
+
+    element = brdfRoot->FirstChildElement("OriginalPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_ORIGINAL_PHONG;
+        brdf.isNormalized = true;
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+        //std::cout << "BRDF " << brdf.exp << std::endl;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("OriginalPhong");
+    }
+
+    element = brdfRoot->FirstChildElement("ModifiedPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_MODIFIED_PHONG;
+        brdf.isNormalized = false;
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("ModifiedPhong");
+    }
+
+
+    stream.clear();
+
+}
