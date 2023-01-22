@@ -166,6 +166,8 @@ test_brdf:
 	./raytracer hw6/brdf/inputs/brdf_phong_original.xml
 	./raytracer hw6/brdf/inputs/brdf_phong_modified.xml
 	./raytracer hw6/brdf/inputs/brdf_phong_modified_normalized.xml
+	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified.xml
+	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified_normalized.xml
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
