@@ -435,6 +435,7 @@ void Scene::loadFromXml(const std::string &filepath)
                 case BRDF_ORIGINAL_BLINN_PHONG:
                 case BRDF_ORIGINAL_PHONG:
                 case BRDF_MODIFIED_PHONG:
+                case BRDF_MODIFIED_BLINN_PHONG:
                     material.phong_exponent = material.brdf.exp;
                     break;
                 default:
@@ -443,7 +444,6 @@ void Scene::loadFromXml(const std::string &filepath)
         }
 
         
-
         materials.push_back(material);
         element = element->NextSiblingElement("Material");
     }
@@ -1346,13 +1346,45 @@ void Scene::parseBRDFs(tinyxml2::XMLNode* root)
     {
         BRDF brdf;
         brdf.type = BRDF_MODIFIED_PHONG;
-        brdf.isNormalized = false;
+
+        if(element->Attribute("normalized", "true") != NULL) 
+        {
+            brdf.isNormalized = true;
+        }
+        else 
+        {
+            brdf.isNormalized = false;
+        }
+
         child = element->FirstChildElement("Exponent");
         stream << child->GetText() << std::endl;
         stream >> brdf.exp;
 
         brdfs.push_back(brdf);
         element = element->NextSiblingElement("ModifiedPhong");
+    }
+    
+    element = brdfRoot->FirstChildElement("ModifiedBlinnPhong");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_MODIFIED_BLINN_PHONG;
+        
+        if(element->Attribute("normalized", "true") != NULL) 
+        {
+            brdf.isNormalized = true;
+        }
+        else 
+        {
+            brdf.isNormalized = false;
+        }
+
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("ModifiedBlinnPhong");
     }
 
 
