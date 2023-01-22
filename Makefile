@@ -85,6 +85,7 @@ $(libdir)/%.o: $(srcdir)/%.c %.h
 .PHONY: del_images
 del_images:
 	-rm *.png
+	-rm *.exr
 
 .PHONY: clean
 clean:
@@ -123,9 +124,9 @@ test2: raytracer
 	
 
 test3:
-	(time ./raytracer hw3/inputs/rough_metal_glass_plates.xml) 2> time_rough_metal_glass_plates_brushed.txt
-	(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
 	(time ./raytracer hw3/inputs/cornellbox_area.xml) 2> time_cornellbox_area.txt
+	(time ./raytracer hw3/inputs/metal_glass_plates.xml) 2> time_rough_metal_glass_plates_brushed.txt
+	(time ./raytracer hw3/inputs/spheres_dof.xml) 2> time_spheres_dof.txt
 	(time ./raytracer hw3/inputs/cornellbox_boxes_dynamic.xml) 2> time_cornellbox_boxes_dynamic.txt
 
 	
