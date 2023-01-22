@@ -126,11 +126,11 @@ vec3f Material::modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 
     if(brdf.isNormalized)
     {
-        return diffuse + (specular * cosAlpha); 
+        return (diffuse + specular * (phong_exponent + 8.f) / 8.f * cosAlpha ) / M_PI;
     }
     else
     {
-        return (diffuse + specular * (phong_exponent + 8.f) / 8.f * cosAlpha ) / M_PI;
+        return diffuse + (specular * cosAlpha); 
     }
 }
 
