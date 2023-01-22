@@ -12,14 +12,20 @@ LDFLAGS = -pthread
 
 
 #TODO correct header dependency issues
-PARSER_FILES= plyfile.o parser.o 
-OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
-GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
+#header dependency variables
+OBJECT_CLASS_HEADERS= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
+PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_CLASS_HEADERS) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
+AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
+POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
+MATH_HEADERS=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
+
+#object files
+PARSER_OBJECTS= plyfile.o parser.o 
+GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
-MATH_DEP=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
-OBJ=miniz.o $(PARSER_FILES) Material.o  main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY) AreaLight.o $(TEXTURES) tonemap.o 
+OBJ=miniz.o $(PARSER_OBJECTS) Material.o  main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY_OBJECTS) AreaLight.o $(TEXTURES) tonemap.o 
 OBJECT_FILES= $(addprefix $(libdir)/,$(OBJ) ) 
 
 raytracer: build $(OBJECT_FILES)
@@ -28,13 +34,13 @@ raytracer: build $(OBJECT_FILES)
 build:
 	-mkdir build
 
-$(libdir)/main.o: $(srcdir)/main.cpp parser.h ppm.h
+$(libdir)/main.o: $(srcdir)/main.cpp $(PARSER_HEADERS) ppm.h BVHConstruction.hpp
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
 $(libdir)/parser.o: $(srcdir)/parser.cpp $(PARSER_HEADERS) Material.hpp
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
 $(libdir)/tinyxml2.o: $(srcdir)/tinyxml2.cpp tinyxml2.h
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
-$(libdir)/core.o: $(srcdir)/core.cpp img.hpp Ray.hpp $(OBJECT_HPP_DEP) $(PARSER_HEADERS)
+$(libdir)/core.o: $(srcdir)/core.cpp img.hpp Ray.hpp $(OBJECT_CLASS_HEADERS) $(PARSER_HEADERS)
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
 	
 
@@ -49,26 +55,23 @@ $(libdir)/mat4x4.o: mat4x4.hpp $(srcdir)/mat4x4.cpp
 $(libdir)/Matrix.o: Matrix.hpp $(srcdir)/Matrix.cpp
 $(libdir)/rtmath.o: rtmath.hpp $(srcdir)/rtmath.cpp
 
-AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
-POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 AreaLight.o: AreaLight.cpp $(AREA_LIGHT_HEADERS)
 
-PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_HPP_DEP) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
 $(libdir)/plyfile.o: $(srcdir)/plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c $< -o $@
 	
 
-$(libdir)/Object.o: $(srcdir)/Object.cpp Object.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
+$(libdir)/Object.o: $(srcdir)/Object.cpp Object.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
-Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
-Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
-Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
-Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP $(MATH_DEP))
-InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_HPP_DEP $(MATH_DEP))
+Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
+Face.o: Face.cpp Face.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
+Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_CLASS_HEADERS)
+Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS $(MATH_HEADERS))
+InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS $(MATH_HEADERS))
 
-BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_DEP)
-BVH.o: $(OBJECT_HPP_DEP) BoundingBox.hpp
-BVHConstruction.o: $(OBJECT_HPP_DEP) BVH.hpp
+BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_HEADERS)
+BVH.o: $(OBJECT_CLASS_HEADERS) BoundingBox.hpp
+BVHConstruction.o: $(OBJECT_CLASS_HEADERS) BVH.hpp
 
 ImageTexture.o: Texture.hpp ImageTexture.hpp ImageTexture.cpp rtmath.hpp
 PerlinNoise.o: Texture.hpp PerlinNoise.hpp PerlinNoise.cpp rtmath.hpp
@@ -162,6 +165,7 @@ test_brdf:
 	./raytracer hw6/brdf/inputs/brdf_blinnphong_original.xml
 	./raytracer hw6/brdf/inputs/brdf_phong_original.xml
 	./raytracer hw6/brdf/inputs/brdf_phong_modified.xml
+	./raytracer hw6/brdf/inputs/brdf_phong_modified_normalized.xml
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
