@@ -11,7 +11,7 @@ CXXFLAGS = $(COMMON_FLAGS) -std=c++17
 LDFLAGS = -pthread
 
 
-#TODO
+#TODO correct header dependency issues
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
@@ -58,7 +58,8 @@ $(libdir)/plyfile.o: $(srcdir)/plyfile.c ply.h
 	$(CC) $(CFLAGS) -w -c $< -o $@
 	
 
-Object.o: Object.cpp Object.hpp $(MATH_DEP)
+$(libdir)/Object.o: $(srcdir)/Object.cpp Object.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
+	$(CXX) $(CXXFLAGS) -c $<  -o $@
 Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
 Face.o: Face.cpp Face.hpp $(OBJECT_HPP_DEP) $(MATH_DEP)
 Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_HPP_DEP)
@@ -156,6 +157,11 @@ test5:
 	(time ./raytracer hw5/inputs/cube_directional.xml) 2> time_cube_directional.txt
 	(time ./raytracer hw5/inputs/cube_point.xml) 2> time_cube_point.txt
 	(time ./raytracer hw5/inputs/cube_point_hdr.xml) 2> time_cube_point_hdr.txt
+
+test_brdf:
+	./raytracer hw6/brdf/inputs/brdf_blinnphong_original.xml
+	./raytracer hw6/brdf/inputs/brdf_phong_original.xml
+	./raytracer hw6/brdf/inputs/brdf_phong_modified.xml
 
 hw:
 	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
