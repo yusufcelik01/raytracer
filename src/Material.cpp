@@ -41,6 +41,7 @@ vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
             reflectance = originalBlinnPhong(surfNorm, w_light, w_eye);
             break;
         case BRDF_ORIGINAL_PHONG:
+            reflectance = originalPhong(surfNorm, w_light, w_eye);
             break;
         case BRDF_MODIFIED_BLINN_PHONG:
             break;
@@ -58,12 +59,10 @@ vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 // all the arguments are assumed to be normalized
 vec3f Material::originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
-    vec3f reflectance = vec3f(0.f);
-    
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0)
     {
-        return reflectance;//theta > 90
+        return vec3f(0.f);//theta > 90
     }
 
     //specular shading 
@@ -71,13 +70,25 @@ vec3f Material::originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     float cosAlpha = dot(half, surfNorm);
     cosAlpha = std::max(pow(cosAlpha, phong_exponent), 0.0);
 
-    reflectance += diffuse;
-    reflectance += specular * cosAlpha / cosTheta;
+    return diffuse + (specular * cosAlpha / cosTheta); 
+}
 
-    return reflectance;
+vec3f Material::originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+{
+    float cosTheta = dot(surfNorm, w_light);
+    if(cosTheta <= 0)
+    {
+        return vec3f(0.f);//theta > 90
+    }
+    vec3f w_ri = reflect(surfNorm, w_light);
+    float cosAlpha = dot(w_ri, w_eye);
+    cosAlpha = pow(std::max(cosAlpha, 0.0f), phong_exponent); 
+    
+    return diffuse + (specular * cosAlpha / cosTheta);
 }
 
 
+//=========================BRDF=================
 //BRDF member functions
 BRDF::BRDF()
 {
