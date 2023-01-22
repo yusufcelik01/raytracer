@@ -11,6 +11,7 @@ CXXFLAGS = $(COMMON_FLAGS) -std=c++17
 LDFLAGS = -pthread
 
 
+#TODO
 PARSER_FILES= plyfile.o parser.o 
 OBJECT_HPP_DEP= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
 GEOMETRY= Object.o Mesh.o Sphere.o Face.o Triangle.o #InstancedMesh.o
