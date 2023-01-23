@@ -151,7 +151,7 @@ vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     float NdotWh = cosAlpha;
     float NdotWo = dot(surfNorm, w_eye);
     float WoDotWh = dot(w_eye, w_h);
-    float GCommon = 2.f * NdotWh * NdotWo / WoDotWh;
+    float GCommon = 2.f * NdotWh / WoDotWh;
 
     float G1 = GCommon * NdotWo;
     float G2 = GCommon * NdotWi;
@@ -165,7 +165,20 @@ vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     float cosBeta = dot(w_h, w_eye);
     float F = R0 + (1 - R0) * pow(1 - cosBeta, 5);
 
+    vec3f reflectance(0.f);
 
+    if(brdf.isKdFresnel)
+    {
+        reflectance += diffuse * ((1-F)/ M_PI);
+    }
+    else
+    {
+        reflectance += diffuse / M_PI;
+    }
+
+    reflectance += specular * (D * F * G * 0.25f /(cosTheta * NdotWo));
+    
+    return reflectance;
 }
 
 //=========================BRDF=================
