@@ -345,30 +345,51 @@ void Scene::loadFromXml(const std::string &filepath)
         if(element->Attribute("type", "mirror") != NULL)
         {
             material.type = MATERIAL_MIRROR;
-            child = element->FirstChildElement("MirrorReflectance");
-            stream << child->GetText() << std::endl;
-            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
         }
         else if(element->Attribute("type", "conductor") != NULL) 
         {
             material.type = MATERIAL_CONDUCTOR;
-            child = element->FirstChildElement("MirrorReflectance");
-            stream << child->GetText() << std::endl;
-            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
-            child = element->FirstChildElement("RefractionIndex");
-            stream << child->GetText() << std::endl;
-            stream >> material.refraction_index;
-            child = element->FirstChildElement("AbsorptionIndex");
-            stream << child->GetText() << std::endl;
-            stream >> material.absorption_index;
         }
         else if(element->Attribute("type", "dielectric") != NULL) 
         {
             material.type = MATERIAL_DIELECTRIC;
-            child = element->FirstChildElement("AbsorptionCoefficient");
+        }
+
+
+        child = element->FirstChildElement("MirrorReflectance");
+        if(child != NULL)
+        { 
+            stream << child->GetText() << std::endl;
+            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
+        }
+
+        child = element->FirstChildElement("MirrorReflectance");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
+        }
+        child = element->FirstChildElement("RefractionIndex");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> material.refraction_index;
+        }
+        child = element->FirstChildElement("AbsorptionIndex");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            stream >> material.absorption_index;
+        }
+        child = element->FirstChildElement("AbsorptionCoefficient");
+        if(child)
+        {
             stream << child->GetText() << std::endl;
             stream >> material.absorption_coefficent.x >> material.absorption_coefficent.y >> material.absorption_coefficent.z;
-            child = element->FirstChildElement("RefractionIndex");
+        }
+        child = element->FirstChildElement("RefractionIndex");
+        if(child)
+        {
             stream << child->GetText() << std::endl;
             stream >> material.refraction_index;
         }
