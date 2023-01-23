@@ -170,5 +170,4 @@ test_brdf:
 	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified_normalized.xml
 
 hw:
-	tar -czf raytracer.tar.gz Makefile *.cpp *.hpp *.h *.c
-
+	tar -czf raytracer.tar.gz Makefile src/
