@@ -14,10 +14,11 @@ LDFLAGS = -pthread
 #TODO correct header dependency issues
 #header dependency variables
 OBJECT_CLASS_HEADERS= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
-PARSER_HEADERS= parser.h tinyxml2.h $(OBJECT_CLASS_HEADERS) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
+PARSER_HEADERS= parser.h tinyxml2.h $(GEOMETRY_HEADERS) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
 AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 MATH_HEADERS=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
+GEOMETRY_HEADERS= $(OBJECT_CLASS_HEADERS) Face.hpp Triangle.hpp Mesh.hpp Sphere.hpp
 
 #object files
 PARSER_OBJECTS= plyfile.o parser.o 
@@ -63,11 +64,11 @@ $(libdir)/plyfile.o: $(srcdir)/plyfile.c ply.h
 
 $(libdir)/Object.o: $(srcdir)/Object.cpp Object.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
-Sphere.o: Sphere.cpp Sphere.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
-Face.o: Face.cpp Face.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
-Triangle.o: Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_CLASS_HEADERS)
-Mesh.o: Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS $(MATH_HEADERS))
-InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS $(MATH_HEADERS))
+$(libdir)/Sphere.o: $(srcdir)/Sphere.cpp Sphere.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
+$(libdir)/Face.o: $(srcdir)/Face.cpp Face.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
+$(libdir)/Triangle.o: $(srcdir)/Triangle.cpp Triangle.hpp Face.hpp $(OBJECT_CLASS_HEADERS)
+$(libdir)/Mesh.o: $(srcdir)/Mesh.cpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS) $(MATH_HEADERS)
+#InstancedMesh.o: InstancedMesh.cpp InstancedMesh.hpp Mesh.hpp Face.hpp $(OBJECT_CLASS_HEADERS $(MATH_HEADERS))
 
 BoundingBox.o: BoundingBox.hpp BoundingBox.cpp $(MATH_HEADERS)
 BVH.o: $(OBJECT_CLASS_HEADERS) BoundingBox.hpp
@@ -168,6 +169,7 @@ test_brdf:
 	./raytracer hw6/brdf/inputs/brdf_phong_modified_normalized.xml
 	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified.xml
 	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified_normalized.xml
+	./raytracer hw6/brdf/inputs/brdf_torrancesparrow.xml
 
 hw:
 	tar -czf raytracer.tar.gz Makefile src/
