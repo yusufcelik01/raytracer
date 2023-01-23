@@ -430,17 +430,7 @@ void Scene::loadFromXml(const std::string &filepath)
         {
             brdfId--;//make them start from 0
             material.brdf = brdfs[brdfId];
-            switch(material.brdf.type)
-            {
-                case BRDF_ORIGINAL_BLINN_PHONG:
-                case BRDF_ORIGINAL_PHONG:
-                case BRDF_MODIFIED_PHONG:
-                case BRDF_MODIFIED_BLINN_PHONG:
-                    material.phong_exponent = material.brdf.exp;
-                    break;
-                default:
-                    break;
-            }
+            material.phong_exponent = material.brdf.exp;
         }
 
         
@@ -1387,7 +1377,29 @@ void Scene::parseBRDFs(tinyxml2::XMLNode* root)
         element = element->NextSiblingElement("ModifiedBlinnPhong");
     }
 
+    element = brdfRoot->FirstChildElement("TorranceSparrow");
+    while(element)
+    {
+        BRDF brdf;
+        brdf.type = BRDF_TORRANCE_SPARROW;
+
+        child = element->FirstChildElement("Exponent");
+        stream << child->GetText() << std::endl;
+        stream >> brdf.exp;
+
+        if(element->Attribute("kdfresnel", "true"))
+        {
+            brdf.isKdFresnel = true;
+        }
+        else
+        {
+            brdf.isKdFresnel = false;
+        }
+
+        brdfs.push_back(brdf);
+        element = element->NextSiblingElement("TorranceSparrow");
+    }
+
 
     stream.clear();
-
 }

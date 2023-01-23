@@ -7,10 +7,14 @@
 #include "rtmath.hpp"
 #include "Camera.hpp"
 #include "Material.hpp"
-#include "Face.hpp"
-#include "Mesh.hpp"
-#include "Triangle.hpp"
-#include "Sphere.hpp"
+
+//#include "Face.hpp"
+//#include "Mesh.hpp"
+//#include "Triangle.hpp"
+//#include "Sphere.hpp"
+//#include "BVH.hpp"
+#include "geometry.hpp"
+
 #include "PointLight.hpp"
 #include "AreaLight.hpp"
 #include "SpotLight.hpp"
