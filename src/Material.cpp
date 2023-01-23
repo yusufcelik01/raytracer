@@ -50,6 +50,7 @@ vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
             reflectance = modifiedPhong(surfNorm, w_light, w_eye);
             break;
         case BRDF_TORRANCE_SPARROW:
+            reflectance = torranceSparrow(surfNorm, w_light, w_eye);
             break;
         default:
             break;
@@ -132,6 +133,39 @@ vec3f Material::modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     {
         return diffuse + (specular * cosAlpha); 
     }
+}
+
+vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+{
+    float cosTheta = dot(surfNorm, w_light);
+    if(cosTheta <= 0.f)
+    {
+        return vec3f(0.f);
+    }
+    vec3f w_h= norm(w_light + w_eye);
+    float cosAlpha = dot(w_h, surfNorm);
+    float D = (phong_exponent + 2.f)/(2* M_PI) 
+             * pow(cosAlpha, phong_exponent);
+
+    float NdotWi = cosTheta;
+    float NdotWh = cosAlpha;
+    float NdotWo = dot(surfNorm, w_eye);
+    float WoDotWh = dot(w_eye, w_h);
+    float GCommon = 2.f * NdotWh * NdotWo / WoDotWh;
+
+    float G1 = GCommon * NdotWo;
+    float G2 = GCommon * NdotWi;
+
+    float G = std::min(1.f, std::min(G1, G2));
+
+    //compute Fresnel reflection by Shclick's approx.
+    float tmp = (refraction_index - 1)/(refraction_index + 1);
+    float R0 = tmp * tmp;
+    
+    float cosBeta = dot(w_h, w_eye);
+    float F = R0 + (1 - R0) * pow(1 - cosBeta, 5);
+
+
 }
 
 //=========================BRDF=================
