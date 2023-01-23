@@ -159,11 +159,12 @@ vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     float G = std::min(1.f, std::min(G1, G2));
 
     //compute Fresnel reflection by Shclick's approx.
-    float tmp = (refraction_index - 1)/(refraction_index + 1);
-    float R0 = tmp * tmp;
+    //float tmp = (refraction_index - 1)/(refraction_index + 1);
+    //float R0 = tmp * tmp;
+    float R0 = pow(refraction_index-1, 2)/pow(refraction_index+1, 2);
     
     float cosBeta = dot(w_h, w_eye);
-    float F = R0 + (1 - R0) * pow(1 - cosBeta, 5);
+    float F = R0 + (1 - R0) * pow((1.0 - cosBeta), 5.0);
 
     vec3f reflectance(0.f);
 
@@ -176,7 +177,7 @@ vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
         reflectance += diffuse / M_PI;
     }
 
-    reflectance += specular * (D * F * G * 0.25f /(cosTheta * NdotWo));
+    reflectance += specular * ((D * F * G) / ( 4 * cosTheta * NdotWo));
     
     return reflectance;
 }
