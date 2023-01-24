@@ -206,9 +206,10 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
             continue; 
         }
 
-        vec3f irradiance = light->radiance/(lightPoint.prob *d_sqr) ;
+        vec3f radiance = light->radiance/(lightPoint.prob) ;
 
-        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye);
+        float cosTheta = dot(w_light, surfNorm);
+        color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
     if(material.isEmissive)
