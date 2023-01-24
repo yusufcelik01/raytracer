@@ -14,6 +14,7 @@
 //#include "Sphere.hpp"
 //#include "BVH.hpp"
 #include "geometry.hpp"
+#include "SphereLight.hpp"
 
 #include "PointLight.hpp"
 #include "AreaLight.hpp"
@@ -46,6 +47,7 @@ struct Scene
     std::vector<AreaLight> area_lights;
     std::vector<DirectionalLight> directional_lights;
     std::vector<SpotLight> spot_lights;
+    std::vector<SphereLight*> sphere_lights;
 
     std::vector<BRDF> brdfs;
     std::vector<Material> materials;

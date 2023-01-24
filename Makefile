@@ -22,7 +22,7 @@ GEOMETRY_HEADERS= $(OBJECT_CLASS_HEADERS) Face.hpp Triangle.hpp Mesh.hpp Sphere.
 
 #object files
 PARSER_OBJECTS= plyfile.o parser.o 
-GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o
+GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o SphereLight.o
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 

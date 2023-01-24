@@ -43,6 +43,7 @@ void Scene::loadFromXml(const std::string &filepath)
 {
     tinyxml2::XMLDocument file;
     std::stringstream stream;
+    tinyxml2::XMLElement* child;
 
     objects = {};
     auto res = file.LoadFile(filepath.c_str());
@@ -220,113 +221,116 @@ void Scene::loadFromXml(const std::string &filepath)
 
     //Get Lights
     element = root->FirstChildElement("Lights");
-    auto child = element->FirstChildElement("AmbientLight");
-    if(child) {
-        stream << child->GetText() << std::endl;
-        stream >> ambient_light.x >> ambient_light.y >> ambient_light.z;
-    }
-    else {
-        ambient_light = vec3f(0.f);
-    }
-
-
-    element = element->FirstChildElement("PointLight");
-    PointLight point_light;
-    while (element)
+    if(element)//if lights are present
     {
-        child = element->FirstChildElement("Position");
-        stream << child->GetText() << std::endl;
-        child = element->FirstChildElement("Intensity");
-        stream << child->GetText() << std::endl;
-
-        stream >> point_light.position.x >> point_light.position.y >> point_light.position.z;
-        stream >> point_light.intensity.x >> point_light.intensity.y >> point_light.intensity.z;
-
-        point_lights.push_back(point_light);
-        element = element->NextSiblingElement("PointLight");
-    }
-
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("AreaLight");
-    AreaLight areaLight;
-    while (element)
-    {
-        child = element->FirstChildElement("Position");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight.position.x >> areaLight.position.y >> areaLight.position.z;
-
-        child = element->FirstChildElement("Normal");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight.normal.x >> areaLight.normal.y >> areaLight.normal.z;
-        areaLight.normal = norm(areaLight.normal);
-
-        child = element->FirstChildElement("Radiance");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight.radiance.r >> areaLight.radiance.g >> areaLight.radiance.b;
-
-        child = element->FirstChildElement("Size");
-        stream << child->GetText() << std::endl;
-        stream >> areaLight.extent;
-
-        area_lights.push_back(areaLight);
-        element = element->NextSiblingElement("AreaLight");
-    }
-
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("DirectionalLight");
-    DirectionalLight directionalLight;
-    while(element)
-    {
-        child = element->FirstChildElement("Radiance");
-        stream << child->GetText() << std::endl;
-        stream >> directionalLight.radiance.r >> directionalLight.radiance.g >> directionalLight.radiance.b;
-
-        child = element->FirstChildElement("Direction");
-        stream << child->GetText() << std::endl;
-        stream >> directionalLight.direction.x >> directionalLight.direction.y >> directionalLight.direction.z;
-
-        directional_lights.push_back(directionalLight);
-        element = element->NextSiblingElement("DirectionalLight");
-    }
-
-    element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("SpotLight");
-    SpotLight spot_light;
-    while (element)
-    {
-        child = element->FirstChildElement("Position");
-        stream << child->GetText() << std::endl;
-        stream >> spot_light.position.x >> spot_light.position.y >> spot_light.position.z;
-
-        child = element->FirstChildElement("Intensity");
-        stream << child->GetText() << std::endl;
-        stream >> spot_light.intensity.x >> spot_light.intensity.y >> spot_light.intensity.z;
-
-        child = element->FirstChildElement("Direction");
-        stream << child->GetText() << std::endl;
-        stream >> spot_light.direction.x >> spot_light.direction.y >> spot_light.direction.z;
-
-        child = element->FirstChildElement("CoverageAngle");
-        stream << child->GetText() << std::endl;
-        stream >> spot_light.covarageAngle;
-
-        child = element->FirstChildElement("FalloffAngle");
-        stream << child->GetText() << std::endl;
-        stream >> spot_light.fallOffAngle;
-
-        //normalize direction
-        spot_light.direction = norm(spot_light.direction);
-
-        //convert to radians and divide by two
-        spot_light.covarageAngle = spot_light.covarageAngle * M_PI / 360.f;
-        spot_light.fallOffAngle = spot_light.fallOffAngle * M_PI / 360.f;
-        if(spot_light.fallOffAngle > spot_light.covarageAngle)
-        {
-            spot_light.covarageAngle = spot_light.fallOffAngle;
+        child = element->FirstChildElement("AmbientLight");
+        if(child) {
+            stream << child->GetText() << std::endl;
+            stream >> ambient_light.x >> ambient_light.y >> ambient_light.z;
+        }
+        else {
+            ambient_light = vec3f(0.f);
         }
 
-        spot_lights.push_back(spot_light);
-        element = element->NextSiblingElement("SpotLight");
+
+        element = element->FirstChildElement("PointLight");
+        PointLight point_light;
+        while (element)
+        {
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            child = element->FirstChildElement("Intensity");
+            stream << child->GetText() << std::endl;
+
+            stream >> point_light.position.x >> point_light.position.y >> point_light.position.z;
+            stream >> point_light.intensity.x >> point_light.intensity.y >> point_light.intensity.z;
+
+            point_lights.push_back(point_light);
+            element = element->NextSiblingElement("PointLight");
+        }
+
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("AreaLight");
+        AreaLight areaLight;
+        while (element)
+        {
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight.position.x >> areaLight.position.y >> areaLight.position.z;
+
+            child = element->FirstChildElement("Normal");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight.normal.x >> areaLight.normal.y >> areaLight.normal.z;
+            areaLight.normal = norm(areaLight.normal);
+
+            child = element->FirstChildElement("Radiance");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight.radiance.r >> areaLight.radiance.g >> areaLight.radiance.b;
+
+            child = element->FirstChildElement("Size");
+            stream << child->GetText() << std::endl;
+            stream >> areaLight.extent;
+
+            area_lights.push_back(areaLight);
+            element = element->NextSiblingElement("AreaLight");
+        }
+
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("DirectionalLight");
+        DirectionalLight directionalLight;
+        while(element)
+        {
+            child = element->FirstChildElement("Radiance");
+            stream << child->GetText() << std::endl;
+            stream >> directionalLight.radiance.r >> directionalLight.radiance.g >> directionalLight.radiance.b;
+
+            child = element->FirstChildElement("Direction");
+            stream << child->GetText() << std::endl;
+            stream >> directionalLight.direction.x >> directionalLight.direction.y >> directionalLight.direction.z;
+
+            directional_lights.push_back(directionalLight);
+            element = element->NextSiblingElement("DirectionalLight");
+        }
+
+        element = root->FirstChildElement("Lights");
+        element = element->FirstChildElement("SpotLight");
+        SpotLight spot_light;
+        while (element)
+        {
+            child = element->FirstChildElement("Position");
+            stream << child->GetText() << std::endl;
+            stream >> spot_light.position.x >> spot_light.position.y >> spot_light.position.z;
+
+            child = element->FirstChildElement("Intensity");
+            stream << child->GetText() << std::endl;
+            stream >> spot_light.intensity.x >> spot_light.intensity.y >> spot_light.intensity.z;
+
+            child = element->FirstChildElement("Direction");
+            stream << child->GetText() << std::endl;
+            stream >> spot_light.direction.x >> spot_light.direction.y >> spot_light.direction.z;
+
+            child = element->FirstChildElement("CoverageAngle");
+            stream << child->GetText() << std::endl;
+            stream >> spot_light.covarageAngle;
+
+            child = element->FirstChildElement("FalloffAngle");
+            stream << child->GetText() << std::endl;
+            stream >> spot_light.fallOffAngle;
+
+            //normalize direction
+            spot_light.direction = norm(spot_light.direction);
+
+            //convert to radians and divide by two
+            spot_light.covarageAngle = spot_light.covarageAngle * M_PI / 360.f;
+            spot_light.fallOffAngle = spot_light.fallOffAngle * M_PI / 360.f;
+            if(spot_light.fallOffAngle > spot_light.covarageAngle)
+            {
+                spot_light.covarageAngle = spot_light.fallOffAngle;
+            }
+
+            spot_lights.push_back(spot_light);
+            element = element->NextSiblingElement("SpotLight");
+        }
     }
 
     stream.clear();
@@ -463,33 +467,26 @@ void Scene::loadFromXml(const std::string &filepath)
 
     parseTextures(root, filepath.c_str());
     element = root->FirstChildElement("Lights");
-    element = element->FirstChildElement("SphericalDirectionalLight");
-    SphericalEnvLight envLight;
     if(element)
     {
-        env_light = new SphericalEnvLight;
-        
-        child = element->FirstChildElement("ImageId");
-        stream << child->GetText() << std::endl;
-        int imgId;
-        stream >> imgId;
-        env_light->tex.img =  images[imgId-1];
-        env_light->tex.decalMode = TEX_MODE_ENV_LIGHT;
-        env_light->tex.normalizer = 1.f;
-        env_light->tex.interpolationType = INTERPOLATE_BI_LINEAR;
+        element = element->FirstChildElement("SphericalDirectionalLight");
+        SphericalEnvLight envLight;
+        if(element)
+        {
+            env_light = new SphericalEnvLight;
+
+            child = element->FirstChildElement("ImageId");
+            stream << child->GetText() << std::endl;
+            int imgId;
+            stream >> imgId;
+            env_light->tex.img =  images[imgId-1];
+            env_light->tex.decalMode = TEX_MODE_ENV_LIGHT;
+            env_light->tex.normalizer = 1.f;
+            env_light->tex.interpolationType = INTERPOLATE_BI_LINEAR;
+        }
+        stream.clear();
     }
-    stream.clear();
 
-
-    //element = root->FirstChildElement("Lights");
-    //element = element->FirstChildElement("SphericalDirectionalLight");
-    //if(element)
-    //{
-    //    int imgId;
-    //    child = element->FirstChildElement("ImageId"); 
-    //    stream << child->GetText() << std::endl;
-    //    stream
-    //}
 
     //get scaling transformations
     element = root->FirstChildElement("Transformations");
@@ -713,28 +710,67 @@ void Scene::loadFromXml(const std::string &filepath)
     //Get Spheres
     element = root->FirstChildElement("Objects");
     element = element->FirstChildElement("Sphere");
-    Sphere sphere;
-    while (element)
     {
+        Sphere sphere;
+        while (element)
+        {
 
-        child = element->FirstChildElement("Center");
-        stream << child->GetText() << std::endl;
-        stream >> sphere.center_vertex_id;
+            child = element->FirstChildElement("Center");
+            stream << child->GetText() << std::endl;
+            stream >> sphere.center_vertex_id;
 
-        child = element->FirstChildElement("Radius");
-        stream << child->GetText() << std::endl;
-        stream >> sphere.radius;
+            child = element->FirstChildElement("Radius");
+            stream << child->GetText() << std::endl;
+            stream >> sphere.radius;
 
-        getObjAttributes(element, &sphere);
-        stream.clear();
-        
+            getObjAttributes(element, &sphere);
+            stream.clear();
 
-        //spheres.push_back(sphere);
-        Sphere* spherePtr = new Sphere(sphere); 
-        objects.push_back(spherePtr);//runtime polymorph
-        spheres.push_back(spherePtr);
-        sphere = Sphere();
-        element = element->NextSiblingElement("Sphere");
+
+            //spheres.push_back(sphere);
+            Sphere* spherePtr = new Sphere(sphere); 
+            objects.push_back(spherePtr);//runtime polymorph
+            spheres.push_back(spherePtr);
+            sphere = Sphere();
+            element = element->NextSiblingElement("Sphere");
+        }
+    }
+
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("LightSphere");
+    {//no 
+        SphereLight* sphereLight = new SphereLight;
+        while (element)
+        {
+
+            getObjAttributes(element, sphereLight);
+
+            child = element->FirstChildElement("Center");
+            stream << child->GetText() << std::endl;
+            stream >> sphereLight->center_vertex_id;
+
+            child = element->FirstChildElement("Radius");
+            stream << child->GetText() << std::endl;
+            stream >> sphereLight->radius;
+
+            child = element->FirstChildElement("Radiance");
+            stream << child->GetText() << std::endl;
+            stream >> sphereLight->radiance.x >> sphereLight->radiance.y >> sphereLight->radiance.z; 
+            sphereLight->material.radiance = sphereLight->radiance;
+            sphereLight->material.isEmissive = true;
+
+            stream.clear();
+
+
+            //spheres.push_back(sphere);
+            //SphereLight* spherePtr = new SphereLight(sphere); 
+            objects.push_back(sphereLight);//runtime polymorph
+            spheres.push_back(sphereLight);
+            sphere_lights.push_back(sphereLight);
+            sphereLight = new SphereLight();
+            element = element->NextSiblingElement("LightSphere");
+        }
+        delete sphereLight;
     }
 
     element = root->FirstChildElement("Objects");

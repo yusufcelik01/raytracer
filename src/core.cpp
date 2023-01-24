@@ -178,6 +178,44 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         color += radiance * material.computeBRDF(surfNorm, lightDir, w_eye) * cosTheta;
     }
     
+    for(SphereLight* light : sphere_lights)
+    {
+        SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
+        vec3f lightSample = lightPoint.point;
+
+        if(lightSample.x != lightSample.x) 
+        {
+            //std::cerr << "sphere light sampling error" << std::endl;
+            continue; 
+        }
+        Ray shadowRay;
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = norm(lightSample - shadowRay.o);
+        shadowRay.time = eyeRay.time;
+        vec3f w_light = lightSample - p;
+        float distance = length(w_light);
+        float d_sqr = distance * distance;
+        if(rayQuery(shadowRay, dummy, true, distance*0.97))//if shadow
+        {
+            continue;
+        }
+        w_light = norm(w_light);
+        if(w_light.x != w_light.x) 
+        {
+            //std::cerr << "sphere light light direction NAN error" << std::endl;
+            continue; 
+        }
+
+        vec3f irradiance = light->radiance/(lightPoint.prob *d_sqr) ;
+
+        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye);
+    }
+
+    if(material.isEmissive)
+    {
+        color += material.radiance;
+    }
+
 
     return color;
 }
@@ -278,8 +316,8 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 color = closestObjData.material.diffuse;
             }
             else {
-            color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
-            color += objMaterial.ambient * ambient_light;
+                color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
+                color += objMaterial.ambient * ambient_light;
             }
         }
         if(dot(n, ray.d) > 0)//if we are inside an object
