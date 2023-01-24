@@ -571,6 +571,10 @@ struct RowRendererArg
 
 void Scene::render(Camera camera)
 {
+    unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
+    std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
+    std::thread threads[NUMBER_OF_THREADS];
+
     vec3f e = camera.position;
     vec3f u, v, w;    
     v = norm(camera.up);
@@ -621,9 +625,6 @@ void Scene::render(Camera camera)
     threadArg.img = img;
     threadArg.rows = new ImageRows(ny);
 
-    unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
-    std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
-    std::thread threads[NUMBER_OF_THREADS];
     for(unsigned int i = 0; i < NUMBER_OF_THREADS; i++)
     {
         //threads[i] = std::thread(&Scene::renderRow, this, &threadArg);
