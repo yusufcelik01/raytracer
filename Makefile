@@ -171,5 +171,12 @@ test_brdf:
 	./raytracer hw6/brdf/inputs/brdf_blinnphong_modified_normalized.xml
 	./raytracer hw6/brdf/inputs/brdf_torrancesparrow.xml
 
+test_object_light:
+	./raytracer hw6/directLighting/inputs/cornellbox_jaroslav_glossy_area_sphere.xml
+	./raytracer hw6/directLighting/inputs/cornellbox_jaroslav_glossy_area_ellipsoid.xml
+
+test6:
+	make test_object_light
+
 hw:
 	tar -czf raytracer.tar.gz Makefile src/
