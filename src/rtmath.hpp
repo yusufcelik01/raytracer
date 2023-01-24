@@ -10,6 +10,12 @@
 #define FLOAT_MAX std::numeric_limits<float>::max()
 #define FLOAT_MIN std::numeric_limits<float>::min()
 
+struct SampledPoint
+{
+    vec3f point;
+    float prob;
+};
+
 
 template <class T>
 T mix(T x, T y, float a);
