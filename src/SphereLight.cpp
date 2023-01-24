@@ -6,7 +6,7 @@ SphereLight::SphereLight()
     rng = new UniformRandomGenerator;
 }
 
-SphereLight::SphereLight(const SphereLight& rhs)
+SphereLight::SphereLight(const SphereLight& rhs) : Sphere(rhs)
 {
     radiance = rhs.radiance;
     rng = new UniformRandomGenerator;
