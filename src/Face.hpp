@@ -12,6 +12,7 @@ class Face : public Object
     //int v0_id;
     //int v1_id;
     //int v2_id;
+    float area;
     
     //constructors
     Face();

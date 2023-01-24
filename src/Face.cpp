@@ -9,6 +9,7 @@ Face::Face()
     vertexId[2] = -1;
     normal = NULL;
     TBN = NULL;
+    area = -1;
     //material_id = -1;
     //bbox = NULL;
 }
@@ -22,6 +23,7 @@ Face::Face(size_t v0, size_t v1, size_t v2)
     bbox = NULL;
     TBN = NULL;
     normal = NULL;
+    area = -1;
 }
 
 Face::Face(const Face& rhs) : Object(rhs)
@@ -42,7 +44,7 @@ Face::Face(const Face& rhs) : Object(rhs)
     else {
         normal = new vec3f(*(rhs.normal));
     }
-
+    area = rhs.area;
 }
 
 Face::~Face()
@@ -107,6 +109,12 @@ void Face::cacheData(const VertexBuffers& vertexBuffers)
 
     //cache normal
     normal = new vec3f(norm(cross(v2-v1, v3-v2)));
+    float a = length(v1 - v2),
+          b = length(v2 - v3),
+          c = length(v3 - v1);
+   
+    float s = (a + b + c) * 0.5f;
+    area = sqrt(s * (s - a) * (s - b) * (s - c));
     
     //cache TBN
     if(vertexBuffers.textureCoords.size() > 1)
