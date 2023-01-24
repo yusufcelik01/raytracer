@@ -57,6 +57,8 @@ class Material
     float roughness = -0.f;
     //brdf
     BRDF brdf;
+    bool isEmissive;//for object lights
+    vec3f radiance;//if emissive
 
     //constructors
     Material();

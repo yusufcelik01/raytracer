@@ -14,6 +14,8 @@ Material::Material()
     absorption_index = 1.f;
     //dielectric fields
     absorption_coefficent = 1.f;
+    isEmissive = false;
+    radiance = vec3f(0.f);
 }
 
 Material::Material(const Material& rhs)
@@ -30,6 +32,8 @@ Material::Material(const Material& rhs)
     phong_exponent = rhs.phong_exponent; 
     roughness = rhs.roughness;
     brdf = rhs.brdf;
+    isEmissive = rhs.isEmissive;
+    radiance = rhs.radiance;
 }
 
 vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
