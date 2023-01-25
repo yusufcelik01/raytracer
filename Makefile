@@ -178,5 +178,12 @@ test_object_light:
 test6:
 	make test_object_light
 
+previous_test:
+	make test
+	make test4 
+	make test5
+	make test_brdf
+	make test_object_light
+
 hw:
 	tar -czf raytracer.tar.gz Makefile src/
