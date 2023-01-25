@@ -17,6 +17,14 @@ struct ToneMapParamType
     float gamma;
 };
 
+struct RendererParams
+{
+    bool pathTracing; 
+    bool nextEvent;
+    bool importanceSampling;
+    bool russianRoulette;
+};
+
 struct Camera
 {
     vec3f position;
@@ -30,7 +38,10 @@ struct Camera
     int numSamples;
     float focusDistance;
     float apertureSize;
-    struct ToneMapParamType TMOArgs;
+    ToneMapParamType TMOArgs;
+    RendererParams rendererParams;
+
+    Camera();
 };
 
 #endif
