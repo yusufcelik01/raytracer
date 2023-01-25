@@ -54,7 +54,11 @@ void MeshLight::preprocess(const VertexBuffers& vertexBuffers)
     //this will help us while doing binary search on the list
 }
 
-SampledPoint MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint)
+//return -1 on error
+//return 0 on succes 
+//write all the other return values to references arguments if no error occurs
+//int MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint)
+int MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint, vec3f& Lpoint, vec3f& Lnormal, float& Larea, float& Lprob)
 {
     //first convert the shaded point to object space
     mat4x4 compositeTransformation(1.f), invM(1.f);
@@ -80,53 +84,50 @@ SampledPoint MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffe
     vec3f v2;
     vec3f v3;
 
-        //float xi = rng->getUniformRandNumber(0.f, 1.f); 
-        //int sampledIndex = getRandomFace(0, faces.size() - 1, xi);
-        //sampledFace = faces[sampledIndex];  
-        //v1 = vertexBuffers.vertexCoords[sampledFace->vertexId[0]];
-        //v2 = vertexBuffers.vertexCoords[sampledFace->vertexId[1]];
-        //v3 = vertexBuffers.vertexCoords[sampledFace->vertexId[2]];
-    int startIndex = 0;
-    int endIndex = faces.size() - 1;
-    float startProb = 0.f;
-    float endProb = 1.f;
-    while(true)
-    {
-        float xi = rng->getUniformRandNumber(startProb, endProb); 
-        int sampledIndex = getRandomFace(startIndex, endIndex, xi);
+        float xi = rng->getUniformRandNumber(0.f, 1.f); 
+        int sampledIndex = getRandomFace(0, faces.size() - 1, xi);
         sampledFace = faces[sampledIndex];  
-
         v1 = vertexBuffers.vertexCoords[sampledFace->vertexId[0]];
         v2 = vertexBuffers.vertexCoords[sampledFace->vertexId[1]];
         v3 = vertexBuffers.vertexCoords[sampledFace->vertexId[2]];
+    //int startIndex = 0;
+    //int endIndex = faces.size() - 1;
+    //float startProb = 0.f;
+    //float endProb = 1.f;
+    //while(true)
+    //{
+    //    float xi = rng->getUniformRandNumber(startProb, endProb); 
+    //    int sampledIndex = getRandomFace(startIndex, endIndex, xi);
+    //    sampledFace = faces[sampledIndex];  
 
-        vec3f center = (v1 + v2 + v3) / 3.f;
-        vec3f w_i = norm(center - pLocal); 
+    //    v1 = vertexBuffers.vertexCoords[sampledFace->vertexId[0]];
+    //    v2 = vertexBuffers.vertexCoords[sampledFace->vertexId[1]];
+    //    v3 = vertexBuffers.vertexCoords[sampledFace->vertexId[2]];
 
-        if(dot(w_i, *(sampledFace->normal)) < 0.f)//if NOT backface
-        {
-            break;//if bot backface
-        }
-        else
-        {
-            if(startIndex == sampledIndex) {
-                startProb = triangleProbs[startIndex];
-                startIndex++;
-            }
-            else if(endIndex == sampledIndex) {
-                endProb = triangleProbs[endIndex -1];
-                endIndex--;
-            }
-            if(startIndex > endIndex)
-            {
-                SampledPoint errValue;
-                errValue.point = vec3f(std::nan("1"));
-                errValue.prob = std::nan("1");
-                return errValue;
-            }
+    //    vec3f center = (v1 + v2 + v3) / 3.f;
+    //    vec3f w_i = norm(center - pLocal); 
 
-        }
-    }
+    //    if(dot(w_i, *(sampledFace->normal)) < 0.f)//if NOT backface
+    //    {
+    //        break;//if bot backface
+    //    }
+    //    else
+    //    {
+    //        if(startIndex == sampledIndex) {
+    //            startProb = triangleProbs[startIndex];
+    //            startIndex++;
+    //        }
+    //        else if(endIndex == sampledIndex) {
+    //            endProb = triangleProbs[endIndex -1];
+    //            endIndex--;
+    //        }
+    //        if(startIndex > endIndex)
+    //        {
+    //            return -1;
+    //        }
+
+    //    }
+    //}
     
     //TODO sample point on triangle
     float xi1 = rng->getUniformRandNumber(0.f, 1.f); 
@@ -139,13 +140,14 @@ SampledPoint MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffe
     tmp = compositeTransformation * vec4f(p, 1.f);
     vec3f worldLightPoint(tmp.x, tmp.y, tmp.z);
 
+    tmp =  transpose(invM) * vec4f(*(sampledFace->normal), 0.f);
+    
+    Larea = sampledFace->area;
+    Lprob = sampledFace->area / totalSurfaceArea;
+    Lnormal = norm(vec3f(tmp.x, tmp.y, tmp.z));
+    Lpoint = worldLightPoint;
 
-
-    SampledPoint retVal;
-    retVal.point = worldLightPoint;
-    retVal.prob = sampledFace->area / totalSurfaceArea;
-
-    return retVal;
+    return 0;
 }
 
 int MeshLight::getRandomFace(int start, int end, float xi)

@@ -15,7 +15,7 @@ class MeshLight : public Mesh
     float totalSurfaceArea;
     std::vector<float> triangleProbs;
 
-    SampledPoint sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint);
+    int sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint, vec3f& Lpoint, vec3f& Lnormal, float& Larea, float& Lprob);
     void preprocess(const VertexBuffers& vertexBuffers);
     private:
 

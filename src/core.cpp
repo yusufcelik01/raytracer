@@ -214,13 +214,20 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
 
     for(MeshLight* light : mesh_lights)
     {
-        SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
-        //std::cout << "sample the point " << std::endl;
-        vec3f lightSample = lightPoint.point;
+        //SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
+        vec3f Lpoint(0.f);
+        vec3f Lnormal(0.f);
+        float Larea = 0;;
+        float Lprob = 0;
 
-        if(lightSample.x != lightSample.x) 
+        int retStatus = light->sampleIlluminationPoint(VAO, p, Lpoint, Lnormal, Larea, Lprob); 
+        //std::cout << "sample the point " << std::endl;
+        //vec3f lightSample = lightPoint.point;
+        vec3f lightSample = Lpoint;
+
+        if(retStatus == -1) 
         {
-            //std::cerr << "sphere light sampling error" << std::endl;
+            //std::cerr << "mesh light sampling error" << std::endl;
             continue; 
         }
         Ray shadowRay;
@@ -230,21 +237,27 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         vec3f w_light = lightSample - p;
         float distance = length(w_light);
         float d_sqr = distance * distance;
-        if(rayQuery(shadowRay, dummy, true, distance*0.94))//if shadow
+        if(rayQuery(shadowRay, dummy, true, distance*0.98))//if shadow
         {
             continue;
         }
         w_light = norm(w_light);
+        float cosAlpha = dot(-w_light, Lnormal);
+        if(cosAlpha < 0)
+        {
+            continue;
+        }
+
         if(w_light.x != w_light.x) 
         {
-            //std::cerr << "sphere light light direction NAN error" << std::endl;
+            //std::cerr << "mesh light light direction NAN error" << std::endl;
             continue; 
         }
 
-        vec3f radiance = light->radiance/(lightPoint.prob) ;
+        vec3f irradiance = light->radiance * (Larea * cosAlpha)/(Lprob* d_sqr) ;
 
         float cosTheta = dot(w_light, surfNorm);
-        color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
+        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
 
     }
 
