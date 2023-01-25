@@ -22,5 +22,6 @@ T mix(T x, T y, float a);
 
 float clamp(float x, float min, float max);
 
+vec3f uniformSampleHemiSphere(float xi1, float xi2);
 
 #endif
