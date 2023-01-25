@@ -597,30 +597,7 @@ void Scene::loadFromXml(const std::string &filepath)
         const char* plyFileName = child->Attribute("plyFile");
         if(plyFileName != NULL)//it is a ply file
         {
-            //std::cerr << "ply files are not implemented yet" << std::endl;
-            //exit(-1);
             char *plyFilePath;
-            //if(plyFileName[0] == '~' || plyFileName[0] == '/' )
-            //{
-            //    strcpy(plyFilePath, plyFileName);//abs path
-            //}
-            //else if( index(filepath.c_str(), '/') == NULL)
-            //{
-            //    strcpy(plyFilePath, plyFileName);
-            //}
-            //else
-            //{
-            //    const char* begin = filepath.c_str();
-            //    const char* end = rindex(begin, '/');
-            //    size_t plyPathStrSize = end - begin + 128;
-            //    plyFilePath = new char[plyPathStrSize];
-            //    for(size_t foo = 0; foo < plyPathStrSize; ++foo) {
-            //        plyFilePath[foo] = '\0';//fill the are with nulls
-            //    }
-            //    strncpy(plyFilePath, begin, end - begin + 1);
-            //    strncat(plyFilePath, plyFileName, 126);
-            //}
-            //std::cout << plyFilePath << std::endl;
             plyData obj;
             plyFilePath = navigateDirs(filepath.c_str(), plyFileName);
             std::cout << std::string(plyFilePath) << std::endl;
@@ -683,6 +660,92 @@ void Scene::loadFromXml(const std::string &filepath)
         element = element->NextSiblingElement("Mesh");
     }
     delete mesh;//one extra was allotaced at the end of the loop
+    stream.clear();
+
+    element = root->FirstChildElement("Objects");
+    element = element->FirstChildElement("LightMesh");
+    MeshLight* meshLight;
+    meshLight = new MeshLight();
+    while (element)
+    {
+        //stream.clear();
+
+        getObjAttributes(element, meshLight); 
+
+        child = element->FirstChildElement("Faces");
+        //check if it is a ply file
+        const char* plyFileName = child->Attribute("plyFile");
+        if(plyFileName != NULL)//it is a ply file
+        {
+            char *plyFilePath;
+            plyData obj;
+            plyFilePath = navigateDirs(filepath.c_str(), plyFileName);
+            std::cout << std::string(plyFilePath) << std::endl;
+            parsePly(plyFilePath, obj);
+
+            size_t numOfTotalVertices = VAO.vertexCoords.size();
+            size_t numOfPlyVertices = obj.vertices.size();
+            for(size_t k=0; k < numOfPlyVertices; k++)
+            {
+               VAO.vertexCoords.push_back(obj.vertices[k]); 
+            }
+            size_t numOfPlyFaces = obj.triangles.size();
+            for(size_t k=0; k < numOfPlyFaces; k++)
+            {
+                Face* face = new Face(numOfTotalVertices + obj.triangles[k].vertexId[0],
+                                      numOfTotalVertices + obj.triangles[k].vertexId[1],
+                                      numOfTotalVertices + obj.triangles[k].vertexId[2] );
+                
+                meshLight->faces.push_back(face);
+            }
+        }
+        else// a regular non-ply mesh
+        {
+            const char* vertexOffsetStr = child->Attribute("vertexOffset");
+            //const char* textureOffsetStr = child->Attribute("textureOffset");
+            int vertexOffset = 0;
+            //int textureOffset = 0;
+            if(vertexOffsetStr != NULL)
+            {
+                vertexOffset = std::stoi(vertexOffsetStr); 
+            }
+            //if(textureOffsetStr != NULL)
+            //{
+            //    textureOffset = std::stoi(textureOffsetStr); 
+            //}
+
+            stream << child->GetText() << std::endl;
+            Face* face;
+            face = new Face();
+            while (!(stream >> face->vertexId[0]).eof())
+            {
+                stream >> face->vertexId[1] >> face->vertexId[2];
+                face->vertexId[0] += vertexOffset;
+                face->vertexId[1] += vertexOffset;
+                face->vertexId[2] += vertexOffset;
+
+                meshLight->faces.push_back(face);
+                face = new Face();
+            }
+            delete face;
+            stream.clear();
+        }
+        
+        child = element->FirstChildElement("Radiance");
+        stream << child->GetText() << std::endl;
+        stream >> meshLight->radiance.x >> meshLight->radiance.y >> meshLight->radiance.z; 
+        meshLight->material.radiance = meshLight->radiance;
+        meshLight->material.isEmissive = true;
+
+
+        //meshes.push_back(mesh);
+        objects.push_back((Object*) meshLight);//runtime polymorph
+        meshes.push_back(meshLight);
+        mesh_lights.push_back(meshLight);
+        meshLight= new MeshLight();
+        element = element->NextSiblingElement("LightMesh");
+    }
+    delete meshLight;//one extra was allotaced at the end of the loop
     stream.clear();
 
     //Get Triangles

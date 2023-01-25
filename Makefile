@@ -18,11 +18,11 @@ PARSER_HEADERS= parser.h tinyxml2.h $(GEOMETRY_HEADERS) ply.h $(POINT_LIGHT_HEAD
 AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 MATH_HEADERS=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
-GEOMETRY_HEADERS= $(OBJECT_CLASS_HEADERS) Face.hpp Triangle.hpp Mesh.hpp Sphere.hpp
+GEOMETRY_HEADERS= $(OBJECT_CLASS_HEADERS) Face.hpp Triangle.hpp Mesh.hpp Sphere.hpp SphereLight.hpp MeshLight.hpp
 
 #object files
 PARSER_OBJECTS= plyfile.o parser.o 
-GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o SphereLight.o
+GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o SphereLight.o MeshLight.o
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 

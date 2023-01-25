@@ -28,6 +28,10 @@ int main(int argc, char* argv[])
         mesh->AccBVH = constructMeshBVH(scene.VAO.vertexCoords, mesh->faces.begin(), mesh->faces.end(), X_AXIS);
         //mesh->bbox = mesh->AccBVH->getBoundingBox();
     }
+    for(MeshLight* meshLight : scene.mesh_lights)
+    {
+        meshLight->preprocess(scene.VAO);
+    }
 
     for(Triangle* triangle : scene.triangles)
     {

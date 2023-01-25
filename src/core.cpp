@@ -212,6 +212,43 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
+    for(MeshLight* light : mesh_lights)
+    {
+        SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
+        //std::cout << "sample the point " << std::endl;
+        vec3f lightSample = lightPoint.point;
+
+        if(lightSample.x != lightSample.x) 
+        {
+            //std::cerr << "sphere light sampling error" << std::endl;
+            continue; 
+        }
+        Ray shadowRay;
+        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+        shadowRay.d = norm(lightSample - shadowRay.o);
+        shadowRay.time = eyeRay.time;
+        vec3f w_light = lightSample - p;
+        float distance = length(w_light);
+        float d_sqr = distance * distance;
+        if(rayQuery(shadowRay, dummy, true, distance*0.94))//if shadow
+        {
+            continue;
+        }
+        w_light = norm(w_light);
+        if(w_light.x != w_light.x) 
+        {
+            //std::cerr << "sphere light light direction NAN error" << std::endl;
+            continue; 
+        }
+
+        vec3f radiance = light->radiance/(lightPoint.prob) ;
+
+        float cosTheta = dot(w_light, surfNorm);
+        color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
+
+    }
+
+
     if(material.isEmissive)
     {
         color += material.radiance;
@@ -611,6 +648,7 @@ struct RowRendererArg
 void Scene::render(Camera camera)
 {
     unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
+    NUMBER_OF_THREADS = 1; 
     std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
     std::thread threads[NUMBER_OF_THREADS];
 
