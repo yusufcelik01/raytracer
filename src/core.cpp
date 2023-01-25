@@ -161,6 +161,8 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         dir.y = (dir.y < 0.f) ? -dir.y : dir.y;//select the upper hemisphere
 
         ONB tbn = ONB(vec3f(0.f, 1.f, 0.f));
+        //TODO this is not sampling the upper hemisphere this is constant
+        //fix this
         Matrix onbTransform(3,3);
         
         for(int i = 0; i < 3; ++i)
@@ -329,12 +331,15 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
     return hit;
 }
 
-vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
+//vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium)
+//{
+//    return getRayColor(ray, depth, false, currentMedium, vec3f(0.f), 0.f);
+//}
+//vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
+vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera)
 {
-    return getRayColor(ray, depth, false, currentMedium, vec3f(0.f), 0.f);
-}
-vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
-{
+    float nearDist = camera.near_distance;
+    vec3f gaze = camera.gaze;
     if(depth < 0)
     {
         return vec3f(0.f, 0.f, 0.f);
@@ -388,7 +393,8 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             {
                 reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
             }
-            color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
+            //color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
+            color += objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium, camera);
         }
         else if(objMaterial.type == MATERIAL_DIELECTRIC)
         {
@@ -412,7 +418,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 {
                     reflectingRay.d = deviateRay(reflectingRay.d, objMaterial.roughness); 
                 }
-                color += getRayColor(reflectingRay, depth - 1, false, currentMedium);
+                color += getRayColor(reflectingRay, depth - 1, false, currentMedium, camera);
             }
             else//refraction + reflection
             {
@@ -432,11 +438,11 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 }
 
                 //TODO enable reflections on dielectrics
-                color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentMedium);
+                color += reflectionRatio * getRayColor(reflectingRay, depth - 1, false, currentMedium, camera);
                 if(currentMedium.type == MATERIAL_AIR)
                 {
                     //if we are inside air now we will be entering a dielectric
-                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial);
+                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, objMaterial, camera);
                 }
                 else
                 {
@@ -446,11 +452,11 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     air.refraction_index = 1.f;
                     air.absorption_index = 0.f;
                     air.absorption_coefficent = vec3f(0.f);
-                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, air);
+                    color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, air, camera);
                 }
             }
 
-            //color += objMaterial.refraction_index * getRayColor(reflectingRay, depth-1, false, currentRefractionIndex);
+            //color += objMaterial.refraction_index * getRayColor(reflectingRay, depth-1, false, currentRefractionIndex, camera);
 
             //TODO
             //add current medium's refraction index to getRayColor function
@@ -477,7 +483,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             }
             
             float reflectionRatio = conductorReflectionRatio(objMaterial.refraction_index, objMaterial.absorption_index, dot(-ray.d, n));
-            color += reflectionRatio * objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium);
+            color += reflectionRatio * objMaterial.mirror * getRayColor(reflectingRay, depth-1, false, currentMedium, camera);
         }
         
         return color;
@@ -661,7 +667,7 @@ struct RowRendererArg
 void Scene::render(Camera camera)
 {
     unsigned int NUMBER_OF_THREADS = std::thread::hardware_concurrency(); 
-    NUMBER_OF_THREADS = 1; 
+    //NUMBER_OF_THREADS = 1; 
     std::cout << "Number of threads running: " << NUMBER_OF_THREADS << std::endl;
     std::thread threads[NUMBER_OF_THREADS];
 
@@ -787,7 +793,7 @@ void Scene::renderRow(void* void_arg)
             ray.d = norm(s - arg->e);
 
 
-            vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
+            vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
             //vec3i c = clamp(vec3i(color), 0, 255);
             vec3f c = color;
 
@@ -963,7 +969,8 @@ void Scene::renderRowMultiSampled(void* void_arg)
                 ray.texCoord = backGroundCoords;
                 //std::cout << "ray time: " << ray.time << std::endl;
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
-                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);
+                //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);
+                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
 
                 sampleColors.push_back(sampleColor);
             }

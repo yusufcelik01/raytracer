@@ -75,8 +75,9 @@ struct Scene
     void render(size_t cameraId);
     bool rayQuery(Ray ray, IntersectionData& closestObjData, bool isShadowRay, float maxT);
     bool rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float maxT, float nearDist, vec3f gaze);
-    vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium);
-    vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist);
+    //vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium);
+    //vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist);
+    vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera);
     vec3f getObjNorm(const IntersectionData& data);
     vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
 

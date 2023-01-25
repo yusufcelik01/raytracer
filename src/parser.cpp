@@ -185,6 +185,7 @@ void Scene::loadFromXml(const std::string &filepath)
             child = element->FirstChildElement("Gaze");
             stream << child->GetText() << std::endl;
             stream >> camera.gaze.x >> camera.gaze.y >> camera.gaze.z;
+            camera.gaze = norm(camera.gaze);
 
             child = element->FirstChildElement("NearPlane");
             stream << child->GetText() << std::endl;
