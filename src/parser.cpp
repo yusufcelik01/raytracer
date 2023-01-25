@@ -159,7 +159,24 @@ void Scene::loadFromXml(const std::string &filepath)
         if(cameraType != NULL && strcmp(cameraType, "lookAt") == 0 )
         {
             child = element->FirstChildElement("GazePoint");
-            stream << child->GetText() << std::endl;
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+            }
+            else
+            {
+                child = element->FirstChildElement("Gaze");
+                if(child)
+                {
+                    stream << child->GetText() << std::endl;
+                }
+                else
+                {
+                    std::cerr << "Broken input: NO GazePoint element in camera" << std::endl;
+                }
+            }
+        
+             
             vec3f gazePoint,gazeDir;
             stream >> gazePoint.x >> gazePoint.y >> gazePoint.z;
             camera.gaze = norm(gazePoint - camera.position);
@@ -215,6 +232,43 @@ void Scene::loadFromXml(const std::string &filepath)
             stream << grandChild->GetText() << std::endl;
             stream >> camera.TMOArgs.gamma;
         }
+
+        stream.clear();
+        child = element->FirstChildElement("Renderer");
+        if(child)
+        {
+            stream << child->GetText() << std::endl;
+            std::string param;
+            stream >> param;
+            if(param == "PathTracing")
+            {
+                camera.rendererParams.pathTracing = true;
+            }
+            stream.clear();
+
+            child = element->FirstChildElement("RendererParams");
+            if(child)
+            {
+                stream << child->GetText() << std::endl;
+                while(!(stream >> param).eof())
+                {
+                    if(param == "NextEventEstimation")
+                    {
+                        camera.rendererParams.nextEvent = true; 
+                    }
+                    else if(param == "RussianRoulette")
+                    {
+                        camera.rendererParams.russianRoulette = true; 
+                    }
+                    else if(param == "ImportanceSampling")
+                    {
+                        camera.rendererParams.importanceSampling = true; 
+                    }
+                }
+                stream.clear();
+            }
+        }
+
 
         cameras.push_back(camera);
         element = element->NextSiblingElement("Camera");
