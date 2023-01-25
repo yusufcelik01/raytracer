@@ -30,7 +30,7 @@ vec3f deviateRay(vec3f originalRay, float roughness)
 }
 
 
-vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
+vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
 {
     //for now only calculate diffuse & spcular shading
     //for only point lights
@@ -180,87 +180,90 @@ vec3f Scene::calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, ve
         color += radiance * material.computeBRDF(surfNorm, lightDir, w_eye) * cosTheta;
     }
     
-    for(SphereLight* light : sphere_lights)
+    if(camera.rendererParams.pathTracing == false && camera.rendererParams.nextEvent == true)
     {
-        SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
-        vec3f lightSample = lightPoint.point;
-
-        if(lightSample.x != lightSample.x) 
+        for(SphereLight* light : sphere_lights)
         {
-            //std::cerr << "sphere light sampling error" << std::endl;
-            continue; 
-        }
-        Ray shadowRay;
-        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
-        shadowRay.d = norm(lightSample - shadowRay.o);
-        shadowRay.time = eyeRay.time;
-        vec3f w_light = lightSample - p;
-        float distance = length(w_light);
-        float d_sqr = distance * distance;
-        if(rayQuery(shadowRay, dummy, true, distance*0.97))//if shadow
-        {
-            continue;
-        }
-        w_light = norm(w_light);
-        if(w_light.x != w_light.x) 
-        {
-            //std::cerr << "sphere light light direction NAN error" << std::endl;
-            continue; 
-        }
+            SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
+            vec3f lightSample = lightPoint.point;
 
-        vec3f radiance = light->radiance/(lightPoint.prob) ;
+            if(lightSample.x != lightSample.x) 
+            {
+                //std::cerr << "sphere light sampling error" << std::endl;
+                continue; 
+            }
+            Ray shadowRay;
+            shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+            shadowRay.d = norm(lightSample - shadowRay.o);
+            shadowRay.time = eyeRay.time;
+            vec3f w_light = lightSample - p;
+            float distance = length(w_light);
+            float d_sqr = distance * distance;
+            if(rayQuery(shadowRay, dummy, true, distance*0.97))//if shadow
+            {
+                continue;
+            }
+            w_light = norm(w_light);
+            if(w_light.x != w_light.x) 
+            {
+                //std::cerr << "sphere light light direction NAN error" << std::endl;
+                continue; 
+            }
 
-        float cosTheta = dot(w_light, surfNorm);
-        color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
-    }
+            vec3f radiance = light->radiance/(lightPoint.prob) ;
 
-    for(MeshLight* light : mesh_lights)
-    {
-        //SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
-        vec3f Lpoint(0.f);
-        vec3f Lnormal(0.f);
-        float Larea = 0;;
-        float Lprob = 0;
-
-        int retStatus = light->sampleIlluminationPoint(VAO, p, Lpoint, Lnormal, Larea, Lprob); 
-        //std::cout << "sample the point " << std::endl;
-        //vec3f lightSample = lightPoint.point;
-        vec3f lightSample = Lpoint;
-
-        if(retStatus == -1) 
-        {
-            //std::cerr << "mesh light sampling error" << std::endl;
-            continue; 
-        }
-        Ray shadowRay;
-        shadowRay.o = p + surfNorm * shadow_ray_epsilon;
-        shadowRay.d = norm(lightSample - shadowRay.o);
-        shadowRay.time = eyeRay.time;
-        vec3f w_light = lightSample - p;
-        float distance = length(w_light);
-        float d_sqr = distance * distance;
-        if(rayQuery(shadowRay, dummy, true, distance*0.98))//if shadow
-        {
-            continue;
-        }
-        w_light = norm(w_light);
-        float cosAlpha = dot(-w_light, Lnormal);
-        if(cosAlpha < 0)
-        {
-            continue;
+            float cosTheta = dot(w_light, surfNorm);
+            color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
         }
 
-        if(w_light.x != w_light.x) 
+        for(MeshLight* light : mesh_lights)
         {
-            //std::cerr << "mesh light light direction NAN error" << std::endl;
-            continue; 
+            //SampledPoint lightPoint = light->sampleIlluminationPoint(VAO, p); 
+            vec3f Lpoint(0.f);
+            vec3f Lnormal(0.f);
+            float Larea = 0;;
+            float Lprob = 0;
+
+            int retStatus = light->sampleIlluminationPoint(VAO, p, Lpoint, Lnormal, Larea, Lprob); 
+            //std::cout << "sample the point " << std::endl;
+            //vec3f lightSample = lightPoint.point;
+            vec3f lightSample = Lpoint;
+
+            if(retStatus == -1) 
+            {
+                //std::cerr << "mesh light sampling error" << std::endl;
+                continue; 
+            }
+            Ray shadowRay;
+            shadowRay.o = p + surfNorm * shadow_ray_epsilon;
+            shadowRay.d = norm(lightSample - shadowRay.o);
+            shadowRay.time = eyeRay.time;
+            vec3f w_light = lightSample - p;
+            float distance = length(w_light);
+            float d_sqr = distance * distance;
+            if(rayQuery(shadowRay, dummy, true, distance*0.98))//if shadow
+            {
+                continue;
+            }
+            w_light = norm(w_light);
+            float cosAlpha = dot(-w_light, Lnormal);
+            if(cosAlpha < 0)
+            {
+                continue;
+            }
+
+            if(w_light.x != w_light.x) 
+            {
+                //std::cerr << "mesh light light direction NAN error" << std::endl;
+                continue; 
+            }
+
+            vec3f irradiance = light->radiance * (Larea * cosAlpha)/(Lprob* d_sqr) ;
+
+            float cosTheta = dot(w_light, surfNorm);
+            color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
+
         }
-
-        vec3f irradiance = light->radiance * (Larea * cosAlpha)/(Lprob* d_sqr) ;
-
-        float cosTheta = dot(w_light, surfNorm);
-        color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
-
     }
 
 
@@ -342,7 +345,18 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
     vec3f gaze = camera.gaze;
     if(depth < 0)
     {
-        return vec3f(0.f, 0.f, 0.f);
+        if(camera.rendererParams.russianRoulette == true)
+        {
+            UniformRandomGenerator rng;
+            if(rng.getUniformRandNumber(0.f, 1.f) > ray.throughput)
+            {
+                return vec3f(0.f);
+            }
+        }
+        else
+        {
+            return vec3f(0.f, 0.f, 0.f);
+        }
     }
 
     IntersectionData closestObjData;
@@ -362,6 +376,13 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         //objMaterial = materials[closestObjData.material_id];
         objMaterial = closestObjData.material;
         vec3f n = closestObjData.normal;
+        if(ray.type == RAY_TYPE_GLOBAL_ILLUMINATION_RAY
+                && objMaterial.isEmissive == true
+                && camera.rendererParams.nextEvent == true)
+        {//hit an object light. kill this ray 
+         //since we are doing next event est.
+            return vec3f(0.f);
+        }
 
         vec3f color = vec3f(0.f);
         if(currentMedium.type == MATERIAL_AIR)
@@ -372,8 +393,54 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 color = closestObjData.material.diffuse;
             }
             else {
-                color += calculateLighting(ray, objMaterial, n, closestObjData.intersectionPoint);        
-                color += objMaterial.ambient * ambient_light;
+                color += calculateLighting(camera, ray, objMaterial, n, closestObjData.intersectionPoint);        
+                if(camera.rendererParams.pathTracing)
+                {
+                    //sample hemisphere and trace it
+                    ONB onb(n);//surface normal
+                    mat4x4 transformONB = getONBTransformation(onb);
+                    
+                    UniformRandomGenerator rng;
+                    float xi1 = rng.getUniformRandNumber(0.f, 1.f);
+                    float xi2 = rng.getUniformRandNumber(0.f, 1.f);
+                    vec3f sampledDir(std::nan("1"));
+                    float sampleProb = 0.f;
+                    if(camera.rendererParams.importanceSampling == false)
+                    {
+                        sampledDir = uniformSampleHemiSphere(xi1, xi2);
+                        sampleProb = 1.f/(2* M_PI);
+                    }
+                    else
+                    {
+                        //TODO importance sample here
+                        sampledDir = cosineSampleHemiSphere(xi1, xi2);
+                        sampleProb = cosineHemispherePdf(sampledDir.z);
+                        //sampleProb = 1.f/(2* M_PI);
+                    }
+                    //transform the sampled hemisphere vector to world space
+                    vec4f rayDir = transformONB * vec4f(sampledDir, 0.f);
+                    Ray globalRay;
+                    globalRay.d = norm(vec3f(rayDir.x, rayDir.y, rayDir.z));
+                    globalRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon;
+                    globalRay.time = ray.time; 
+                    
+                    globalRay.type = RAY_TYPE_GLOBAL_ILLUMINATION_RAY;
+                    vec3f throughtputSpectrum = objMaterial.computeBRDF(n, globalRay.d, -norm(ray.d));
+                    globalRay.throughput = ray.throughput;
+                    globalRay.throughput *= getMaxComp(throughtputSpectrum);
+                    //TODO later set the ray throughput here
+                    //apply the rendering equation
+                    float cosTheta = dot(n, globalRay.d);
+                    vec3f irradiance = getRayColor(globalRay, depth -1, false, currentMedium, camera);
+                    //divide by its probability also
+                    irradiance = irradiance / sampleProb;
+
+                    color += irradiance * throughtputSpectrum * cosTheta;
+                }
+                else
+                {
+                    color += objMaterial.ambient * ambient_light;
+                }
             }
         }
         if(dot(n, ray.d) > 0)//if we are inside an object
@@ -388,6 +455,8 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             reflectingRay.d = reflect(n, -ray.d);
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
             reflectingRay.time = ray.time;
+            reflectingRay.type = RAY_TYPE_RECURSING_RAY;
+            reflectingRay.throughput = ray.throughput * getMaxComp(objMaterial.mirror);
 
             if(objMaterial.roughness != -0.f)
             {
@@ -405,6 +474,8 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
 
             refractingRay.o = closestObjData.intersectionPoint - n * shadow_ray_epsilon;
             refractingRay.time = ray.time;
+            reflectingRay.type = RAY_TYPE_RECURSING_RAY;
+            reflectingRay.throughput = ray.throughput;
 
             float eta;
             if (currentMedium.type == MATERIAL_AIR){ eta = 1.f / objMaterial.refraction_index; }
@@ -967,6 +1038,9 @@ void Scene::renderRowMultiSampled(void* void_arg)
 
                 ray.time =  randTime(rand_mt);
                 ray.texCoord = backGroundCoords;
+                ray.type = RAY_TYPE_PRIMARY_RAY;
+                ray.throughput = 1.f;
+                ray.depth = max_recursion_depth;
                 //std::cout << "ray time: " << ray.time << std::endl;
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);

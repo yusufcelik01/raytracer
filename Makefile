@@ -26,7 +26,7 @@ GEOMETRY_OBJECTS= Object.o Mesh.o Sphere.o Face.o Triangle.o SphereLight.o MeshL
 TEXTURES= ImageTexture.o PerlinNoise.o CheckerBoard.o Image.o SphericalEnvLight.o
 MATH_OBJECTS=  vec2.o vec3.o vec4.o mat4x4.o UniformRandomGenerator.o rtmath.o Matrix.o
 
-OBJ=miniz.o $(PARSER_OBJECTS) Material.o  main.o core.o tinyxml2.o  BoundingBox.o BVH.o BVHConstruction.o $(MATH_OBJECTS) img.o $(GEOMETRY_OBJECTS) AreaLight.o $(TEXTURES) tonemap.o 
+OBJ= $(MATH_OBJECTS) Material.o $(GEOMETRY_OBJECTS) $(PARSER_OBJECTS) Camera.o BoundingBox.o BVH.o BVHConstruction.o AreaLight.o $(TEXTURES) tonemap.o miniz.o main.o core.o tinyxml2.o img.o  
 OBJECT_FILES= $(addprefix $(libdir)/,$(OBJ) ) 
 
 raytracer: build $(OBJECT_FILES)
@@ -42,7 +42,7 @@ $(libdir)/parser.o: $(srcdir)/parser.cpp $(PARSER_HEADERS) Material.hpp
 $(libdir)/tinyxml2.o: $(srcdir)/tinyxml2.cpp tinyxml2.h
 	$(CXX) $(CXXFLAGS) -c $<  -o $@
 $(libdir)/core.o: $(srcdir)/core.cpp img.hpp Ray.hpp $(OBJECT_CLASS_HEADERS) $(PARSER_HEADERS)
-	$(CXX) $(CXXFLAGS) -c $<  -o $@
+	$(CXX) $(CXXFLAGS) -c $<  -o $@ -w
 	
 
 ply_test: 
@@ -176,6 +176,7 @@ test_object_light:
 	./raytracer hw6/directLighting/inputs/cornellbox_jaroslav_glossy_area_ellipsoid.xml
 
 test6:
+	make test_brdf
 	make test_object_light
 
 previous_test:

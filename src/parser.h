@@ -79,7 +79,8 @@ struct Scene
     //vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist);
     vec3f getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera);
     vec3f getObjNorm(const IntersectionData& data);
-    vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
+    //vec3f calculateLighting(Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
+    vec3f calculateLighting(const Camera& camera, Ray eyeRay, Material material, vec3f surfNorm, vec3f p);
 
     private:
     void renderRow(void*);
