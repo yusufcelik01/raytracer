@@ -70,7 +70,7 @@ float conductorReflectionRatio(float n2, float k2, float cosTheta);
 vec3f exp(vec3f v);
 vec3f elemWiseExp(vec3f v, float);
 float makeGrayScale(vec3f rgb);
-
+float getMaxComp(vec3f v);
 
 vec3f operator*(const float& c, const vec3f& v);
 std::ostream& operator<<(std::ostream& os, const vec3f& v);

@@ -393,3 +393,8 @@ vec3f elemWiseExp(vec3f v, float s)
 
     return ret;
 }
+
+float getMaxComp(vec3f v)
+{
+    return std::max(v.x, std::max(v.y, v.z));
+}
