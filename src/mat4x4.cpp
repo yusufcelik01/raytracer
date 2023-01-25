@@ -277,6 +277,20 @@ mat4x4 transpose(const mat4x4& A)
     return trans;
 }
 
+mat4x4 getONBTransformation(ONB onb)
+{
+    mat4x4 M(1.f);
+    for(int i = 0; i < 3; i++)
+    {
+        M.m[i][0] = onb.u[i];
+        M.m[i][1] = onb.v[i];
+        M.m[i][2] = onb.n[i];
+    }
+
+    return M;
+}
+
+
 std::ostream& operator<<(std::ostream& os, const mat4x4& M)
 {
     os << "-----MATRIX-----" << std::endl;

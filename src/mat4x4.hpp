@@ -45,6 +45,13 @@ mat4x4 rotate(float angle, vec3f axis);
 mat4x4 inverse(const mat4x4& m);
 mat4x4 transpose(const mat4x4& A);
 
+//returns a transformation matrix that transforms the 
+//standart xyz space vectors to the onb space
+//such that z is aligned with n
+//          x with u
+//          y with v
+mat4x4 getONBTransformation(ONB onb);
+
 mat4x4 operator*(float c, mat4x4);
 //mat4x4 operator*(const vec3& rhs) const;
 
