@@ -180,7 +180,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
         color += radiance * material.computeBRDF(surfNorm, lightDir, w_eye) * cosTheta;
     }
     
-    if(camera.rendererParams.pathTracing == false && camera.rendererParams.nextEvent == true)
+    if(camera.rendererParams.pathTracing == false || camera.rendererParams.nextEvent == true)
     {
         for(SphereLight* light : sphere_lights)
         {
