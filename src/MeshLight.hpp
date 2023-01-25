@@ -17,6 +17,9 @@ class MeshLight : public Mesh
 
     SampledPoint sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f shadedPoint);
     void preprocess(const VertexBuffers& vertexBuffers);
+    private:
+
+    int getRandomFace(int start, int end, float xi);
 };
 
 
