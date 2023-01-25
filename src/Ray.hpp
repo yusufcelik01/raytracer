@@ -4,6 +4,14 @@
 #include "vec3.hpp"
 #include "vec2.hpp"
 
+enum RayType
+{
+    RAY_TYPE_PRIMARY_RAY,
+    RAY_TYPE_SHADOW_RAY,
+    RAY_TYPE_RECURSING_RAY,
+    RAY_TYPE_GLOBAL_ILLUMINATION_RAY,
+};
+
 class Ray
 {
     public:
@@ -11,6 +19,9 @@ class Ray
     vec3f d;
     float time = 0.f;
     vec2f texCoord;
+    RayType type = RAY_TYPE_RECURSING_RAY;
+    int depth; 
+    float throughput;
 };
 
 #endif
