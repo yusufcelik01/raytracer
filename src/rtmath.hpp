@@ -23,5 +23,8 @@ T mix(T x, T y, float a);
 float clamp(float x, float min, float max);
 
 vec3f uniformSampleHemiSphere(float xi1, float xi2);
+vec3f cosineSampleHemiSphere(float xi1, float xi2);
+float cosineHemispherePdf(float cosTheta);
+vec2f uniformSampleDisc(float xi1, float xi2);
 
 #endif
