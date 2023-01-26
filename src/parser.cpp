@@ -293,9 +293,9 @@ void Scene::loadFromXml(const std::string &filepath)
 
 
         element = element->FirstChildElement("PointLight");
-        PointLight point_light;
         while (element)
         {
+            PointLight point_light;
             child = element->FirstChildElement("Position");
             stream << child->GetText() << std::endl;
             child = element->FirstChildElement("Intensity");
@@ -310,9 +310,9 @@ void Scene::loadFromXml(const std::string &filepath)
 
         element = root->FirstChildElement("Lights");
         element = element->FirstChildElement("AreaLight");
-        AreaLight areaLight;
         while (element)
         {
+            AreaLight areaLight;
             child = element->FirstChildElement("Position");
             stream << child->GetText() << std::endl;
             stream >> areaLight.position.x >> areaLight.position.y >> areaLight.position.z;
@@ -400,9 +400,9 @@ void Scene::loadFromXml(const std::string &filepath)
     //Get Materials
     element = root->FirstChildElement("Materials");
     element = element->FirstChildElement("Material");
-    Material material;
     while (element)
     {
+        Material material;
         //material.is_mirror = (element->Attribute("type", "mirror") != NULL);
         material.type = MATERIAL_REGULAR;
         if(element->Attribute("type", "mirror") != NULL)
