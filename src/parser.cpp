@@ -99,10 +99,9 @@ void Scene::loadFromXml(const std::string &filepath)
     stream.clear();
     element = root->FirstChildElement("Cameras");
     element = element->FirstChildElement("Camera");
-    Camera camera;
     while (element)
     {
-
+        Camera camera;
         auto child = element->FirstChildElement("Position");
         stream << child->GetText() << std::endl;
         stream >> camera.position.x >> camera.position.y >> camera.position.z;
