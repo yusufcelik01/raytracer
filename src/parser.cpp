@@ -246,6 +246,7 @@ void Scene::loadFromXml(const std::string &filepath)
             }
             stream.clear();
 
+            param = "";
             child = element->FirstChildElement("RendererParams");
             if(child)
             {
@@ -263,6 +264,10 @@ void Scene::loadFromXml(const std::string &filepath)
                     else if(param == "ImportanceSampling")
                     {
                         camera.rendererParams.importanceSampling = true; 
+                    }
+                    else if(param == "")
+                    {
+                        break;
                     }
                 }
                 stream.clear();
