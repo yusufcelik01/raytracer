@@ -343,20 +343,32 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
 {
     float nearDist = camera.near_distance;
     vec3f gaze = camera.gaze;
-    if(depth < 0)
+    //if(depth < 0)
+    //{
+    //    if(camera.rendererParams.russianRoulette == true)
+    //    {
+    //        UniformRandomGenerator rng;
+    //        if(rng.getUniformRandNumber(0.f, 1.f) > ray.throughput)
+    //        {
+    //            return vec3f(0.f);
+    //        }
+    //    }
+    //    else
+    //    {
+    //        return vec3f(0.f, 0.f, 0.f);
+    //    }
+    //}
+    if(camera.rendererParams.russianRoulette == true)
     {
-        if(camera.rendererParams.russianRoulette == true)
+        UniformRandomGenerator rng;
+        if(rng.getUniformRandNumber(0.f, 1.f) > ray.throughput)
         {
-            UniformRandomGenerator rng;
-            if(rng.getUniformRandNumber(0.f, 1.f) > ray.throughput)
-            {
-                return vec3f(0.f);
-            }
+            return vec3f(0.f);
         }
-        else
-        {
-            return vec3f(0.f, 0.f, 0.f);
-        }
+    }
+    else if(depth < 0)
+    {
+        return vec3f(0.f, 0.f, 0.f);
     }
 
     IntersectionData closestObjData;
