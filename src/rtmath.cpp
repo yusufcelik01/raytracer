@@ -35,11 +35,6 @@ vec3f uniformSampleHemiSphere(float xi1, float xi2)
 //same logic but sampled with cosine weight towards upper hemisphere
 vec3f cosineSampleHemiSphere(float xi1, float xi2)
 {
-    //float z = xi1; 
-    //float r = std::sqrt(std::max(0.f, 1.f - z*z));//r = sinTheta
-    //float phi = 2 * M_PI * xi2;
-
-    //return vec3f(r * cos(phi), r * sin(phi), z);
     vec2f d = uniformSampleDisc(xi1, xi2);
     float z = std::sqrt(std::max(0.f, 1.f - d.x * d.x - d.y * d.y));
     return vec3f(d.x, d.y, z);
