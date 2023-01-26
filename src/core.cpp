@@ -269,6 +269,8 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
 
     if(material.isEmissive)
     {
+        //TODO
+        //put the cosine theta term here
         color += material.radiance;
     }
 
