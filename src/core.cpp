@@ -414,8 +414,14 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     {
                         //TODO importance sample here
                         sampledDir = cosineSampleHemiSphere(xi1, xi2);
+                        //notice that z may be 0 
+                        //in this case we would get a zero probabalility
+                        //hence division by zero
+                        //we will solve this problem a few lines later
+                        //by cancelling the cosTheta in rendering equation 
+                        //by this cosTheta(sampleProb has cosTheta) 
+                        //the actual reason we get 0
                         sampleProb = cosineHemispherePdf(sampledDir.z);
-                        //sampleProb = 1.f/(2* M_PI);
                     }
                     //transform the sampled hemisphere vector to world space
                     vec4f rayDir = transformONB * vec4f(sampledDir, 0.f);
@@ -433,9 +439,22 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     float cosTheta = dot(n, globalRay.d);
                     vec3f irradiance = getRayColor(globalRay, depth -1, false, currentMedium, camera);
                     //divide by its probability also
-                    irradiance = irradiance / sampleProb;
+                    if(camera.rendererParams.importanceSampling)
+                    {
+                        irradiance = irradiance * M_PI;
+                        color += irradiance * throughtputSpectrum;
+                        //if we are using importance sampling
+                        //the cosineTheta in the rendering equation 
+                        //and the probability of the sampled ray
+                        //cancels each other out
+                    }
+                    else
+                    {
+                        //divide by uniform sampling probability 1/(2 PI)
+                        irradiance = irradiance * (2 * M_PI);
+                        color += irradiance * throughtputSpectrum * cosTheta;
+                    }
 
-                    color += irradiance * throughtputSpectrum * cosTheta;
                 }
                 else
                 {
@@ -819,8 +838,11 @@ void Scene::render(Camera camera)
                         camera.TMOArgs.saturation, 
                         camera.TMOArgs.gamma);
 
-        write_png(ldrOutput.c_str() , nx, ny, ldrImg);
-        std::cout << "writing to file: " << ldrOutput << std::endl;
+        if(ldrImg)
+        {
+            write_png(ldrOutput.c_str() , nx, ny, ldrImg);
+            std::cout << "writing to file: " << ldrOutput << std::endl;
+        }
     }
     else//no tonemapping and hdr
     {
