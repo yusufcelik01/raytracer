@@ -37,7 +37,7 @@ unsigned char* photographicToneMap(float* hdrData, int w, int h,int comp ,float 
             if(temp != temp)
             {
                 std::cout <<"NaN value present quitting" << std::endl;
-                exit(-1);
+                return NULL;
             }
             midGray += temp;
         }
