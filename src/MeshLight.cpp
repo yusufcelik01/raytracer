@@ -107,7 +107,7 @@ int MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f
     //    vec3f center = (v1 + v2 + v3) / 3.f;
     //    vec3f w_i = norm(center - pLocal); 
 
-    //    if(dot(w_i, *(sampledFace->normal)) < 0.f)//if NOT backface
+    //    if(dot(w_i, *(sampledFace->normal)) <= 0.f)//if NOT backface
     //    {
     //        break;//if bot backface
     //    }
@@ -123,7 +123,7 @@ int MeshLight::sampleIlluminationPoint(const VertexBuffers& vertexBuffers, vec3f
     //        }
     //        if(startIndex > endIndex)
     //        {
-    //            return -1;
+    //            break;//no front facing triangles
     //        }
 
     //    }
@@ -168,13 +168,19 @@ int MeshLight::getRandomFace(int start, int end, float xi)
     {
         return getRandomFace(mid+1, end, xi);
     }
-    else// xi < mid
+    else// xi <= mid
     {
-        if(mid > 0 && triangleProbs[mid-1] < xi)
+        if(mid > 0)
         {
-            //std::cout << "returning random face with index: " << mid - 1 << std::endl;
-            return mid - 1;    
+            if(triangleProbs[mid-1] < xi)
+            {
+                return mid;    
+            }
         }
-        return getRandomFace(start, mid, xi);
+        else// mid == 0
+        {
+            return 0;
+        }
+        return getRandomFace(start, mid-1, xi);
     }
 }
