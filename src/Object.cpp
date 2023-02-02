@@ -70,44 +70,45 @@ void Object::processTextures(const VertexBuffers& buffers, IntersectionData& int
                 //intData.material.diffuse = texture->sample(intData.intersectionPoint);
             if(texture->samplerType == TEX_SAMPLER_3D){
             //std::cout << "texture sampling point" << std::endl;
-                intData.material.diffuse = texture->sample(intData.intersectionPoint);
+                intData.material.diffuse = Spectrum::fromRGB(
+                        texture->sample(intData.intersectionPoint));
             }
             else {
-                intData.material.diffuse = texture->sample(u, v);
+                intData.material.diffuse = Spectrum::fromRGB(texture->sample(u, v));
             }
         }
         else if(texture->decalMode == TEX_MODE_BLEND_KD)
         {
-            intData.material.diffuse += texture->sample(u, v);
+            intData.material.diffuse += Spectrum::fromRGB(texture->sample(u, v));
             intData.material.diffuse /= 2.f;
         }
         else if(texture->decalMode == TEX_MODE_REPLACE_KS)
         {
-            intData.material.specular = texture->sample(u, v);
+            intData.material.specular = Spectrum::fromRGB(texture->sample(u, v));
         }
         else if(texture->decalMode == TEX_MODE_REPLACE_MIRROR)
         {
             if(texture->samplerType == TEX_SAMPLER_3D){
                 //std::cout <<" REPLACE MIRROR" << std::endl;
-                intData.material.mirror = texture->sample(intData.intersectionPoint);
+                intData.material.mirror = Spectrum::fromRGB(texture->sample(intData.intersectionPoint));
             }
             else {
-                intData.material.mirror = texture->sample(u, v);
+                intData.material.mirror = Spectrum::fromRGB(texture->sample(u, v));
             }
         }
         else if(texture->decalMode == TEX_MODE_SCALE_MIRROR)
         {
             if(texture->samplerType == TEX_SAMPLER_3D){
                 //std::cout <<" REPLACE MIRROR" << std::endl;
-                intData.material.mirror = intData.material.mirror * makeGrayScale(texture->sample(intData.intersectionPoint));
+                intData.material.mirror = intData.material.mirror * Spectrum::fromRGB(makeGrayScale(texture->sample(intData.intersectionPoint)));
             }
             else {
-                intData.material.mirror = intData.material.mirror * texture->sample(u, v);
+                intData.material.mirror = intData.material.mirror * Spectrum::fromRGB(texture->sample(u, v));
             }
         }
         else if(texture->decalMode == TEX_MODE_REPLACE_ALL)
         {
-            vec3f texSample = texture->sample(u, v);
+            Spectrum texSample = Spectrum::fromRGB(texture->sample(u, v));
             intData.material.ambient  = texSample;
             intData.material.diffuse  = texSample; 
             intData.material.specular = texSample; 

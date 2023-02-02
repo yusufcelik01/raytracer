@@ -7,7 +7,7 @@ class SpotLight
 {
     public:
     vec3f position;
-    vec3f intensity;
+    Spectrum intensity;
     vec3f direction;
     float covarageAngle, fallOffAngle;
 };

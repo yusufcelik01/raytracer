@@ -2,6 +2,7 @@
 #define __MATERIAL
 
 #include "rtmath.hpp"
+#include "Spectrum.hpp"
 
 typedef enum MaterialType
 {
@@ -43,34 +44,34 @@ class Material
     //bool is_mirror;
     public:
     MaterialType type; 
-    vec3f ambient;
-    vec3f diffuse;
-    vec3f specular;
+    Spectrum ambient;
+    Spectrum diffuse;
+    Spectrum specular;
     //mirror
-    vec3f mirror;
+    Spectrum mirror;
     //confuctor fields
     float refraction_index;
     float absorption_index;
     //dielectric fields
-    vec3f absorption_coefficent;
+    Spectrum absorption_coefficent;
     float phong_exponent = 1.f;
     float roughness = -0.f;
     //brdf
     BRDF brdf;
     bool isEmissive;//for object lights
-    vec3f radiance;//if emissive
+    Spectrum radiance;//if emissive
 
     //constructors
     Material();
     Material(const Material& rhs);
-    vec3f computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye);
 
     private:
-    vec3f originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
-    vec3f originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
-    vec3f modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
-    vec3f modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
-    vec3f torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye);
+    Spectrum torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye);
 };
 
 

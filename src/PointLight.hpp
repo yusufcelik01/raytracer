@@ -7,7 +7,7 @@ class PointLight
 {
     public:
     vec3f position;
-    vec3f intensity;
+    Spectrum intensity;
 };
 
 

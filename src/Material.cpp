@@ -15,7 +15,7 @@ Material::Material()
     //dielectric fields
     absorption_coefficent = 1.f;
     isEmissive = false;
-    radiance = vec3f(0.f);
+    radiance = Spectrum(0.f);
 }
 
 Material::Material(const Material& rhs)
@@ -36,9 +36,9 @@ Material::Material(const Material& rhs)
     radiance = rhs.radiance;
 }
 
-vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
-    vec3f reflectance(0.f);
+    Spectrum reflectance(0.f);
     switch(brdf.getType())
     {
         case BRDF_ORIGINAL_BLINN_PHONG:
@@ -64,12 +64,12 @@ vec3f Material::computeBRDF(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 
 // various BRDFs 
 // all the arguments are assumed to be normalized
-vec3f Material::originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0)
     {
-        return vec3f(0.f);//theta > 90
+        return Spectrum(0.f);//theta > 90
     }
 
     //specular shading 
@@ -80,12 +80,12 @@ vec3f Material::originalBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     return diffuse + (specular * cosAlpha / cosTheta); 
 }
 
-vec3f Material::originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0)
     {
-        return vec3f(0.f);//theta > 90
+        return Spectrum(0.f);//theta > 90
     }
     vec3f w_ri = reflect(surfNorm, w_light);
     float cosAlpha = dot(w_ri, w_eye);
@@ -94,12 +94,12 @@ vec3f Material::originalPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     return diffuse + (specular * cosAlpha / cosTheta);
 }
 
-vec3f Material::modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0)
     {
-        return vec3f(0.f);//theta > 90
+        return Spectrum(0.f);//theta > 90
     }
 
     vec3f w_ri = reflect(surfNorm, w_light);
@@ -117,12 +117,12 @@ vec3f Material::modifiedPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     return diffuse + (specular * cosAlpha);
 }
 
-vec3f Material::modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0)
     {
-        return vec3f(0.f);//theta > 90
+        return Spectrum(0.f);//theta > 90
     }
 
     vec3f half = norm(w_light + w_eye);
@@ -139,12 +139,12 @@ vec3f Material::modifiedBlinnPhong(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     }
 }
 
-vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
+Spectrum Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
 {
     float cosTheta = dot(surfNorm, w_light);
     if(cosTheta <= 0.f)
     {
-        return vec3f(0.f);
+        return Spectrum(0.f);
     }
     vec3f w_h= norm(w_light + w_eye);
     float cosAlpha = dot(w_h, surfNorm);
@@ -170,7 +170,7 @@ vec3f Material::torranceSparrow(vec3f surfNorm, vec3f w_light, vec3f w_eye)
     float cosBeta = dot(w_h, w_eye);
     float F = R0 + (1 - R0) * pow((1.0 - cosBeta), 5.0);
 
-    vec3f reflectance(0.f);
+    Spectrum reflectance(0.f);
 
     if(brdf.isKdFresnel)
     {

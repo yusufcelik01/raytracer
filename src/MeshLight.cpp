@@ -4,7 +4,7 @@
 MeshLight::MeshLight()
 {
     totalSurfaceArea = 0.f;
-    radiance = vec3f();
+    radiance = Spectrum(0.f);
     rng = new UniformRandomGenerator;
 }
 

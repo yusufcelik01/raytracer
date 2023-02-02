@@ -7,7 +7,7 @@
 class SphereLight: public Sphere
 {
     public:
-    vec3f radiance;
+    Spectrum radiance;
     UniformRandomGenerator* rng;
 
     SphereLight();

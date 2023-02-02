@@ -2,7 +2,7 @@
 
 SphereLight::SphereLight()
 {
-    radiance = vec3f(0.f);
+    radiance = Spectrum(0.f);
     rng = new UniformRandomGenerator;
 }
 

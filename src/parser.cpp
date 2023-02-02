@@ -285,10 +285,12 @@ void Scene::loadFromXml(const std::string &filepath)
         child = element->FirstChildElement("AmbientLight");
         if(child) {
             stream << child->GetText() << std::endl;
-            stream >> ambient_light.x >> ambient_light.y >> ambient_light.z;
+            vec3f rgb(0.f);
+            stream >> rgb.x >> rgb.y >> rgb.z;
+            ambient_light = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
         }
         else {
-            ambient_light = vec3f(0.f);
+            ambient_light = Spectrum(0.f);
         }
 
 
@@ -302,7 +304,9 @@ void Scene::loadFromXml(const std::string &filepath)
             stream << child->GetText() << std::endl;
 
             stream >> point_light.position.x >> point_light.position.y >> point_light.position.z;
-            stream >> point_light.intensity.x >> point_light.intensity.y >> point_light.intensity.z;
+            vec3f rgb;
+            stream >> rgb.x >> rgb.y >> rgb.z;
+            point_light.intensity = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
 
             point_lights.push_back(point_light);
             element = element->NextSiblingElement("PointLight");
@@ -322,9 +326,12 @@ void Scene::loadFromXml(const std::string &filepath)
             stream >> areaLight.normal.x >> areaLight.normal.y >> areaLight.normal.z;
             areaLight.normal = norm(areaLight.normal);
 
+            vec3f radiance;
             child = element->FirstChildElement("Radiance");
             stream << child->GetText() << std::endl;
-            stream >> areaLight.radiance.r >> areaLight.radiance.g >> areaLight.radiance.b;
+            //stream >> areaLight.radiance.r >> areaLight.radiance.g >> areaLight.radiance.b;
+            stream >> radiance[0] >> radiance[1] >> radiance[2];
+            areaLight.radiance = Spectrum::fromRGB(radiance, SpectrumType::Illuminant);
 
             child = element->FirstChildElement("Size");
             stream << child->GetText() << std::endl;
@@ -341,7 +348,9 @@ void Scene::loadFromXml(const std::string &filepath)
         {
             child = element->FirstChildElement("Radiance");
             stream << child->GetText() << std::endl;
-            stream >> directionalLight.radiance.r >> directionalLight.radiance.g >> directionalLight.radiance.b;
+            vec3f rgb;
+            stream >> rgb.r >> rgb.g >> rgb.b;
+            directionalLight.radiance = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
 
             child = element->FirstChildElement("Direction");
             stream << child->GetText() << std::endl;
@@ -362,7 +371,9 @@ void Scene::loadFromXml(const std::string &filepath)
 
             child = element->FirstChildElement("Intensity");
             stream << child->GetText() << std::endl;
-            stream >> spot_light.intensity.x >> spot_light.intensity.y >> spot_light.intensity.z;
+            vec3f rgb;
+            stream >> rgb.x >> rgb.y >> rgb.z;
+            spot_light.intensity = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
 
             child = element->FirstChildElement("Direction");
             stream << child->GetText() << std::endl;
@@ -423,15 +434,11 @@ void Scene::loadFromXml(const std::string &filepath)
         if(child != NULL)
         { 
             stream << child->GetText() << std::endl;
-            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
+            vec3f rgb;
+            stream >> rgb.x >> rgb.y >> rgb.z;
+            material.mirror = Spectrum::fromRGB(rgb);
         }
 
-        child = element->FirstChildElement("MirrorReflectance");
-        if(child)
-        {
-            stream << child->GetText() << std::endl;
-            stream >> material.mirror.x >> material.mirror.y >> material.mirror.z;
-        }
         child = element->FirstChildElement("RefractionIndex");
         if(child)
         {
@@ -448,7 +455,9 @@ void Scene::loadFromXml(const std::string &filepath)
         if(child)
         {
             stream << child->GetText() << std::endl;
-            stream >> material.absorption_coefficent.x >> material.absorption_coefficent.y >> material.absorption_coefficent.z;
+            vec3f rgb;
+            stream >> rgb.x >> rgb.y >> rgb.z;
+            material.absorption_coefficent = Spectrum::fromRGB(rgb);
         }
         child = element->FirstChildElement("RefractionIndex");
         if(child)
@@ -458,17 +467,24 @@ void Scene::loadFromXml(const std::string &filepath)
         }
 
 
+        vec3f rgb(0.f);
         child = element->FirstChildElement("AmbientReflectance");
         stream << child->GetText() << std::endl;
-        stream >> material.ambient.x >> material.ambient.y >> material.ambient.z;
+        rgb = vec3f(0.f);
+        stream >> rgb.x >> rgb.y >> rgb.z;
+        material.ambient = Spectrum::fromRGB(rgb);
 
         child = element->FirstChildElement("DiffuseReflectance");
         stream << child->GetText() << std::endl;
-        stream >> material.diffuse.x >> material.diffuse.y >> material.diffuse.z;
+        rgb = vec3f(0.f);
+        stream >> rgb.x >> rgb.y >> rgb.z;
+        material.diffuse = Spectrum::fromRGB(rgb);
 
         child = element->FirstChildElement("SpecularReflectance");
         stream << child->GetText() << std::endl;
-        stream >> material.specular.x >> material.specular.y >> material.specular.z;
+        rgb = vec3f(0.f);
+        stream >> rgb.x >> rgb.y >> rgb.z;
+        material.specular = Spectrum::fromRGB(rgb);
         //if(child)
         //{
         //    stream << child->GetText() << std::endl;
@@ -502,9 +518,9 @@ void Scene::loadFromXml(const std::string &filepath)
         if(element->Attribute("degamma", "true") != NULL)
         {
             float gamma = 2.2;
-            material.diffuse = elemWiseExp(material.diffuse, gamma);
-            material.ambient = elemWiseExp(material.ambient, gamma);
-            material.specular = elemWiseExp(material.specular, gamma);
+            material.diffuse = Pow(material.diffuse, gamma);
+            material.ambient = Pow(material.ambient, gamma);
+            material.specular = Pow(material.specular, gamma);
 
         }
 
@@ -792,7 +808,9 @@ void Scene::loadFromXml(const std::string &filepath)
         
         child = element->FirstChildElement("Radiance");
         stream << child->GetText() << std::endl;
-        stream >> meshLight->radiance.x >> meshLight->radiance.y >> meshLight->radiance.z; 
+        vec3f rgb = vec3f(0.f);
+        stream >> rgb.x >> rgb.y >> rgb.z; 
+        meshLight->radiance = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
         meshLight->material.radiance = meshLight->radiance;
         meshLight->material.isEmissive = true;
 
@@ -877,7 +895,9 @@ void Scene::loadFromXml(const std::string &filepath)
 
             child = element->FirstChildElement("Radiance");
             stream << child->GetText() << std::endl;
-            stream >> sphereLight->radiance.x >> sphereLight->radiance.y >> sphereLight->radiance.z; 
+            vec3f rgb(0.f);
+            stream >> rgb.x >> rgb.y >> rgb.z; 
+            sphereLight->radiance = Spectrum::fromRGB(rgb, SpectrumType::Illuminant);
             sphereLight->material.radiance = sphereLight->radiance;
             sphereLight->material.isEmissive = true;
 

@@ -4,13 +4,14 @@
 #include "vec3.hpp"
 #include "UniformRandomGenerator.hpp"
 #include <cstddef>
+#include "Spectrum.hpp"
 
 class AreaLight
 {
     public:
     vec3f position;
     vec3f normal;
-    vec3f radiance;
+    Spectrum radiance;
     float extent;
     UniformRandomGenerator rng;
 

@@ -6,7 +6,7 @@
 class MeshLight : public Mesh
 {
     public:
-    vec3f radiance;
+    Spectrum radiance;
     UniformRandomGenerator* rng;
     
     MeshLight();

@@ -30,13 +30,13 @@ vec3f deviateRay(vec3f originalRay, float roughness)
 }
 
 
-vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
+Spectrum Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material material, vec3f surfNorm, vec3f p)
 {
     //for now only calculate diffuse & spcular shading
     //for only point lights
     IntersectionData dummy;
     vec3f w_eye = -norm(eyeRay.d);
-    vec3f color = vec3f(0.f);
+    Spectrum color(0.f);
     for(PointLight light : point_lights)
     {
         vec3f w_light = (light.position - p);
@@ -54,7 +54,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
         float cosTheta = dot(w_light, surfNorm);
         float d_sqr = distance * distance;
 
-        vec3f irradiance = light.intensity / d_sqr;
+        Spectrum irradiance = light.intensity / d_sqr;
         color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
     }
 
@@ -79,7 +79,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
         float area = light.extent * light.extent;
         float cosAlpha = dot(light.normal, -w_light);
         if( cosAlpha < 0.f) {cosAlpha = -cosAlpha;}//bi-idirectional area light
-        vec3f irradiance = light.radiance * (area * cosAlpha / d_sqr);
+        Spectrum irradiance = light.radiance * (area * cosAlpha / d_sqr);
 
         float cosTheta = dot(w_light, surfNorm);
         color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
@@ -115,7 +115,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
         }
         w_light = norm(w_light);
         float d_sqr = distance * distance;
-        vec3f irradiance = light.intensity / d_sqr;
+        Spectrum irradiance = light.intensity / d_sqr;
 
         float cosAlpha = dot(light.direction, -w_light); 
         float alpha = acos(cosAlpha);
@@ -175,7 +175,9 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
         }
         vec3f lightDir = onbTransform * dir;
 
-        vec3f radiance = env_light->sample(lightDir) * 2.f * M_PI;
+        vec3f envRGB = env_light->sample(lightDir) * 2.f * M_PI;
+        Spectrum radiance = Spectrum::fromRGB(envRGB);
+
         float cosTheta = dot(lightDir, surfNorm);
         color += radiance * material.computeBRDF(surfNorm, lightDir, w_eye) * cosTheta;
     }
@@ -210,7 +212,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
                 continue; 
             }
 
-            vec3f radiance = light->radiance/(lightPoint.prob) ;
+            Spectrum radiance = light->radiance/(lightPoint.prob) ;
 
             float cosTheta = dot(w_light, surfNorm);
             color += radiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
@@ -258,7 +260,7 @@ vec3f Scene::calculateLighting(const Camera& camera, Ray eyeRay, Material materi
                 continue; 
             }
 
-            vec3f irradiance = light->radiance * (Larea * cosAlpha)/(Lprob* d_sqr) ;
+            Spectrum irradiance = light->radiance * (Larea * cosAlpha)/(Lprob* d_sqr) ;
 
             float cosTheta = dot(w_light, surfNorm);
             color += irradiance * material.computeBRDF(surfNorm, w_light, w_eye) * cosTheta;
@@ -341,7 +343,8 @@ bool Scene::rayQuery(Ray ray, IntersectionData& retData, bool isShadowRay, float
 //    return getRayColor(ray, depth, false, currentMedium, vec3f(0.f), 0.f);
 //}
 //vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, vec3f gaze, float nearDist)
-vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera)
+//vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera)
+Spectrum Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material currentMedium, const Camera& camera)
 {
     float nearDist = camera.near_distance;
     vec3f gaze = camera.gaze;
@@ -365,12 +368,12 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
         UniformRandomGenerator rng;
         if(rng.getUniformRandNumber(0.f, 1.f) > ray.throughput)
         {
-            return vec3f(0.f);
+            return Spectrum(0.f);
         }
     }
     else if(depth < 0)
     {
-        return vec3f(0.f, 0.f, 0.f);
+        return Spectrum(0.f);
     }
 
     IntersectionData closestObjData;
@@ -395,10 +398,10 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                 && camera.rendererParams.nextEvent == true)
         {//hit an object light. kill this ray 
          //since we are doing next event est.
-            return vec3f(0.f);
+            return Spectrum(0.f);
         }
 
-        vec3f color = vec3f(0.f);
+        Spectrum color(0.f);
         if(currentMedium.type == MATERIAL_AIR)
         //if not we are inside an dielectric
         //object and light can not directly contribute
@@ -445,13 +448,13 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     globalRay.time = ray.time; 
                     
                     globalRay.type = RAY_TYPE_GLOBAL_ILLUMINATION_RAY;
-                    vec3f throughtputSpectrum = objMaterial.computeBRDF(n, globalRay.d, -norm(ray.d));
+                    Spectrum throughtputSpectrum = objMaterial.computeBRDF(n, globalRay.d, -norm(ray.d));
                     globalRay.throughput = ray.throughput;
-                    globalRay.throughput *= getMaxComp(throughtputSpectrum);
+                    globalRay.throughput *= throughtputSpectrum.maxCoefVal();
                     //TODO later set the ray throughput here
                     //apply the rendering equation
                     float cosTheta = dot(n, globalRay.d);
-                    vec3f irradiance = getRayColor(globalRay, depth -1, false, currentMedium, camera);
+                    Spectrum irradiance = getRayColor(globalRay, depth -1, false, currentMedium, camera);
                     //divide by its probability also
                     if(camera.rendererParams.importanceSampling)
                     {
@@ -489,7 +492,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             reflectingRay.o = closestObjData.intersectionPoint + n * shadow_ray_epsilon; 
             reflectingRay.time = ray.time;
             reflectingRay.type = RAY_TYPE_RECURSING_RAY;
-            reflectingRay.throughput = ray.throughput * getMaxComp(objMaterial.mirror);
+            reflectingRay.throughput = ray.throughput * objMaterial.mirror.maxCoefVal();
 
             if(objMaterial.roughness != -0.f)
             {
@@ -555,7 +558,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
                     air.type = MATERIAL_AIR;
                     air.refraction_index = 1.f;
                     air.absorption_index = 0.f;
-                    air.absorption_coefficent = vec3f(0.f);
+                    air.absorption_coefficent = Spectrum(0.f);
                     color += (1.0 - reflectionRatio) * getRayColor(refractingRay, depth - 1, false, air, camera);
                 }
             }
@@ -570,7 +573,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             if(currentMedium.type != MATERIAL_AIR)
             {
                 float attunuationDistance = length(ray.o - closestObjData.intersectionPoint);
-                color = color * (exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
+                color = color * (Exp(attunuationDistance * (-objMaterial.absorption_coefficent)));
             }
 
         }
@@ -595,14 +598,18 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
     else {
         if(env_light != NULL)
         {
-            return env_light->sample(norm(ray.d));
+            vec3f envRGB = env_light->sample(norm(ray.d));
+            return Spectrum::fromRGB(envRGB);
         }
         else if(isPrimaryRay) {
             if(background_texture != NULL) {
-                return background_texture->sample(ray.texCoord.s, ray.texCoord.t)*255.f;
+                vec3f bg = background_texture->sample(ray.texCoord.s, ray.texCoord.t)*255.f;
+                return Spectrum::fromRGB(bg);
             }
             else {
-                return this->background_color;
+                vec3i irgb = this->background_color;
+                vec3f rgb(irgb);
+                return Spectrum::fromRGB(rgb);
             }
             //if(background_texture == NULL) {
             //    return this->background_color;
@@ -612,7 +619,7 @@ vec3f Scene::getRayColor(Ray ray, int depth, bool isPrimaryRay, Material current
             //}
         }
         else {
-            return vec3f(0, 0, 0);
+            return Spectrum(0.f);
         }
     }
 }
@@ -798,7 +805,7 @@ void Scene::render(Camera camera)
     airMedium.type = MATERIAL_AIR;
     airMedium.absorption_index = 0.f;
     airMedium.refraction_index = 1.f;
-    airMedium.absorption_coefficent = vec3f(0.f);
+    airMedium.absorption_coefficent = Spectrum(0.f);
 
     RowRendererArg threadArg;
     threadArg.u  = u;
@@ -900,9 +907,10 @@ void Scene::renderRow(void* void_arg)
             ray.d = norm(s - arg->e);
 
 
-            vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
+            //vec3f color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
+            Spectrum color = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
             //vec3i c = clamp(vec3i(color), 0, 255);
-            vec3f c = color;
+            vec3f c = color.toRGB();
 
             arg->img[(arg->nx*y + x)*3] = c.r;
             arg->img[(arg->nx*y + x)*3 + 1] = c.g;
@@ -977,20 +985,21 @@ float gauss(float sigma, float x, float y)
     return tmp;
 }
 
-vec3f filterBox(const std::vector<vec3f>& sampleValues)
+Spectrum filterBox(const std::vector<Spectrum>& sampleValues)
 {
-    vec3f acc(0.f);
-    for(vec3f sample : sampleValues)
+    Spectrum acc(0.f);
+    for(Spectrum sample : sampleValues)
     {
         acc += sample;
     }
     return acc / sampleValues.size();
 }
 
-vec3f filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<vec3f>& sampleValues)
+//vec3f filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<vec3f>& sampleValues)
+Spectrum filterGauss(const std::vector<vec2f>& sampleCoords, const std::vector<Spectrum>& sampleValues)
 {
     float totalWeight = 0.f;
-    vec3f totalValue = vec3f(0.f);
+    Spectrum totalValue(0.f);
 
     size_t sampleSize = sampleValues.size();
     for(size_t i = 0; i < sampleSize; ++i)
@@ -1019,7 +1028,8 @@ void Scene::renderRowMultiSampled(void* void_arg)
         for(x = 0; x < arg->nx; ++x)
         {
             std::vector<vec2f> samples  = {};
-            std::vector<vec3f> sampleColors = {};
+            //std::vector<vec3f> sampleColors = {};
+            std::vector<Spectrum> sampleColors = {};
             float apertureSize = arg->camera->apertureSize;
 
             if(arg->numberOfSamples == 1)
@@ -1080,24 +1090,26 @@ void Scene::renderRowMultiSampled(void* void_arg)
                 //std::cout << "ray time: " << ray.time << std::endl;
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium);
                 //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium,  -arg->w, arg->camera->near_distance);
-                vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
+                //vec3f sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
+                Spectrum sampleColor = getRayColor(ray, max_recursion_depth, true, arg->initialMedium, *(arg->camera));
 
                 sampleColors.push_back(sampleColor);
             }
             
             //apply box filter to samples
-            vec3f pixelColor = vec3f(0.f);
+            Spectrum c;
             //pixelColor = filterBox(sampleColors); 
-            pixelColor = filterGauss(samples, sampleColors); 
+            c = filterGauss(samples, sampleColors); 
             //end box filter
             
+            vec3f rgbPixel = c.toRGB();
             //vec3i c = vec3i(pixelColor);
-            vec3f c = vec3f(pixelColor);
-            //vec3i c = clamp(vec3i(pixelColor), 0, 255);
+            //we have a spectrum now
+            //TODO convert to to XYZ before writing to image
 
-            arg->img[(arg->nx*y + x)*3] = c.r;
-            arg->img[(arg->nx*y + x)*3 + 1] = c.g;
-            arg->img[(arg->nx*y + x)*3 + 2] = c.b;
+            arg->img[(arg->nx*y + x)*3] = rgbPixel.r;
+            arg->img[(arg->nx*y + x)*3 + 1] = rgbPixel.g;
+            arg->img[(arg->nx*y + x)*3 + 2] = rgbPixel.b;
         }
         y = arg->rows->getNextAvaliableRow();
     }

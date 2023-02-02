@@ -7,7 +7,7 @@ class DirectionalLight
 {
     public:
     vec3f direction;
-    vec3f radiance;
+    Spectrum radiance;
 };
 
 #endif
