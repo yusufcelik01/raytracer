@@ -13,9 +13,9 @@ LDFLAGS = -pthread
 
 #TODO correct header dependency issues
 #header dependency variables
-OBJECT_CLASS_HEADERS= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp rtmath.hpp Ray.hpp
+OBJECT_CLASS_HEADERS= Object.hpp IntersectionData.hpp Matrix.hpp Material.hpp Spectrum.hpp rtmath.hpp Ray.hpp
 PARSER_HEADERS= parser.h tinyxml2.h $(GEOMETRY_HEADERS) ply.h $(POINT_LIGHT_HEADERS) $(AREA_LIGHT_HEADERS) rtmath.hpp Camera.hpp ImageTexture.hpp Texture.hpp
-AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp
+AREA_LIGHT_HEADERS= AreaLight.hpp vec3.hpp Spectrum.hpp
 POINT_LIGHT_HEADERS= PointLight.hpp vec3.hpp
 MATH_HEADERS=  vec2.hpp vec3.hpp vec4.hpp mat4x4.hpp UniformRandomGenerator.hpp 
 GEOMETRY_HEADERS= $(OBJECT_CLASS_HEADERS) Face.hpp Triangle.hpp Mesh.hpp Sphere.hpp SphereLight.hpp MeshLight.hpp
